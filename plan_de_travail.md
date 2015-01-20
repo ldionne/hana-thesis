@@ -86,26 +86,26 @@ par tâtonnement dirigé et en me basant sur ce qui existe pour le Haskell.
 
 
 ## Échéancier
-23 janvier: Remise du plan de travail
+- 23 janvier: Remise du plan de travail
 
-[24 janvier - 18 février]:
-    - Squelette du travail au complet
-    - Version presque finale de l'introduction aux catégories et de la
+- [24 janvier - 18 février]:
+    + Squelette du travail au complet
+    + Version presque finale de l'introduction aux catégories et de la
       théorie des catégories dans Hana (sauf le bonus). Je souhaite avoir
       une version presque finale de ces parties très rapidement parce que
       c'est là que je prévois de rencontrer le plus de difficultés.
 
-19 février: Rapport d'étape
+- 19 février: Rapport d'étape
 
-[20 février - 23 avril]
-    - Rédiger l'introduction et la conclusion
-    - Compléter l'introduction à la métaprogrammation en C++.
-    - Commencer à monter la présentation orale
-    - Rédiger la partie bonus si le temps le permet
+- [20 février - 23 avril]
+    + Rédiger l'introduction et la conclusion
+    + Compléter l'introduction à la métaprogrammation en C++.
+    + Commencer à monter la présentation orale
+    + Rédiger la partie bonus si le temps le permet
 
-24 avril: Remise du document final
+- 24 avril: Remise du document final
 
-[25 avril - 27 avril]:
-    - Finaliser le travail sur la présentation orale
+- [25 avril - 27 avril]:
+    + Finaliser le travail sur la présentation orale
 
-28 avril: Présentation orale
+- 28 avril: Présentation orale
