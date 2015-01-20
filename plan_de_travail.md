@@ -47,7 +47,7 @@ par tâtonnement dirigé et en me basant sur ce qui existe pour le Haskell.
 - Introduction aux catégories (~ 5 pages)
     + Définition formelle (~ 1 page)
     + Quelques exemples de base (~ 2 pages)
-        * Catégories presques triviales
+        * Catégories presque triviales
         * Set
         * Grp
     + La catégorie Hask (~ 1 page)
