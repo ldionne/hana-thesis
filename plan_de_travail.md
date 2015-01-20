@@ -79,8 +79,8 @@ par tâtonnement dirigé et en me basant sur ce qui existe pour le Haskell.
             qui peut être fait dans MPL peut être fait dans Hana. En effet,
             si les flèches de MPL sont des métafonctions, je pense que la
             fidélité du foncteur nous donnerait qu'il est possible d'exprimer
-            toutes les métafonctions de MPL (et p-t plus) dans Hana. Il me
-            reste du défrichage à faire pour me rendre là.
+            toutes les métafonctions de MPL (et peut-être plus) dans Hana. Il
+            me reste du défrichage à faire pour me rendre là.
 
 - Conclusion (revue des contributions) (~ 1 page)
 
@@ -93,7 +93,7 @@ par tâtonnement dirigé et en me basant sur ce qui existe pour le Haskell.
     - Version presque finale de l'introduction aux catégories et de la
       théorie des catégories dans Hana (sauf le bonus). Je souhaite avoir
       une version presque finale de ces parties très rapidement parce que
-      c'est là que je prévois rencontrer le plus de difficultés.
+      c'est là que je prévois de rencontrer le plus de difficultés.
 
 19 février: Rapport d'étape
 
