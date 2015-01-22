@@ -6,9 +6,10 @@ certains aspects de la métaprogrammation statique en C++.
 
 À noter que j'ai décidé d'exclure la partie traitant d'algèbre abstraite
 parce que
-    1. elle m'intéresse moins
-    2. elle est plutôt évidente
-    3. parler de la théorie des catégories seulement devrait être une tâche suffisante
+
+1. elle m'intéresse moins
+2. elle est plutôt évidente
+3. parler de la théorie des catégories seulement devrait être une tâche suffisante
 
 ## Démarche
 Consulter les excellentes ressources disponibles sur internet faisant des
