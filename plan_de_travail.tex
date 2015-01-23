@@ -1,0 +1,154 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{Plan de travail}
+\author{Louis Dionne}
+\date{23 Janvier 2015}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Objectif du projet}
+Montrer comment la théorie des catégories peut être utilisée pour formaliser
+certains aspects de la métaprogrammation statique en C++.
+
+À noter que j'ai décidé d'exclure la partie traitant d'algèbre abstraite. En
+effet, celle-ci m'intéressait moins et tombait plus sous le sens. De plus,
+j'estime que parler de la théorie des catégories devrait être une tâche
+suffisante.
+
+\section{Démarche}
+Consulter les excellentes ressources disponibles sur internet faisant des
+liens entre le Haskell et la théorie des catégories. Appliquer la théorie
+à la métaprogrammation en C++ au lieu du Haskell; cette partie n'a jamais
+été faite auparavant et j'irai donc un peu comme on fait de la recherche;
+par tâtonnement dirigé et en me basant sur ce qui existe pour le Haskell.
+
+\section{Organisation du travail}
+À noter que les nombres de pages sont à titre indicatif seulement et seront
+certainement amenés à changer. Ils représentent pour moi un indicateur du
+niveau de détails dans lequel je souhaite entrer.
+
+\begin{itemize}
+    \item Introduction: (environ 1 page)
+        \begin{itemize}
+            \item La programmation fonctionnelle
+                \begin{itemize}
+                    \item Lien avec les mathématiques
+                    \item Haskell et la théorie des catégories
+                \end{itemize}
+            \item Le C++
+                \begin{itemize}
+                    \item L'apparition des templates
+                    \item La Turing-complétude accidentelle
+                    \item La métaprogrammation
+                    \item Lien avec la programmation fonctionnelle
+                \end{itemize}
+        \end{itemize}
+
+    \item Introduction à la métaprogrammation en C++ (environ 6 pages)
+        \begin{itemize}
+            \item Les templates (environ 1 page)
+            \item La métaprogrammation classique style MPL (environ 2 pages)
+                \begin{itemize}
+                    \item Représentation des valeurs par des types
+                    \item Séquences de type
+                \end{itemize}
+            \item La métaprogrammation dans Hana (environ 2 pages)
+                \begin{itemize}
+                    \item Utilisation de la déduction de type
+                    \item Utilisation de singletons pour les calculs sur des types
+                    \item Séquences hétérogènes
+                \end{itemize}
+            \item Les applications (environ 1 page)
+            \item Lien avec la programmation fonctionnelle (avec le lambda calcul?)
+        \end{itemize}
+
+    \item Introduction aux catégories (environ 5 pages)
+    \begin{itemize}
+        \item Définition formelle (environ 1 page)
+        \item Quelques exemples de base (environ 2 pages)
+            \begin{itemize}
+                \item Catégories presque triviales
+                \item Set
+                \item Grp
+            \end{itemize}
+        \item La catégorie Hask (environ 1 page)
+        \item La catégorie Hana (environ 1 page)
+    \end{itemize}
+
+    \item La théorie des catégories dans Hana (environ 15 pages total)
+    \begin{itemize}
+        \item Foncteurs (environ 5 pages)
+        \begin{itemize}
+            \item Définition formelle
+            \item Définition dans Hana
+            \item Intuition
+            \item Réalisation dans Hana: Maybe, Either, Tuple
+        \end{itemize}
+
+        \item Transformations naturelles (environ 2 pages)
+        \begin{itemize}
+            \item Définition formelle
+            \item Exemples de transformations naturelles dans Hana
+        \end{itemize}
+
+        \item Monades (environ 5 pages)
+        \begin{itemize}
+            \item Définition formelle
+            \item Définition dans Hana
+            \item Intuition
+            \item Réalisation dans Hana + preuves: Maybe, Either, Tuple
+        \end{itemize}
+
+        \item Produits (environ 3 pages)
+        \begin{itemize}
+            \item Définition formelle
+            \item Définition dans Hana
+            \item Réalisation dans Hana + preuves: Pair
+        \end{itemize}
+
+        \item Bonus (si temps et si j'y arrive)
+        \begin{itemize}
+            \item Définition de la catégorie MPL
+            \item Formalisation du foncteur $Type : MPL \to Hana$:
+            La fidélité du foncteur nous donnerait une preuve que tout ce
+            qui peut être fait dans MPL peut être fait dans Hana. En effet,
+            si les flèches de MPL sont des métafonctions, je pense que la
+            fidélité du foncteur nous donnerait qu'il est possible d'exprimer
+            toutes les métafonctions de MPL (et peut-être plus) dans Hana. Il
+            me reste du défrichage à faire pour me rendre là.
+        \end{itemize}
+    \end{itemize}
+
+    \item Conclusion (revue des contributions) (environ 1 page)
+
+\end{itemize}
+
+\section{Échéancier}
+\begin{itemize}
+    \item 23 janvier: Remise du plan de travail
+    \item 24 janvier - 18 février:
+    \begin{itemize}
+        \item Squelette du travail au complet
+        \item Version presque finale de l'introduction aux catégories et de la
+        théorie des catégories dans Hana (sauf le bonus). Je souhaite avoir
+        une version presque finale de ces parties très rapidement parce que
+        c'est là que je prévois de rencontrer le plus de difficultés.
+    \end{itemize}
+    \item 19 février: Rapport d'étape
+    \item 20 février - 23 avril:
+    \begin{itemize}
+        \item Rédiger l'introduction et la conclusion
+        \item Compléter l'introduction à la métaprogrammation en C++.
+        \item Commencer à monter la présentation orale
+        \item Rédiger la partie bonus si le temps le permet
+    \end{itemize}
+    \item 24 avril: Remise du document final
+    \item 25 avril - 27 avril: Finaliser le travail sur la présentation orale
+    \item 28 avril: Présentation orale
+\end{itemize}
+
+\end{document}
