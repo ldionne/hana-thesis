@@ -1,0 +1,34 @@
+\documentclass[letterpaper, 11pt]{article}
+
+\usepackage[utf8]{inputenc} % Trans­lates var­i­ous stan­dard and other in­put en­cod­ings into a 'LATEX in­ter­nal lan­guage'.
+\usepackage[T1]{fontenc}    % The T1 font encoding is an 8-bit encoding and uses fonts that have 256 glyphs. (le paquet permet de gérer les accents)
+\usepackage[french]{babel}  % Pour les règles spécifiques au français et les formats (dates..).
+\usepackage{geometry}       % Permet de changer le format de la page.
+\usepackage{amssymb}        % Symboles mathématiques
+\usepackage{amsthm}         % Les commandes pour faire des théorèmes, propositions, etc.
+\usepackage{enumerate}      % Listes
+\usepackage{amsmath}        % The amsmath package provides miscellaneous enhancements for improving the information structure and printed output of documents that contain mathematical formulas.
+\usepackage{hyperref}       % Cross-referencing commands
+\usepackage{graphicx}       % Pro­vid­ing a key-value in­ter­face for op­tional ar­gu­ments to the \in­clude­graph­ics com­mand
+\usepackage{tikz}           % Figures et graphiques
+
+% Style preuve
+\theoremstyle{plain}
+\newtheorem{théorème}{Théorème}[subsection]
+\newtheorem{lemme}{Lemme}[subsection]
+\newtheorem{proposition}{Proposition}[subsection]
+\newtheorem{corollaire}{Corollaire}[subsection]
+
+% Style definition
+\theoremstyle{definition}
+\newtheorem{définition}{Définition}
+\newtheorem{exemple}{Exemple}
+
+% Style remark
+\theoremstyle{remark}
+\newtheorem*{remarque}{Remarque}
+
+% Info du document (pour \maketitle)
+\title{Projet de fin d'études}
+\author{Louis \bsc{Dionne}}
+\date{\today}
