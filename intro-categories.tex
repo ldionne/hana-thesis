@@ -74,14 +74,96 @@ composition, c'est-à-dire que pour toute flèche $f : A \to B$,
 \]
 
 Il est intéressant d'observer que ces deux dernières propriétés sont
-semblables à demander que $\left(\hom(\C), \circ\right)$ soit un Monoïde.
+semblables à demander que $\left(\hom(\C), \circ\right)$ soit un monoïde.
 Ce n'est évidemment pas le cas puisqu'on a plusieurs identités et parce
 que $\circ$ n'est pas définie sur la totalité de $\hom(\C) \times \hom(\C)$,
 mais l'intuition reste utile.
 
 
-
 \subsection{Exemples de catégories}
+Avec la définition d'une catégorie qui vient d'être faite, il est un peu
+difficile de voir comment les catégories peuvent se matérialiser. Nous
+explorerons donc maintenant des catégories simples qui permettent de se
+forger une intuition pour éventuellement étudier des catégories plus utiles.
+Dans cet optique, on se doit de commencer par la catégorie la plus simple,
+la catégorie vide:
+
+% TODO
+\begin{center}
+    \tikz \draw (0,0) rectangle (3, 2);
+\end{center}
+
+Il n'y a pas grand chose à dire; la collection des objets est l'ensemble vide
+$\emptyset$, la collection des flèches est elle-aussi l'ensemble vide, et
+la loi de composition est une application vide
+$\circ : \emptyset \times \emptyset \to \emptyset$. Les propriétés d'une
+catégorie sont trivialement satisfaites. Une autre catégorie simple (et
+peu utile) est la catégorie triviale, qui ne contient qu'un seul objet
+et sa flèche identité:
+
+% TODO
+\begin{center}
+    \tikz \draw (0,0) rectangle (3, 2);
+\end{center}
+
+De manière générale, on peut voir une catégorie comme un graphe dirigé avec
+certaines propriétés. Par exemple, le graphe suivant est une catégorie:
+
+% TODO
+\begin{center}
+    \tikz \draw (0,0) rectangle (3, 2);
+\end{center}
+
+Les objets sont les sommets du graphe, les flèches sont les arrêtes et la loi
+de composition est une application qui associe à deux arrêtes $u$ et $v$ un
+troisième sommet qui part de la source de $u$ jusqu'à la destination de $v$.
+Bien entendu, tous les graphes ne sont pas des catégories. Par exemple, le
+graphe suivant ne peut pas être une catégorie:
+
+% TODO
+\begin{center}
+    \tikz \draw (0,0) rectangle (3, 2);
+\end{center}
+
+En effet, il n'y a pas d'arrête qui part du sommet $a$ vers lui-même, ce qui
+ne respecte pas le fait que chaque objet doit avoir une flèche identité. Aussi,
+bien qu'il respecte les identités, le graphe suivant ne peut pas être une
+catégorie:
+
+% TODO
+\begin{center}
+    \tikz \draw (0,0) rectangle (3, 2);
+\end{center}
+
+En effet, il existe une arrête entre les sommets $a$ et $b$ et une arrête
+entre les sommets $b$ et $c$, mais il n'y en a pas entre les sommets $a$ et
+$c$. Si on essayait de définir la loi de composition, on se rendrait compte
+qu'il n'y a pas de valeur possible pour $u \circ v$. Ainsi, la composition
+serait mal définie et le graphe ne peut pas représenter une catégorie. En
+général, on peut créer une catégorie à partir de n'importe quel graphe dirigé
+en ajoutant simplement les flèches manquantes.
+
+Une des raisons d'étudier les catégories est leur capacité d'unifier des
+notions sous un même emblème. Suivant cette ligne de pensée, il est possible
+d'inscrire la plupart des structures provenant de l'algèbre abstraite dans
+un contexte catégorique. On commence d'abord par la catégorie $\mathrm{Set}$,
+dont les objets sont les ensembles, les flèches sont les applications
+ensemblistes et la composition est la composition usuelle de fonctions.
+On peut ensuite ajouter de la structure à ces ensembles et demander que
+les applications ensemblistes respectent cette structure. Ceci nous mène
+à considérer, par exemple, la catégorie $\mathrm{Grp}$, où les objets sont
+les groupes et les flèches sont des homomorphismes de groupe, avec la
+composition usuelle. On peut continuer sur ce chemin et considérer la
+catégorie $\mathrm{Ring}$ des anneaux, où les flèches sont des homomorphismes
+d'anneaux, puis la catégorie $\mathrm{K-Vect}$ des espaces vectoriels sur un
+corps $K$, où les flèches sont les transformations K-linéaires, et ainsi de
+suite. Du côté de l'analyse, on peut considérer par exemple la catégorie
+$\mathrm{Met}$ des espaces métriques, où les flèches sont les applications
+1-Lipschitz. Les exemples sont nombreux; en fait, la plupart des théories
+mathématiques peuvent être exprimés dans ce cadre, parfois moyennant une
+petite dose d'imagination.
+
+
 \subsection{La catégorie Hask}
 
 
