@@ -1,3 +1,106 @@
-
 \section{Hana}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{La catégorie Hana}
+La catégorie Hana est définie de manière similaire à Hask, mais les types
+sont remplacés par la notion plus générale de \textit{tag}. En particulier,
+les objets de Hana sont les tags:
+\[
+    \ob{Hana} := \{ T \suchthat \text{T est un \textit{tag}} \}
+\]
+
+Les morphismes de Hana sont les fonctions génériques qui travaillent sur des
+objets ayant un certain tag, et ce peu importe le type réel de ces objets.
+Plus précisément, soit $X, Y \in \ob{Hana}$, c'est-à-dire que $X$ et $Y$
+sont deux tags. Un morphisme $f : X \to Y$ est un objet C++, disons {\tt f},
+avec un {\tt operator()} tel que $\forall x \in X$,
+\begin{enumerate}
+    \item l'expression {\tt f(x)} est bien formée, c'est-à-dire qu'elle compile
+    \item ${\tt f(x)} \in Y$, c'est-à-dire que le tag de l'expression {\tt f(x)} est $Y$
+    \item l'expression {\tt f(x)} n'a pas d'effets de bord
+\end{enumerate}
+
+La propriété (3) est nécessaire pour s'assurer que les fonctions qu'on
+considère sont des fonctions au sens mathématique, c'est-à-dire que
+\[
+    x = y \implies f(x) = f(y)
+\]
+
+Sans se restreindre explicitement à cette classe de fonctions, on perdrait la
+capacité de raisonner mathématiquement à propos des fonctions de Hana puisque
+le langage C++ n'est pas pur, contrairement au Haskell. Ce n'est cependant pas
+une restriction qui nous handicap beaucoup, puisque Hana s'intéresse surtout à
+la manipulation d'objets hétérogènes, ce qui requiert l'utilisation d'un style
+de programmation fonctionnel de toute façon.
+
+Finalement, la loi de composition sur Hana est, sans grande surprise,
+l'extension de la composition de fonctions usuelle aux fonctions templates
+qui constituent les morphismes de Hana, $\hom(Hana)$. Rigoureusement, soit
+$X, Y, Z \in \ob{Hana}$, c'est-à-dire que $X$, $Y$ et $Z$ sont des tags.
+On peut définir la composition par
+\begin{minted}{c++}
+    template <typename X, typename Y, typename Z>
+    auto compose = [](auto f, auto g) {
+        return [=](auto x) {
+            static_assert(std::is_same<datatype_t<decltype(x)>, X>{}, "");
+            static_assert(std::is_same<datatype_t<decltype(g(x))>, Y>{}, "");
+            static_assert(std::is_same<datatype_t<decltype(f(g(x)))>, Z>{}, "");
+            return f(g(x));
+        };
+    };
+\end{minted}
+
+Dans la réalité, il est trop répétitif de préciser les tags $X$, $Y$ et $Z$
+et on préfère la définition suivante pour {\tt compose}:
+\begin{minted}{c++}
+    auto compose = [](auto f, auto g) {
+        return [=](auto x) {
+            return f(g(x));
+        };
+    };
+\end{minted}
+
+Il nous reste à démontrer que Hana est bien une catégorie. Pour ce faire, il
+suffit de vérifier qu'il existe un morphisme identité pour chaque objet de
+la catégorie et que la composition est bien associative.
+
+% TODO
+\begin{proof}
+
+\end{proof}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Les foncteurs}
+Nous avons introduit la notion de catégorie à l'aide d'exemples provenant de
+l'algèbre abstraite, de l'analyse puis de l'informatique. L'algorithme pour
+\textit{catégoriser} une théorie était toujours un peu la même: isoler les
+objets d'étude de la théorie, isoler les propriétés importantes qui les
+définissent puis considérer l'ensemble des transformations qui, de manière
+informelle, respectent ces propriétés. Or, la théorie des catégorie est
+elle-même une théorie qui étudie certains objets appelés ``catégories''.
+Il serait donc naturel de se demander s'il est possible de définir des
+transformations entre les catégories et, si c'est le cas, quelles propriétés
+doivent posséder ces transformations pour qu'on obtienne quelque chose
+d'intéressant. Comme on le verra plus loin, ce questionnement et sa réponse
+sont à la source de la notion de \textit{foncteur}.
+
+D'abord, une catégorie $C$ possède non seulement des objets, mais aussi des
+flèches entre ces objets et une loi de composition. Ainsi, peu importe la
+forme que prendra notre transformation inter-catégories, elle devra spécifier
+où elle envoie les objets, les flèches ainsi que la loi de composition.
+Ensuite, il serait intéressant qu'une telle transformation ne
+
+
+
+..., ce qui nous mène à la définition suivante.
+
+\begin{définition}[Foncteur]
+Un foncteur est une
+\end{définition}
+
+
+\subsection{Les transformations naturelles}
+\subsection{Les monades}
+\subsection{Les produits}
