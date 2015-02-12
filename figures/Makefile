@@ -11,9 +11,7 @@ all: $(DIAGRAMS)
 	mpost --tex=latex $*.full
 
 %.png: %.1
-	convert -colorspace rgb -density 600 						\
-		$*.1 '(' +clone -background black -shadow 90x4+0+1 ')' 	\
-		+swap -background none -layers merge +repage $*.png
+	convert -colorspace rgb -density 600 $*.1 $*.png
 
 clean:
 	rm -f *.full *.1 *.log mptextmp.mp mptextmp.mpx
