@@ -86,35 +86,22 @@ mais l'intuition reste utile.
 Avec la définition d'une catégorie qui vient d'être faite, il est un peu
 difficile de voir comment les catégories peuvent se matérialiser. Nous
 explorerons donc maintenant des catégories simples qui permettent de se
-forger une intuition pour éventuellement étudier des catégories plus utiles.
-Dans cet optique, on se doit de commencer par la catégorie la plus simple,
-la catégorie vide:
-
-% TODO
-\begin{center}
-    \tikz \draw (0,0) rectangle (3, 2);
-\end{center}
-
-Il n'y a pas grand chose à dire; la collection des objets est l'ensemble vide
-$\emptyset$, la collection des flèches est elle-aussi l'ensemble vide, et
-la loi de composition est une application vide
+forger une intuition dans le but éventuel d'étudier des catégories plus utiles.
+Dans cet optique, on se doit de commencer par la catégorie la plus simple;
+la catégorie vide. Comme son nom l'indique, cette catégorie n'a pas d'objets
+ni de flèches, et sa loi de composition est une application vide
 $\circ : \emptyset \times \emptyset \to \emptyset$. Les propriétés d'une
 catégorie sont trivialement satisfaites. Une autre catégorie simple (et
 peu utile) est la catégorie triviale, qui ne contient qu'un seul objet
 et sa flèche identité:
 
-% TODO
-\begin{center}
-    \tikz \draw (0,0) rectangle (3, 2);
-\end{center}
+\centerline{\includegraphics[scale=0.3]{figures/trivial}}
 
 De manière générale, on peut voir une catégorie comme un graphe dirigé avec
 certaines propriétés. Par exemple, le graphe suivant est une catégorie:
 
 % TODO
-\begin{center}
-    \tikz \draw (0,0) rectangle (3, 2);
-\end{center}
+\centerline{\tikz \draw (0,0) rectangle (3, 2);}
 
 Les objets sont les sommets du graphe, les flèches sont les arrêtes et la loi
 de composition est une application qui associe à deux arrêtes $u$ et $v$ un
@@ -123,9 +110,7 @@ Bien entendu, tous les graphes ne sont pas des catégories. Par exemple, le
 graphe suivant ne peut pas être une catégorie:
 
 % TODO
-\begin{center}
-    \tikz \draw (0,0) rectangle (3, 2);
-\end{center}
+\centerline{\tikz \draw (0,0) rectangle (3, 2);}
 
 En effet, il n'y a pas d'arrête qui part du sommet $a$ vers lui-même, ce qui
 ne respecte pas le fait que chaque objet doit avoir une flèche identité. Aussi,
@@ -133,9 +118,7 @@ bien qu'il respecte les identités, le graphe suivant ne peut pas être une
 catégorie:
 
 % TODO
-\begin{center}
-    \tikz \draw (0,0) rectangle (3, 2);
-\end{center}
+\centerline{\tikz \draw (0,0) rectangle (3, 2);}
 
 En effet, il existe une arrête entre les sommets $a$ et $b$ et une arrête
 entre les sommets $b$ et $c$, mais il n'y en a pas entre les sommets $a$ et
