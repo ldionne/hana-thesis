@@ -4,7 +4,7 @@ DIAGRAMS = $(patsubst mp/%.mp,%.png,$(wildcard mp/*.mp))
 
 all: $(DIAGRAMS)
 
-%.full:
+%.full: mp/%.mp
 	cat mp/_before mp/$*.mp mp/_after > $*.full
 
 %.1: %.full

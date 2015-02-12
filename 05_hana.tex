@@ -7,12 +7,12 @@ La catégorie Hana est définie de manière similaire à Hask, mais les types
 sont remplacés par la notion plus générale de \textit{tag}. En particulier,
 les objets de Hana sont les tags:
 \[
-    \ob{Hana} := \{ T \suchthat \text{T est un \textit{tag}} \}
+    \ob(Hana) := \{ T \suchthat \text{T est un \textit{tag}} \}
 \]
 
 Les morphismes de Hana sont les fonctions génériques qui travaillent sur des
 objets ayant un certain tag, et ce peu importe le type réel de ces objets.
-Plus précisément, soit $X, Y \in \ob{Hana}$, c'est-à-dire que $X$ et $Y$
+Plus précisément, soit $X, Y \in \ob(Hana)$, c'est-à-dire que $X$ et $Y$
 sont deux tags. Un morphisme $f : X \to Y$ est un objet C++, disons {\tt f},
 avec un {\tt operator()} tel que $\forall x \in X$,
 \begin{enumerate}
@@ -37,7 +37,7 @@ de programmation fonctionnel de toute façon.
 Finalement, la loi de composition sur Hana est, sans grande surprise,
 l'extension de la composition de fonctions usuelle aux fonctions templates
 qui constituent les morphismes de Hana, $\hom(Hana)$. Rigoureusement, soit
-$X, Y, Z \in \ob{Hana}$, c'est-à-dire que $X$, $Y$ et $Z$ sont des tags.
+$X, Y, Z \in \ob(Hana)$, c'est-à-dire que $X$, $Y$ et $Z$ sont des tags.
 On peut définir la composition par
 \begin{minted}{c++}
     template <typename X, typename Y, typename Z>
@@ -83,21 +83,65 @@ elle-même une théorie qui étudie certains objets appelés ``catégories''.
 Il serait donc naturel de se demander s'il est possible de définir des
 transformations entre les catégories et, si c'est le cas, quelles propriétés
 doivent posséder ces transformations pour qu'on obtienne quelque chose
-d'intéressant. Comme on le verra plus loin, ce questionnement et sa réponse
-sont à la source de la notion de \textit{foncteur}.
+d'intéressant. Comme on s'apprête à le voir, ce questionnement et sa
+réponse sont à la source de la notion de \textit{foncteur}, qui n'est
+en effet rien d'autre qu'une transformation entre catégories.
 
-D'abord, une catégorie $C$ possède non seulement des objets, mais aussi des
-flèches entre ces objets et une loi de composition. Ainsi, peu importe la
-forme que prendra notre transformation inter-catégories, elle devra spécifier
-où elle envoie les objets, les flèches ainsi que la loi de composition.
-Ensuite, il serait intéressant qu'une telle transformation ne
+D'abord, une catégorie $\C$ possède non seulement des objets, mais aussi
+des flèches entre ces objets. Ainsi, peu importe la forme que prendra notre
+transformation inter-catégories, elle devra spécifier où elle envoie les
+objets, mais aussi les flèches. Considérons donc une application $F : \C \to \D$
+d'une catégorie $\C$ vers une catégorie $\D$. On devra avoir que
+\begin{enumerate}
+    \item Pour chaque objet $A \in \ob(\C)$, $F$ envoie $A$ vers un objet de
+          $\D$, disons $F(A) \in \ob(\D)$.
+    \item Pour chaque flèche $f : A \to B \in \hom(\C)$, $F$ envoie $f$ sur
+          une flèche de $\D$, disons $F(f) \in \hom(\D)$.
+\end{enumerate}
 
+Il est intéressant de remarquer que l'on a pas spécifié la source ni la
+destination de la flèche $F(f)$. En fait, pour une flèche $f : A \to B$,
+seuls deux choix s'offrent à nous:
+\begin{itemize}
+    \item $F(f) : F(A) \to F(B)$
+    \item $F(f) : F(B) \to F(A)$
+\end{itemize}
 
+Ces deux choix sont valables. Dans le premier cas, on dira que c'est un
+foncteur \textit{covariant}, ou juste un foncteur, et dans l'autre cas on
+dira que c'est un foncteur \textit{contravariant}. Dans le cadre actuel,
+nous nous intéresserons seulement aux foncteurs covariants. Ensuite, une
+catégorie possède une loi de composition et chaque objet doit posséder une
+flèche identité; il serait probablement intéressant qu'une transformation
+entre catégories préserve ces propriétés d'une certaine manière. On demandera
+donc que la loi de composition soit respectée, c'est-à-dire que pour des
+flèches $f : A \to B$ et $g : B \to C$ de $\C$,
+\[
+    F(g \circ_\C f) = F(g) \circ_\D F(f)
+\]
 
-..., ce qui nous mène à la définition suivante.
+De manière similaire, on demandera que les flèches identité soient préservées
+par la transformation, c'est-à-dire que pour un objet $A$ de $\C$, on devra
+avoir
+\[
+    F(id_A) = id_{F(A)}
+\]
+
+Ceci nous mène à la définition formelle suivante:
 
 \begin{définition}[Foncteur]
-Un foncteur est une
+    Un foncteur $F : \C \to \D$ d'une catégorie $\C$ vers une catégorie $\D$
+    est une application qui
+    \begin{enumerate}
+        \item à chaque objet $X \in \ob(\C)$ associe un objet $F(X) \in \ob(\D)$
+        \item à chaque flèche $f : A \to B \in \hom(\C)$ associe une flèche
+              $F(f) : F(A) \to F(B) \in \hom(\D)$
+        \item respecte la loi de composition, c'est-à-dire que pour toutes
+              flèches $f : A \to B$ et $g : B \to C \in \hom(\C)$,
+              $F(g \circ_\C f) = F(g) \circ_\D F(f)$
+        \item préserve les identités, c'est-à-dire que pour tout objet
+              $X \in \ob(\C)$, $F(\id_X) = \id_{F(X)}$
+    \end{enumerate}
 \end{définition}
 
 
