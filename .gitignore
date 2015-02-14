@@ -8,3 +8,4 @@
 *.fdb_latexmk
 *.bbl
 *.toc
+_minted-main/

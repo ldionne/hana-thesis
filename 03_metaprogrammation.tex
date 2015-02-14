@@ -1,2 +1,164 @@
 \section{La métaprogrammation en C++}
+% Base du type system + motivation templates + fonctionnement templates
+Le C++ est un langage statiquement typé. Ceci veut dire que chaque objet
+possède un (et un seul) type, et que celui-ci est déterminé au moment de la
+compilation. De plus, en C++, le type d'un objet est directement relié à son
+mode de représentation. Par exemple, pour représenter une valeur entière, on
+doit d'abord décider d'un mode de représentation, disons {\tt int}. Or, le mode
+de représentation choisit ne permet généralement pas de représenter le concept
+voulu dans toute sa généralité. En effet, {\tt int} n'est capable de représenter
+que des valeurs entre -2,147,483,647 et 2,147,483,647, ce qui est très loin
+du très général $\mathbb{Z}$. La différence entre le concept abstrait
+représenté par un type et sa représentation concrète est un problème auquel
+les programmeurs sont constamment confrontés. Un bon programmeur saura
+utiliser la bonne représentation au bon moment, et ce dans le but d'optimiser
+des choses qui dépendent de la situation particulière; performance,
+expressivité, testabilité ou même productivité du programmeur.
 
+Lorsqu'on souhaite créer un objet pour lui donner une valeur, on doit donc
+dire au compilateur quel est le mode de représentation que l'on souhaite
+utiliser. Par exemple, pour créer un entier représenté par le type {\tt int}
+avec une valeur de 10, on écrira
+\begin{minted}{c++}
+    int i = 10;
+\end{minted}
+
+De manière similaire, le domaine et le codomaine d'une fonction sont des
+types qui doivent être connus au moment de la compilation. Ici aussi, il
+est nécessaire de spécifier le mode de représentation exact que l'on souhaite
+utiliser. Par exemple, pour déclarer une fonction dont le domaine est
+l'ensemble des chaînes de caractères et le codomaine est l'ensemble des
+entiers non-négatifs, on devra d'abord décider d'une représentation concrète
+pour chacun de ces ensembles. Supposons que l'on choisisse le type
+{\tt std::string} pour représenter l'ensemble des chaînes de caractères et le
+type {\tt unsigned int} pour représenter l'ensemble des entiers non-négatifs.
+Une fonction $f : \text{{\tt std::string}} \to \text{{\tt unsigned int}}$
+s'écrira alors
+\begin{minted}{c++}
+    unsigned int f(std::string);
+\end{minted}
+
+Les créateurs du langage C++ se sont vite rendu compte que ce système,
+bien que plutôt simple à gérer pour le compilateur, limitait grandement
+l'expressivité du côté du programmeur. Par exemple, supposons que l'on
+ait une famille de types représentant des séquences d'objets, et que ces
+types aient tous un interface commun:
+
+\begin{minted}{c++}
+    struct int_sequence {
+        bool is_empty() const;
+        int head() const;
+        int_sequence tail() const;
+
+        // implémentation ignorée pour simplifier
+    };
+
+    struct float_sequence {
+        bool is_empty() const;
+        float head() const;
+        float_sequence tail() const;
+
+        // implémentation ignorée pour simplifier
+    };
+
+    // possiblement d'autres types de séquences
+\end{minted}
+
+Dans cet exemple, {\tt is\_empty} retourne une valeur booléenne qui est {\tt true}
+si la séquence est vide, et {\tt false} sinon. {\tt head} retourne la première
+valeur d'une séquence non-vide et {\tt tail} retourne une nouvelle séquence
+qui contient toutes les valeurs sauf la première. À partir de cet interface
+minimal, il est possible de faire plusieurs choses utiles. Par exemple, on
+peut aller chercher la n-ième valeur dans une séquence de la manière suivante:
+\begin{minted}{c++}
+    int_sequence int_sequence_nth_element(unsigned int n, int_sequence s) {
+        if (n == 0) return s.head();
+        else        return int_sequence_nth_element(n - 1, s.tail());
+    }
+\end{minted}
+
+Malheureusement, cette fonction ne fonctionne que sur des objets de type
+{\tt int\_sequence}. Il faudrait donc écrire une autre fonction pour les
+objets de type {\tt float\_sequence}
+\begin{minted}{c++}
+    float_sequence float_sequence_nth_element(unsigned int n, float_sequence s) {
+        if (n == 0) return s.head();
+        else        return float_sequence_nth_element(n - 1, s.tail());
+    }
+\end{minted}
+
+Évidemment, l'implémentation de la fonction est exactement la même; la seule
+différence est le type des objets qui sont manipulés. Ceci est fâcheux puisqu'il
+s'agit d'une duplication d'efforts qui doit être effectuée à chaque fois qu'une
+nouvelle représentation pour une séquence d'un type différent est ajoutée. Les
+\textit{templates} servent à éliminer ce problème. Au lieu de spécifier exactement
+la représentation du domaine d'une fonction, on peut utiliser un type fictif de la
+manière suivante:
+\begin{minted}{c++}
+    template <typename Sequence>
+    Sequence nth_element(unsigned int n, Sequence s) {
+        if (n == 0) return s.head();
+        else        return nth_element(n - 1, s.tail());
+    }
+\end{minted}
+
+Ensuite, le compilateur s'occupera lui-même de substituer les bons types puis
+de générer la fonction appropriée. Par exemple, lorsque le compilateur voit le
+code suivant
+\begin{minted}{c++}
+    int_sequence s = ...;
+    int i = nth_element(10, s);
+\end{minted}
+
+, il commence par déterminer quel est le type qui devrait être substitué à
+la place de {\tt Sequence} dans le template écrit plus haut. Il détermine
+que le type à substituer est {\tt int\_sequence}, puis il génère une fonction
+équivalente à celle que nous avions écrite pour le type {\tt int\_sequence}.
+Finalement, l'appel à {\tt nth\_element} sera en réalité un appel à la
+fonction générée pour le type {\tt int\_sequence}. L'idée est donc
+d'utiliser le compilateur comme un système de réécriture pour nous
+éviter des tâches répétitives dans certains cas. Cependant, il reste un cas
+très évident de répétition dans l'exemple que nous venons de donner; les
+séquences sont une famille de types qui possèdent tous un interface similaire
+et dont l'implémentation pourrait être similaire, mais nous avons quand même
+répété exactement le même code pour chacun de ces types. Heureusement, les
+templates peuvent aussi être utilisés pour créer des canevas de types:
+\begin{minted}{c++}
+    template <typename T>
+    struct sequence {
+        bool is_empty() const;
+        T head() const;
+        sequence<T> tail() const;
+
+        // implémentation ignorée pour simplifier
+    };
+\end{minted}
+
+Ensuite, on aura qu'à écrire {\tt sequence<int>} pour faire référence à la
+représentation d'une séquence contenant des {\tt int}, {\tt sequence<float>}
+pour une séquence de {\tt float}, et ainsi de suite. Par exemple, lorsque le
+compilateur voit
+\begin{minted}{c++}
+    sequence<float> s = ...;
+\end{minted}
+
+, il génère un type équivalent à {\tt float\_sequence} en substituant {\tt T}
+par {\tt float} dans le canevas écrit plus haut, et c'est à ce type généré que
+l'écriture {\tt sequence<float>} fait référence.
+
+%%%%%%%%%%%%%%
+% Quel niveau de connaissance du langage on doit assumer? C++11? C++14?
+% Si on assume rien, je pourrais écrire un livre complet là-dessus..
+%%%%%%%%%%%%%%
+
+% introduire la spécialisation pour le branching compile-time
+% introduire la récursion compile-time et dire que c'est turing complet
+
+% montrer comment on peut représenter des valeurs compile-time en utilisant
+% des objets de type singleton, et comment ça joue avec le return type deduction.
+
+% Montrer comment on peut implémenter un tuple et un exemple d'utilisation pour
+% faire quelque chose d'utile.
+
+% Introduire la notion de generalized data type et faire le lien avec la
+% dichotomie "abstract data type"/"representation".
