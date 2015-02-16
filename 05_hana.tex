@@ -4,21 +4,21 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{La catégorie Hana}
 La catégorie Hana est définie de manière similaire à Hask, mais les types
-sont remplacés par la notion plus générale de \textit{tag}. En particulier,
-les objets de Hana sont les tags:
+sont remplacés par la notion plus générale de type généralisé présentée
+précédemment. En particulier, les objets de Hana sont les types généralisés:
 \[
-    \ob(Hana) := \{ T \suchthat \text{T est un \textit{tag}} \}
+    \ob(Hana) := \{ T \suchthat \text{T est un type généralisé} \}
 \]
 
-Les morphismes de Hana sont les fonctions génériques qui travaillent sur des
-objets ayant un certain tag, et ce peu importe le type réel de ces objets.
-Plus précisément, soit $X, Y \in \ob(Hana)$, c'est-à-dire que $X$ et $Y$
-sont deux tags. Un morphisme $f : X \to Y$ est un objet C++, disons {\tt f},
-avec un {\tt operator()} tel que $\forall x \in X$,
+Les flèches de Hana sont les fonctions génériques qui travaillent sur des
+objets ayant un certain type généralisé, et ce peu importe le type réel de ces
+objets. Plus précisément, soit $X, Y \in \ob(Hana)$, c'est-à-dire que $X$ et $Y$
+sont deux types généralisés. Une flèche $f : X \to Y$ est un objet C++, disons
+\icpp{f}, avec un \icpp{operator()} tel que $\forall x \in X$,
 \begin{enumerate}
-    \item l'expression {\tt f(x)} est bien formée, c'est-à-dire qu'elle compile
-    \item ${\tt f(x)} \in Y$, c'est-à-dire que le tag de l'expression {\tt f(x)} est $Y$
-    \item l'expression {\tt f(x)} n'a pas d'effets de bord
+    \item l'expression \icpp{f(x)} est bien formée, c'est-à-dire qu'elle compile
+    \item ${\tt f(x)} \in Y$, c'est-à-dire que le type généralisé de l'expression \icpp{f(x)} est $Y$
+    \item l'expression \icpp{f(x)} n'a pas d'effets de bord
 \end{enumerate}
 
 La propriété (3) est nécessaire pour s'assurer que les fonctions qu'on
@@ -36,9 +36,9 @@ de programmation fonctionnel de toute façon.
 
 Finalement, la loi de composition sur Hana est, sans grande surprise,
 l'extension de la composition de fonctions usuelle aux fonctions templates
-qui constituent les morphismes de Hana, $\hom(Hana)$. Rigoureusement, soit
-$X, Y, Z \in \ob(Hana)$, c'est-à-dire que $X$, $Y$ et $Z$ sont des tags.
-On peut définir la composition par
+qui constituent les flèches de Hana, $\hom(Hana)$. Rigoureusement, soit
+$X, Y, Z \in \ob(Hana)$, c'est-à-dire que $X$, $Y$ et $Z$ sont des types
+généralisés. On peut définir la composition par
 \begin{minted}{c++}
     template <typename X, typename Y, typename Z>
     auto compose = [](auto f, auto g) {
@@ -51,8 +51,8 @@ On peut définir la composition par
     };
 \end{minted}
 
-Dans la réalité, il est trop répétitif de préciser les tags $X$, $Y$ et $Z$
-et on préfère la définition suivante pour {\tt compose}:
+Dans la réalité, il est trop répétitif de préciser les types $X$, $Y$ et $Z$
+et on préfère la définition suivante pour \icpp{compose}:
 \begin{minted}{c++}
     auto compose = [](auto f, auto g) {
         return [=](auto x) {
@@ -62,7 +62,7 @@ et on préfère la définition suivante pour {\tt compose}:
 \end{minted}
 
 Il nous reste à démontrer que Hana est bien une catégorie. Pour ce faire, il
-suffit de vérifier qu'il existe un morphisme identité pour chaque objet de
+suffit de vérifier qu'il existe une flèche identité pour chaque objet de
 la catégorie et que la composition est bien associative.
 
 % TODO
@@ -75,7 +75,7 @@ la catégorie et que la composition est bien associative.
 \subsection{Les foncteurs}
 Nous avons introduit la notion de catégorie à l'aide d'exemples provenant de
 l'algèbre abstraite, de l'analyse puis de l'informatique. L'algorithme pour
-\textit{catégoriser} une théorie était toujours un peu la même: isoler les
+\textit{catégoriser} une théorie était toujours un peu le même: isoler les
 objets d'étude de la théorie, isoler les propriétés importantes qui les
 définissent puis considérer l'ensemble des transformations qui, de manière
 informelle, respectent ces propriétés. Or, la théorie des catégorie est
@@ -148,7 +148,7 @@ Lorsque le domaine et le codomaine d'un foncteur sont la même catégorie, i.e.
 lorsqu'on a un foncteur du type $F : \C \to \C$ pour une certaine catégorie
 $\C$, on dira parfois que $F$ est un \textit{endofoncteur}.
 
-% TODO: Intuition
+\todo{Intuition}
 
 \subsubsection{Foncteurs dans Hana}
 Dans le cadre de la bibliothèque Hana, on s'intéressera principalement aux
