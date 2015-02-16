@@ -12,7 +12,12 @@
 \usepackage{graphicx}          % Pro­vid­ing a key-value in­ter­face for op­tional ar­gu­ments to the \in­clude­graph­ics com­mand
 \usepackage{tikz}              % Figures et graphiques
 \usepackage{listings}          % Pour inclure du code source
-\usepackage{minted}            % Pour inclure du code source
+\usepackage{todonotes}         % \todo{...}
+
+% Pour inclure du code source
+\usepackage{minted}
+\newcommand{\icpp}[1]{\mintinline{c++}{#1}}
+\newminted[cpp]{c++}{}
 
 
 % Style preuve

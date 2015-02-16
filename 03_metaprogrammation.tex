@@ -1,5 +1,10 @@
+\newcommand{\MPL}{http://www.boost.org/doc/libs/release/libs/mpl/doc/index.html}
+\newcommand{\Hana}{http://ldionne.github.io/hana}
+
 \section{La métaprogrammation en C++}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Le système de typage et les templates}
 Cette section introduit brièvement les concepts de base du système de typage
 du C++, qui seront nécessaires par la suite. Le lecteur qui est familier avec
@@ -9,9 +14,9 @@ Le C++ est un langage statiquement typé. Ceci veut dire que chaque objet
 possède un (et un seul) type, et que celui-ci est déterminé au moment de la
 compilation. De plus, en C++, le type d'un objet est directement relié à son
 mode de représentation. Par exemple, pour représenter une valeur entière, on
-doit d'abord décider d'un mode de représentation, disons {\tt int}. Or, le mode
+doit d'abord décider d'un mode de représentation, disons \icpp{int}. Or, le mode
 de représentation choisit ne permet généralement pas de représenter le concept
-voulu dans toute sa généralité. En effet, {\tt int} n'est capable de représenter
+voulu dans toute sa généralité. En effet, \icpp{int} n'est capable de représenter
 que des valeurs entre -2,147,483,647 et 2,147,483,647, ce qui est très loin
 du très général $\mathbb{Z}$. La différence entre le concept abstrait
 représenté par un type et sa représentation concrète est un problème auquel
@@ -22,11 +27,11 @@ expressivité, testabilité ou même productivité du programmeur.
 
 Lorsqu'on souhaite créer un objet pour lui donner une valeur, on doit donc
 dire au compilateur quel est le mode de représentation que l'on souhaite
-utiliser. Par exemple, pour créer un entier représenté par le type {\tt int}
+utiliser. Par exemple, pour créer un entier représenté par le type \icpp{int}
 avec une valeur de 10, on écrira
-\begin{minted}{c++}
+\begin{cpp}
     int i = 10;
-\end{minted}
+\end{cpp}
 
 De manière similaire, le domaine et le codomaine d'une fonction sont des
 types qui doivent être connus au moment de la compilation. Ici aussi, il
@@ -35,13 +40,13 @@ utiliser. Par exemple, pour déclarer une fonction dont le domaine est
 l'ensemble des chaînes de caractères et le codomaine est l'ensemble des
 entiers non-négatifs, on devra d'abord décider d'une représentation concrète
 pour chacun de ces ensembles. Supposons que l'on choisisse le type
-{\tt std::string} pour représenter l'ensemble des chaînes de caractères et le
-type {\tt unsigned int} pour représenter l'ensemble des entiers non-négatifs.
+\icpp{std::string} pour représenter l'ensemble des chaînes de caractères et le
+type \icpp{unsigned int} pour représenter l'ensemble des entiers non-négatifs.
 Une fonction $f : \text{{\tt std::string}} \to \text{{\tt unsigned int}}$
 s'écrira alors
-\begin{minted}{c++}
+\begin{cpp}
     unsigned int f(std::string);
-\end{minted}
+\end{cpp}
 
 Les créateurs du langage C++ se sont vite rendu compte que ce système,
 bien que plutôt simple à gérer pour le compilateur, limitait grandement
@@ -49,7 +54,7 @@ l'expressivité du côté du programmeur. Par exemple, supposons que l'on
 ait une famille de types représentant des séquences d'objets, et que ces
 types aient tous un interface commun:
 
-\begin{minted}{c++}
+\begin{cpp}
     struct int_sequence {
         bool is_empty() const;
         int head() const;
@@ -67,30 +72,30 @@ types aient tous un interface commun:
     };
 
     // possiblement d'autres types de séquences
-\end{minted}
+\end{cpp}
 
-Dans cet exemple, {\tt is\_empty} retourne une valeur booléenne qui est {\tt true}
-si la séquence est vide, et {\tt false} sinon. {\tt head} retourne la première
-valeur d'une séquence non-vide et {\tt tail} retourne une nouvelle séquence
+Dans cet exemple, \icpp{is_empty} retourne une valeur booléenne qui est \icpp{true}
+si la séquence est vide, et \icpp{false} sinon. \icpp{head} retourne la première
+valeur d'une séquence non-vide et \icpp{tail} retourne une nouvelle séquence
 qui contient toutes les valeurs sauf la première. À partir de cet interface
 minimal, il est possible de faire plusieurs choses utiles. Par exemple, on
-peut aller chercher la n-ième valeur dans une séquence de la manière suivante:
-\begin{minted}{c++}
+peut aller chercher la n-ème valeur dans une séquence de la manière suivante:
+\begin{cpp}
     int_sequence int_sequence_nth_element(unsigned int n, int_sequence s) {
         if (n == 0) return s.head();
         else        return int_sequence_nth_element(n - 1, s.tail());
     }
-\end{minted}
+\end{cpp}
 
 Malheureusement, cette fonction ne fonctionne que sur des objets de type
-{\tt int\_sequence}. Il faudrait donc écrire une autre fonction pour les
-objets de type {\tt float\_sequence}
-\begin{minted}{c++}
+\icpp{int_sequence}. Il faudrait donc écrire une autre fonction pour les
+objets de type \icpp{float_sequence}
+\begin{cpp}
     float_sequence float_sequence_nth_element(unsigned int n, float_sequence s) {
         if (n == 0) return s.head();
         else        return float_sequence_nth_element(n - 1, s.tail());
     }
-\end{minted}
+\end{cpp}
 
 Évidemment, l'implémentation de la fonction est exactement la même; la seule
 différence est le type des objets qui sont manipulés. Ceci est fâcheux puisqu'il
@@ -99,28 +104,28 @@ nouvelle représentation pour une séquence d'un type différent est ajoutée. L
 \textit{templates} servent à éliminer ce problème. Au lieu de spécifier exactement
 la représentation du domaine d'une fonction, on peut utiliser un type fictif de la
 manière suivante:
-\begin{minted}{c++}
+\begin{cpp}
     template <typename Sequence>
     Sequence nth_element(unsigned int n, Sequence s) {
         if (n == 0) return s.head();
         else        return nth_element(n - 1, s.tail());
     }
-\end{minted}
+\end{cpp}
 
 Ensuite, le compilateur s'occupera lui-même de substituer les bons types puis
 de générer la fonction appropriée. Par exemple, lorsque le compilateur voit le
 code suivant
-\begin{minted}{c++}
+\begin{cpp}
     int_sequence s = ...;
     int i = nth_element(10, s);
-\end{minted}
+\end{cpp}
 
 , il commence par déterminer quel est le type qui devrait être substitué à
-la place de {\tt Sequence} dans le template écrit plus haut. Il détermine
-que le type à substituer est {\tt int\_sequence}, puis il génère une fonction
-équivalente à celle que nous avions écrite pour le type {\tt int\_sequence}.
-Finalement, l'appel à {\tt nth\_element} sera en réalité un appel à la
-fonction générée pour le type {\tt int\_sequence}. L'idée est donc
+la place de \icpp{Sequence} dans le template écrit plus haut. Il détermine
+que le type à substituer est \icpp{int_sequence}, puis il génère une fonction
+équivalente à celle que nous avions écrite pour le type \icpp{int_sequence}.
+Finalement, l'appel à \icpp{nth_element} sera en réalité un appel à la
+fonction générée pour le type \icpp{int_sequence}. L'idée est donc
 d'utiliser le compilateur comme un système de réécriture pour nous
 éviter des tâches répétitives dans certains cas. Cependant, il reste un cas
 très évident de répétition dans l'exemple que nous venons de donner; les
@@ -128,7 +133,7 @@ séquences sont une famille de types qui possèdent tous un interface similaire
 et dont l'implémentation pourrait être similaire, mais nous avons quand même
 répété exactement le même code pour chacun de ces types. Heureusement, les
 templates peuvent aussi être utilisés pour créer des canevas de types:
-\begin{minted}{c++}
+\begin{cpp}
     template <typename T>
     struct sequence {
         bool is_empty() const;
@@ -137,35 +142,35 @@ templates peuvent aussi être utilisés pour créer des canevas de types:
 
         // implémentation ignorée pour simplifier
     };
-\end{minted}
+\end{cpp}
 
-Ensuite, on aura qu'à écrire {\tt sequence<int>} pour faire référence à la
-représentation d'une séquence contenant des {\tt int}, {\tt sequence<float>}
-pour une séquence de {\tt float}, et ainsi de suite. Par exemple, lorsque le
+Ensuite, on aura qu'à écrire \icpp{sequence<int>} pour faire référence à la
+représentation d'une séquence contenant des \icpp{int}, \icpp{sequence<float>}
+pour une séquence de \icpp{float}, et ainsi de suite. Par exemple, lorsque le
 compilateur voit
-\begin{minted}{c++}
+\begin{cpp}
     sequence<float> s = ...;
-\end{minted}
+\end{cpp}
 
-, il génère un type équivalent à {\tt float\_sequence} en substituant {\tt T}
-par {\tt float} dans le canevas écrit plus haut, et c'est à ce type généré que
-l'écriture {\tt sequence<float>} fait référence.
+, il génère un type équivalent à \icpp{float_sequence} en substituant \icpp{T}
+par \icpp{float} dans le canevas écrit plus haut, et c'est à ce type généré que
+l'écriture \icpp{sequence<float>} fait référence.
 
 Dans la réalité, il arrive souvent que l'on souhaite écrire une fonction
 template qui ait une implémentation bien spécifique pour certains types
 d'arguments, ou encore un type template qui ait une représentation spéciale
 dans certains cas. Ceci est particulièrement utile à des fins d'optimisation.
 Par exemple, supposons que nous voulions représenter une séquence de booléens.
-Nous pouvons utiliser le type {\tt sequence<bool>}. Cependant, en supposant
-que {\tt sequence} stocke ses valeurs dans un tableau d'éléments contigus en
+Nous pouvons utiliser le type \icpp{sequence<bool>}. Cependant, en supposant
+que \icpp{sequence} stocke ses valeurs dans un tableau d'éléments contigus en
 mémoire, on peut remarquer qu'une représentation différente nous ferait sauver
-de l'espace. En effet, le type {\tt bool} prend généralement 1 octet en mémoire
+de l'espace. En effet, le type \icpp{bool} prend généralement 1 octet en mémoire
 parce qu'il s'agit de la petite unité adressable, mais nous n'avons en réalité
 besoin que d'une seule bit pour le représenter. Si on voulait stocker une
 séquence de booléens, on pourrait utiliser un tableau d'octets et n'utiliser
 qu'une seule bit par booléen. Le C++ rend ce genre d'optimisation très facile
 à implémenter en utilisant une technique appelée \textit{spécialisation}:
-\begin{minted}{c++}
+\begin{cpp}
     template <>
     struct sequence<bool> {
         bool is_empty() const;
@@ -174,103 +179,463 @@ qu'une seule bit par booléen. Le C++ rend ce genre d'optimisation très facile
 
         // on pourrait spécifier ici une représentation plus efficace
     };
-\end{minted}
+\end{cpp}
 
-Avec une telle spécialisation, le type {\tt sequence<T>} fait référence à
+Avec une telle spécialisation, le type \icpp{sequence<T>} fait référence à
 l'implémentation pour le cas général présenté au début de cette section,
-mais le type {\tt sequence<bool>} fait référence à la représentation plus
+mais le type \icpp{sequence<bool>} fait référence à la représentation plus
 efficace qu'on vient de donner. De plus, tant qu'on ne change pas l'interface
-publique du type {\tt sequence<bool>} en le spécialisant, toutes les fonctions
-qui n'utilisent que cet interface (comme {\tt nth\_element}) fonctionneront
+publique du type \icpp{sequence<bool>} en le spécialisant, toutes les fonctions
+qui n'utilisent que cet interface (comme \icpp{nth_element}) fonctionneront
 encore. Cependant, il arrive fréquemment qu'il est possible d'implémenter une
 fonction de manière plus efficace si l'on tire avantage de la représentation
 d'un type. Le C++ permet donc aussi de spécifier une implémentation différente
 pour une fonction à l'aide d'une technique appelée \textit{overloading}. Par
 exemple, on pourrait spécifier l'implémentation de la fonction
-{\tt nth\_element} pour le type {\tt sequence<bool>} comme suit:
-\begin{minted}{c++}
+\icpp{nth_element} pour le type \icpp{sequence<bool>} comme suit:
+\begin{cpp}
     sequence<bool> nth_element(unsigned int n, sequence<bool> s) {
         // implémentation plus efficace
     }
-\end{minted}
+\end{cpp}
 
-Lorsque le compilateur voit un appel à la fonction {\tt nth\_element}, il
+Lorsque le compilateur voit un appel à la fonction \icpp{nth_element}, il
 effectue un procédé plutôt complexe appelé \textit{overload resolution}, qui
-consiste essentiellement à trouver la version de {\tt nth\_element} qui est
+consiste essentiellement à trouver la version de \icpp{nth_element} qui est
 la plus spécifique étant donné le type des arguments avec lesquels la fonction
 est appelée.
 
-Le dernier élément de base dont nous aurons besoin pour la suite est la
-déduction automatique du type d'une expression, qui a été introduite dans
-le langage en 2011. En C++, toute expression possède un type unique qui est
-connu par le compilateur. En principe, le compilateur devrait donc être
-capable de dire ce type au programmeur. C'est en effet le cas; il suffit
-d'utiliser le mot clé {\tt decltype}. Par exemple, pour savoir le type de
-l'expression {\tt 1 + 1}, on peut écrire {\tt decltype(1 + 1)}:
-\begin{minted}{c++}
+Un autre élément de base dont nous aurons besoin pour la suite est la déduction
+automatique du type d'une expression, qui a été introduite dans le langage en
+2011. En C++, toute expression possède un type unique qui est connu par le
+compilateur. En principe, le compilateur devrait donc être capable de dire ce
+type au programmeur. C'est en effet le cas; il suffit d'utiliser le mot clé
+\icpp{decltype}. Par exemple, pour savoir le type de l'expression \icpp{1 + 1},
+on peut écrire \icpp{decltype(1 + 1)}:
+\begin{cpp}
     // équivalent à `int i = 0`, parce que `decltype(1 + 1) = int`
     decltype(1 + 1) i = 0;
-\end{minted}
+\end{cpp}
 
 De plus, il est possible de demander au compilateur de donner à une variable
 le type inféré d'une expression qu'on lui assigne. Pour ce faire, on utilise
-le mot clé {\tt auto}:
-\begin{minted}{c++}
+le mot clé \icpp{auto}:
+\begin{cpp}
     auto i = 1 + 1;
-\end{minted}
+\end{cpp}
 
-Ici, le compilateur détermine que le type de {\tt 1 + 1} est {\tt int}, et
-le type de {\tt i} est donc {\tt int}, exactement comme si on avait écrit
-{\tt int i = 1 + 1}. Ce principe s'étend aussi au type de retour des fonctions.
+Ici, le compilateur détermine que le type de \icpp{1 + 1} est \icpp{int}, et
+le type de \icpp{i} est donc \icpp{int}, exactement comme si on avait écrit
+\icpp{int i = 1 + 1}. Ce principe s'étend aussi au type de retour des fonctions.
 En effet, le compilateur peut inférer le type de retour d'une fonction à partir
 du type de l'expression qui est retournée. Par exemple, pour prendre un exemple
 un peu trivial,
-\begin{minted}{c++}
+\begin{cpp}
     auto add(int i, int j) {
         return i + j;
     }
-\end{minted}
+\end{cpp}
 
-Ici, le compilateur sait que {\tt i} et {\tt j} sont de type {\tt int},
+Ici, le compilateur sait que \icpp{i} et \icpp{j} sont de type \icpp{int},
 puisque c'est comme cela qu'ils ont été déclarés comme paramètres de la
-fonction {\tt add}. De plus, il sait que l'addition de deux {\tt int} donne
-un {\tt int}; il peut donc inférer le type de retour de la fonction {\tt add}
-comme étant le type {\tt int}.
+fonction \icpp{add}. De plus, il sait que l'addition de deux \icpp{int} donne
+un \icpp{int}; il peut donc inférer le type de retour de la fonction \icpp{add}
+comme étant le type \icpp{int}.
 
 Bien que ces mots clés n'en aient pas l'air, ils sont terriblement utiles pour
 faire de la programmation générique. Par exemple, si on changeait la définition
-de {\tt add} pour
-\begin{minted}{c++}
+de \icpp{add} pour
+\begin{cpp}
     template <typename T, typename U>
     auto add(T t, U u) {
         return t + u;
     }
-\end{minted}
+\end{cpp}
 
 , le type de retour serait bien moins évident. Par exemple, si on appelle la
-fonction {\tt add} avec une {\tt std::string} et un {\tt char const*}, il
-n'est pas du tout évident que le type de retour doit être {\tt std::string}.
-    \footnote{En effet, le fichier {\tt <string>} fournit un opérateur avec la
-    signature {\tt std::string operator+(std::string, char const*)}, qui sera
-    utilisé ici.}
+fonction \icpp{add} avec une \icpp{std::string} et un \icpp{char const*}, il
+n'est pas du tout évident que le type de retour doit être \icpp{std::string}.
+\footnote{
+    En effet, le fichier \icpp{<string>} fournit un opérateur avec la signature
+    \icpp{std::string operator+(std::string, char const*)}, qui sera utilisé ici.
+}
 En général, il sera très difficile ou même impossible pour un programmeur
 d'écrire explicitement le type d'une expression lorsque celui-ci dépend de
-plusieurs autres expressions dont les types sont inconnus par le programmeur.
+plusieurs autres expressions dont les types sont soit complexes ou inconnus
+du programmeur.
+
+Le dernier élément de base qui sera nécessaire pour la suite est la notion
+d'\textit{expression constante}. Une expression constante est, intuitivement,
+une expression dont la valeur est connue au moment de la compilation. Pour
+dénoter une expression constante, on utilise le mot clé \icpp{constexpr}:
+\begin{cpp}
+    constexpr int i = 0;
+\end{cpp}
+
+Les règles exactes de ce qui peut apparaître dans une expression constante
+sont un peu techniques, mais l'essentiel est qu'une expression constante ne
+doit contenir que des sous-expressions qui sont elles-aussi des expressions
+constantes, et que les litéraux comme \icpp{1}, \icpp{'x'} et \icpp{true}
+sont des expressions constantes. De plus, on peut utiliser certaines
+expressions constantes comme argument à des templates. C'est notamment le
+cas pour celles d'un type intégral (au sens du standard) comme \icpp{int}
+ou \icpp{bool}. Les expressions constantes sont un outil très important,
+comme nous le verrons dans ce qui suit.
 
 
-\subsection{La métaprogrammation dans Hana}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{La base de la métaprogrammation}
+Maintenant que ces notions de base sont écartées, nous pouvons nous pencher
+sur la vraie question: qu'est-ce que la métaprogrammation en C++? Lorsque nous
+avons présenté l'\textit{overloading} et la spécialisation dans la section
+précédente, nous aurions pu remarquer qu'il s'agit en fait d'une manière
+d'introduire un branchement dans le compilateur. En effet, dépendamment
+d'une condition exprimée sous la forme d'un type, on peut demander au
+compilateur de compiler une fonction ou bien une autre en faisant en sorte
+que la branche que l'on souhaite soit choisie par l'\textit{overload resolution}.
+Par exemple, considérons le type template \icpp{_bool}, qui représentera une
+condition connue au moment de la compilation. On peut alors obtenir un
+branchement équivalent à \icpp{condition ? x : y}, mais effectué au moment de
+la compilation, de la manière suivante:
+\begin{cpp}
+    template <bool condition>
+    struct _bool { };
+
+    template <typename Then, typename Else>
+    Then if_(_bool<true>, Then t, Else e) { return t; }
+
+    template <typename Then, typename Else>
+    Else if_(_bool<false>, Then t, Else e) { return e; }
+\end{cpp}
+
+L'expression \icpp{if_(condition, x, y)} est équivalente à \icpp{condition ? x : y},
+à la différence que les types de \icpp{x} et \icpp{y} ne sont pas obligés d'être
+compatibles, et que la condition doit être un objet de type \icpp{_bool<...>}
+au lieu d'être un \icpp{bool}. En effet, lorsqu'on écrit
+\begin{cpp}
+    if_(_bool<true>{}, 1, std::string{"xyz"})
+\end{cpp}
+, le compilateur détermine que la version de \icpp{if_} à choisir est la
+première et c'est donc le premier argument qui est retourné. Si on avait
+écrit
+\begin{cpp}
+    if_(_bool<false>{}, 1, std::string{"xyz"})
+\end{cpp}
+, alors la deuxième fonction aurait été appelée et la \icpp{std::string} aurait
+été retournée. Tout l'intéret de cette technique est qu'elle permet aux objets
+dans les deux branches d'avoir des types incompatibles, ce qui n'est pas le cas
+avec l'opérateur \icpp{: ?} usuel. En effet, avec cet opérateur, les deux
+alternatives doivent avoir un type en commun, puisque le compilateur doit être
+en mesure de donner un type à cette expression au moment de la compilation. Or,
+il est possible que la condition ne soit connue qu'à l'exécution du programme.
+Le type de l'expression ne peut donc pas dépendre de la \textit{valeur} de la
+condition. Avec notre technique, il est nécessaire que la condition soit une
+expression constante (puisqu'elle est utilisée comme argument dans le template
+\icpp{_bool}), mais on gagne alors la possibilité d'avoir des objets de types
+complètement différents dans chaque branche.
+
+Le branchement à la compilation n'est pas la seule technique que nous pouvons
+exploiter à des fins de métaprogrammation. En effet, il est aussi possible
+d'écrire des fonctions complexes utilisant la récursion à l'intérieur même du
+compilateur. Prenons par exemple la fonction factorielle:
+\begin{cpp}
+    // représente un entier connu au moment de la compilation
+    template <int n>
+    struct _int { };
+
+    template <int n, int acc>
+    auto fact_impl(_int<n>, _int<acc>)
+    { return fact_impl(_int<n - 1>{}, _int<acc * n>{}); }
+
+    template <int acc>
+    _int<acc> fact_impl(_int<0>, _int<acc>)
+    { return {}; }
+
+    template <typename N>
+    auto fact(N n)
+    { return fact_impl(n, _int<1>{}); }
+\end{cpp}
+
+Voici ce qui arrive lorsque l'on appelle \icpp{fact(_int<3>{})}. D'abord,
+\icpp{fact} appelle directement \icpp{fact_impl} en lui fournissant un
+accumulateur à 1 sous la forme d'un \icpp{_int}. Il s'agit là d'une simple
+astuce pour ne pas être obligé de fournir l'accumulateur soi-même lorsqu'on
+utilise \icpp{fact}. Ensuite, le compilateur détermine que la version de
+\icpp{fact_impl} à appeler est celle dont la signature est \icpp{??
+fact_impl(_int<3>, _int<1>)}. Cependant, pour connaître le type de retour de
+la fonction, on force le compilateur à aller voir le corps de la fonction, où
+on se trouve à appeler \icpp{fact_impl(_int<n - 1>{}, _int<acc * n>{})}. C'est
+là que la récursion arrive; le compilateur est forcé de recommencer le même
+processus avec la fonction dont la signature est \icpp{fact_impl(_int<2>,
+_int<1 * 3>)}, ce qui le mènera éventuellement à considérer la fonction
+\icpp{fact_impl(_int<0>, _int<1 * 3 * 2 * 1>)}. À cette étape, la deuxième
+implémentation de \icpp{fact_impl} sera choisie, puisqu'elle est plus
+spécifique. Il s'agit du cas de base de la récursion. Le type de retour de
+cette fonction étant \icpp{_int<acc>} (\icpp{_int<1 * 3 * 2 * 1>} dans notre
+cas), le compilateur n'a pas besoin d'aller plus loin et il ``remonte'' la
+chaîne de fonctions qu'il était en train de compiler. Ainsi, le type de
+l'expression \icpp{fact(_int<3>{})} est évalué à \icpp{_int<1 * 3 * 2 * 1>},
+et nous venons effectivement de forcer le compilateur à calculer la fonction
+factorielle. Cet exemple n'est pas très utile; en effet, il existe de
+meilleures manières de calculer une factorielle au moment de la compilation en
+utilisant \icpp{constexpr}, et de toute façon la factorielle n'est pas si
+intéressante que ça. Cependant, il est intéressant de remarquer que la
+compilation des templates en C++ constitue un langage Turing-complet, et il
+est donc possible d'exprimer des algorithmes très complexes de cette manière,
+même si cela n'est généralement pas facile à faire en pratique.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{L'arithmétique à la compilation}
+Le but de la bibliothèque Hana est précisément de rendre cette tâche plus
+facile et plus plaisante en fournissant des outils de base pour exprimer des
+algorithmes complexes au moment de la compilation. D'abord, la bibliothèque
+fournit des outils pour faire de l'arithmétique au moment de la compilation.
+Bien que nous n'en parlerons pas, il est à noter que ces outils sont basés
+sur une hiérarchie de concepts venant de l'algèbre abstraite; on y trouve les
+concepts de monoïde, de groupe, d'anneau et de domaine intègre. Concrètement,
+ceci se matérialise via le type
+\begin{cpp}
+    template <typename T, T v>
+    struct _integral_constant { /* ... */ };
+\end{cpp}
+
+\icpp{_integral_constant} est un peu comme \icpp{_int} introduit plus haut,
+mais il est possible de spécifier une valeur de n'importe quel type intégral.
+De plus, on fournit des \textit{variable templates} qui servent d'alias pour
+créer des objets de ces types avec un poid syntaxique minimal:
+\begin{cpp}
+    template <typename T, T v>
+    constexpr _integral_constant<T, v> integral_constant{};
+
+    template <int i>
+    constexpr auto int_ = integral_constant<int, i>;
+
+    // On peut ensuite écrire
+    auto three = int_<3>;
+\end{cpp}
+
+De plus, \icpp{_integral_constant} fournit les opérateurs arithmétiques usuels,
+ce qui permet de faire de l'arithmétique avec une syntaxe raisonable:
+\begin{cpp}
+    template <typename T, T t, typename U, U u>
+    auto operator+(_integral_constant<T, t>, _integral_constant<U, u>)
+    { return _integral_constant<decltype(t + u), t + u>{}; }
+
+    template <typename T, T t, typename U, U u>
+    auto operator*(_integral_constant<T, t>, _integral_constant<U, u>)
+    { return _integral_constant<decltype(t * u), t * u>{}; }
+
+    // etc...
+
+    auto seven = int_<3> + (int_<2> * int_<2>);
+    // `seven` est maintenant un objet de type `_integral_constant<int, 7>`
+\end{cpp}
+
+Il est bien important de se rendre compte de ce qui se passe ici. Ces opérateurs
+n'ont rien à voir avec les opérateurs arithmétiques usuels. En effet, ils
+n'utilisent pas du tout la \textit{valeur} de leurs arguments, mais uniquement
+leur type. De plus, le type de retour dépend entièrement du type des arguments.
+La valeur de retour, quant à elle, est complètement inutile puisque
+\icpp{_integral_constant<...>} ne possède qu'une seule valeur, c'est à dire
+\icpp{_integral_constant<...>{}}. L'idée derrière ceci est en fait très
+puissante; nous utilisons des objets de types singletons (n'ayant qu'une
+valeur possible) pour représenter des expressions constantes et pour faire
+des calculs au moment de la compilation.
+
+Il est aussi intéressant de noter qu'il ne s'agit jusqu'ici que d'une différence
+syntaxique avec les approches précédentes comme la bibliothèque \href{\MPL}{MPL},
+puisque la donnée d'une valeur d'un type singleton fournit exactement la même
+quantité d'information que la donnée de ce type seulement. Cependant, manipuler
+des valeurs est bien plus commode que manipuler des types directement. Bien
+entendu, cette correspondance nécessite la capacité de demander le type d'une
+expression au compilateur, ce qui est justement possible grâce à \icpp{decltype}
+et \icpp{auto}.
+
+Avant de continuer, penchons-nous un peu plus sur la nature d'\icpp{_integral_constant}.
+Étant donné une expression constante \icpp{v} d'un type intégral \icpp{T}, on est
+capable de créer un objet du type singleton \icpp{_integral_constant<T, v>}, ce qui
+nous permet effectivement de représenter cette expression constante par un objet.
+Cependant, étant donné un tel objet, sommes-nous capable de retrouver l'expression
+constante qu'il représente? Présentement, c'est impossible.
+\footnote{
+    En fait, c'est possible, mais comprendre pourquoi ça fonctionne dans tous
+    les cas demande une excellente compréhension de \icpp{constexpr}. Les
+    détails sont expliqués dans \href{\Hana}{Hana}.
+}
+Or, il est crucial d'être capable de le faire. De plus, il est très important
+que cette valeur soit considérée par le compilateur comme une expression constante,
+et ce peu importe que l'objet dont elle est issue soit une expression constante ou
+non. Pour que ce soit possible, il nous faut changer la définition
+d'\icpp{_integral_constant} de la manière suivante:
+\begin{cpp}
+    template <typename T, T v>
+    struct _integral_constant {
+        static constexpr T value = v;
+    };
+\end{cpp}
+
+Maintenant, étant donné un objet de type \icpp{_integral_constant<...>}, on
+peut retrouver l'expression constante qu'il représente, et ce même si cet objet
+n'en est pas une. En effet, il suffit d'utiliser \icpp{decltype}:
+\begin{cpp}
+    // Supposons que `n` soit un `_integral_constant<...>`. À noter que
+    // `n` n'est vraiment pas une expression constante (volatile!).
+    volatile auto n = ...;
+    constexpr bool v = decltype(n)::value;
+\end{cpp}
+
+On commence donc par déduire le type de \icpp{n}, qui est de la forme
+\icpp{_integral_constant<...>}. Ensuite, on va chercher l'expression
+constante qu'il représente et qui est stockée dans le membre de classe
+\icpp{value}. Bien que cela puisse sembler anodin, nous venons de faire
+quelque chose d'important. Nous étions en mesure de passer d'une expression
+constante vers un objet d'un type singleton. Maintenant, nous sommes aussi
+capables de parcourir le chemin en sens inverse et de passer d'un objet d'un
+type singleton vers une expression constante. Cette correspondance entre les
+objets de types singletons et ce qu'ils représentent est une partie importante
+de la bibliothèque Hana, et nous verrons d'autres correspondances similaires
+plus loin.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Le calcul sur les types}
+Être capable de faire de l'arithmétique à la compilation est intéressant, mais
+il y a plusieurs autres choses que l'on souhaiterait faire. Par exemple, il
+est souvent utile de manipuler des types comme s'ils étaient des objets, pour
+effectuer des transformations sur ceux-ci. Par exemple, on aimerait écrire
+une fonction \icpp{f} qui ``prend'' un type \icpp{T}, et qui ``renvoie'' le
+type \icpp{T*}. Attention, ici \icpp{T} n'est pas le domaine de la fonction
+\icpp{f}. En fait, mathématiquement, on pourrait écrire
+\begin{align*}
+    f : \{\text{tous les types C++}\} &\to \{\text{tous les types C++}\}\\
+                             T &\mapsto T*
+\end{align*}
+
+Comment pourrait-on écrire une telle fonction en C++? Une option est d'utiliser
+le concept de \textit{métafonction}, tel qu'introduit par la bibliothèque MPL.
+Une métafonction au sens MPL est un template contenant un alias nommé
+\icpp{type} qui contient la ``valeur de retour'' de la métafonction:
+\begin{cpp}
+    template <typename T>
+    struct f {
+        using type = T*;
+    };
+\end{cpp}
+
+De plus, on se donne la convention qu'appliquer une métafonction \icpp{f} à
+un type \icpp{T} se fait de la manière suivante:
+\begin{cpp}
+    using U = f<T>::type;
+    // `U` est maintenant un alias pour `f<T>::type`,
+    // qui est lui-même un alias pour `T*`
+\end{cpp}
+
+Cette approche fonctionne assez bien, mis à part que la syntaxe est peu
+intuitive et qu'écrire des métafonctions complexes est assez difficile.
+Pour cette raison, Hana utilise une approche mixte qui consiste à écrire les
+transformations de base (précisément celles de \icpp{<type_traits>}) comme des
+métafonctions au sens MPL, puis de les manipuler en tant qu'objets pour
+construire des métafonctions plus complexes. Voici comment cela fonctionne.
+D'abord, on définit une famille de types singletons qui représenteront des types
+C++, exactement comme on a utilisé des types singletons pour représenter des
+entiers auparavant. Ceci est la clé pour être capable de manipuler des types
+comme s'ils étaient des objets:
+\begin{cpp}
+    template <typename T>
+    struct _type { /* ... */ };
+
+    // On se dote d'un alias
+    template <typename T>
+    constexpr _type<T> type{};
+
+    auto t = type<int>;
+    // `t` est maintenant un objet de type `_type<int>`, qui représente
+    // le type `int` dans notre monde
+\end{cpp}
+
+Étant donné un type \icpp{T}, on est donc maintenant capable de fournir un
+objet qui représente ce type \icpp{T}. Cependant, étant donné un objet qui
+représente un type \icpp{T}, on est pas (pour l'instant) capable de retrouver
+le type \icpp{T}. Pour être capable de faire la correspondance entre le monde
+des types et celui des valeurs dans les deux sens, on fait la chose suivante.
+D'abord, on fournit un alias qui fait en sorte que \icpp{_type<T>} devienne
+une métafonction au sens MPL:
+\begin{cpp}
+    template <typename T>
+    struct _type {
+        using type = T;
+    };
+\end{cpp}
+
+Ensuite, étant donné un objet qui représente un type \icpp{T}, on est capable
+de retrouver \icpp{T} comme suit:
+\begin{cpp}
+    auto t = ...; // un `type<T>`
+    using T = decltype(t)::type;
+\end{cpp}
+
+On utilise donc l'inférence de type fournie par le compilateur avec
+\icpp{decltype} pour d'abord obtenir \icpp{_type<T>} à partir de \icpp{t},
+puis on utilise le fait que \icpp{_type<T>} est une métafonction MPL pour
+obtenir un alias au \icpp{T} initial. D'ailleurs, il est très éclairant de
+constater que ce procédé est analogue à ce que nous avons fait pour
+\icpp{_integral_constant}, où nous avions la variable de classe \icpp{value}
+qui jouait le rôle de \icpp{type} et qui nous permettait de traverser le pont
+entre les types et les objets dans le sens inverse.
+
+Pour être en mesure de faire des calculs sur des types, il nous manque
+cependant un bloc important. Comment pouvons-nous encoder des fonctions
+qui prennent des types en argument et qui retournent des types? Encore une
+fois, il s'agit de définir une famille de types singletons qui représenteront
+des métafonctions:
+\begin{cpp}
+    template <template <typename ...> class F>
+    struct _metafunction {
+        template <typename ...T>
+        auto operator()(_type<T>...) const {
+            using Result = F<T...>::type;
+            return type<Result>;
+        }
+    };
+
+    // On se dote d'un alias
+    template <template <typename ...> class F>
+    constexpr _metafunction<F> metafunction{};
+
+    auto f = metafunction<std::add_pointer>;
+    // `f` est maintenant un objet de type `_metafunction<std::add_pointer>`,
+    // qui représente la métafonction `std::add_pointer` dans notre monde
+
+    auto p = f(type<int>);
+    // `p` est maintenant un objet de type `_type<int*>`, qui représente le
+    // type `int*` dans notre monde!
+\end{cpp}
+
+Voyons comment cela fonctionne. D'abord, nous dotons \icpp{_metafunction<F>}
+d'un opérateur d'appel. Cet opérateur assume que \icpp{_metafunction<F>} ne
+sera appelé qu'avec des objets de type \icpp{_type<T>}. Ensuite, dans le corps
+de la fonction, on commence par appliquer la métafonction \icpp{F} aux types
+\icpp{T} cachés dans les paramètres \icpp{_type<T>...}, puis on stocke le
+résultat dans l'alias \icpp{Result} pour faciliter la lecture. On retourne
+finalement un objet de type \icpp{_type<Result>} en utilisant le raccourci
+\icpp{type<Result>}. C'est donc de la manière suivante qu'il faut comprendre
+l'expression \icpp{f(type<int>)}:
+\begin{cpp}
+    f(type<int>) == metafunction<std::add_pointer>(type<int>)
+                 == type<std::add_pointer<int>::type>
+                 == type<int*>
+\end{cpp}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Les séquences hétérogènes}
 
 
 
-
-% introduire la spécialisation pour le branching compile-time
-% introduire la récursion compile-time et dire que c'est turing complet
-
-% montrer comment on peut représenter des valeurs compile-time en utilisant
-% des objets de type singleton, et comment ça joue avec le return type deduction.
-
-% Montrer comment on peut implémenter un tuple et un exemple d'utilisation pour
-% faire quelque chose d'utile.
-
-% Introduire la notion de generalized data type et faire le lien avec la
-% dichotomie "abstract data type"/"representation".
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Les types généralisés}
+Tout ceci est bien beau, mais une question fondamentale se pose quand même:
+Comment fait-on pour raisonner à propos de notre code dans un contexte
+hétérogène? Sommes-nous en mesure d'écrire des fonctions utiles qui prennent
+en entrée des objets de types hétérogènes?
