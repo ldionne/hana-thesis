@@ -1,5 +1,10 @@
 \section{La métaprogrammation en C++}
-% Base du type system + motivation templates + fonctionnement templates
+
+\subsection{Le système de typage et les templates}
+Cette section introduit brièvement les concepts de base du système de typage
+du C++, qui seront nécessaires par la suite. Le lecteur qui est familier avec
+le C++11 et le C++14 est invité à sauter cette section.
+
 Le C++ est un langage statiquement typé. Ceci veut dire que chaque objet
 possède un (et un seul) type, et que celui-ci est déterminé au moment de la
 compilation. De plus, en C++, le type d'un objet est directement relié à son
@@ -146,10 +151,117 @@ compilateur voit
 par {\tt float} dans le canevas écrit plus haut, et c'est à ce type généré que
 l'écriture {\tt sequence<float>} fait référence.
 
-%%%%%%%%%%%%%%
-% Quel niveau de connaissance du langage on doit assumer? C++11? C++14?
-% Si on assume rien, je pourrais écrire un livre complet là-dessus..
-%%%%%%%%%%%%%%
+Dans la réalité, il arrive souvent que l'on souhaite écrire une fonction
+template qui ait une implémentation bien spécifique pour certains types
+d'arguments, ou encore un type template qui ait une représentation spéciale
+dans certains cas. Ceci est particulièrement utile à des fins d'optimisation.
+Par exemple, supposons que nous voulions représenter une séquence de booléens.
+Nous pouvons utiliser le type {\tt sequence<bool>}. Cependant, en supposant
+que {\tt sequence} stocke ses valeurs dans un tableau d'éléments contigus en
+mémoire, on peut remarquer qu'une représentation différente nous ferait sauver
+de l'espace. En effet, le type {\tt bool} prend généralement 1 octet en mémoire
+parce qu'il s'agit de la petite unité adressable, mais nous n'avons en réalité
+besoin que d'une seule bit pour le représenter. Si on voulait stocker une
+séquence de booléens, on pourrait utiliser un tableau d'octets et n'utiliser
+qu'une seule bit par booléen. Le C++ rend ce genre d'optimisation très facile
+à implémenter en utilisant une technique appelée \textit{spécialisation}:
+\begin{minted}{c++}
+    template <>
+    struct sequence<bool> {
+        bool is_empty() const;
+        bool head() const;
+        sequence<bool> tail() const;
+
+        // on pourrait spécifier ici une représentation plus efficace
+    };
+\end{minted}
+
+Avec une telle spécialisation, le type {\tt sequence<T>} fait référence à
+l'implémentation pour le cas général présenté au début de cette section,
+mais le type {\tt sequence<bool>} fait référence à la représentation plus
+efficace qu'on vient de donner. De plus, tant qu'on ne change pas l'interface
+publique du type {\tt sequence<bool>} en le spécialisant, toutes les fonctions
+qui n'utilisent que cet interface (comme {\tt nth\_element}) fonctionneront
+encore. Cependant, il arrive fréquemment qu'il est possible d'implémenter une
+fonction de manière plus efficace si l'on tire avantage de la représentation
+d'un type. Le C++ permet donc aussi de spécifier une implémentation différente
+pour une fonction à l'aide d'une technique appelée \textit{overloading}. Par
+exemple, on pourrait spécifier l'implémentation de la fonction
+{\tt nth\_element} pour le type {\tt sequence<bool>} comme suit:
+\begin{minted}{c++}
+    sequence<bool> nth_element(unsigned int n, sequence<bool> s) {
+        // implémentation plus efficace
+    }
+\end{minted}
+
+Lorsque le compilateur voit un appel à la fonction {\tt nth\_element}, il
+effectue un procédé plutôt complexe appelé \textit{overload resolution}, qui
+consiste essentiellement à trouver la version de {\tt nth\_element} qui est
+la plus spécifique étant donné le type des arguments avec lesquels la fonction
+est appelée.
+
+Le dernier élément de base dont nous aurons besoin pour la suite est la
+déduction automatique du type d'une expression, qui a été introduite dans
+le langage en 2011. En C++, toute expression possède un type unique qui est
+connu par le compilateur. En principe, le compilateur devrait donc être
+capable de dire ce type au programmeur. C'est en effet le cas; il suffit
+d'utiliser le mot clé {\tt decltype}. Par exemple, pour savoir le type de
+l'expression {\tt 1 + 1}, on peut écrire {\tt decltype(1 + 1)}:
+\begin{minted}{c++}
+    // équivalent à `int i = 0`, parce que `decltype(1 + 1) = int`
+    decltype(1 + 1) i = 0;
+\end{minted}
+
+De plus, il est possible de demander au compilateur de donner à une variable
+le type inféré d'une expression qu'on lui assigne. Pour ce faire, on utilise
+le mot clé {\tt auto}:
+\begin{minted}{c++}
+    auto i = 1 + 1;
+\end{minted}
+
+Ici, le compilateur détermine que le type de {\tt 1 + 1} est {\tt int}, et
+le type de {\tt i} est donc {\tt int}, exactement comme si on avait écrit
+{\tt int i = 1 + 1}. Ce principe s'étend aussi au type de retour des fonctions.
+En effet, le compilateur peut inférer le type de retour d'une fonction à partir
+du type de l'expression qui est retournée. Par exemple, pour prendre un exemple
+un peu trivial,
+\begin{minted}{c++}
+    auto add(int i, int j) {
+        return i + j;
+    }
+\end{minted}
+
+Ici, le compilateur sait que {\tt i} et {\tt j} sont de type {\tt int},
+puisque c'est comme cela qu'ils ont été déclarés comme paramètres de la
+fonction {\tt add}. De plus, il sait que l'addition de deux {\tt int} donne
+un {\tt int}; il peut donc inférer le type de retour de la fonction {\tt add}
+comme étant le type {\tt int}.
+
+Bien que ces mots clés n'en aient pas l'air, ils sont terriblement utiles pour
+faire de la programmation générique. Par exemple, si on changeait la définition
+de {\tt add} pour
+\begin{minted}{c++}
+    template <typename T, typename U>
+    auto add(T t, U u) {
+        return t + u;
+    }
+\end{minted}
+
+, le type de retour serait bien moins évident. Par exemple, si on appelle la
+fonction {\tt add} avec une {\tt std::string} et un {\tt char const*}, il
+n'est pas du tout évident que le type de retour doit être {\tt std::string}.
+    \footnote{En effet, le fichier {\tt <string>} fournit un opérateur avec la
+    signature {\tt std::string operator+(std::string, char const*)}, qui sera
+    utilisé ici.}
+En général, il sera très difficile ou même impossible pour un programmeur
+d'écrire explicitement le type d'une expression lorsque celui-ci dépend de
+plusieurs autres expressions dont les types sont inconnus par le programmeur.
+
+
+\subsection{La métaprogrammation dans Hana}
+
+
+
 
 % introduire la spécialisation pour le branching compile-time
 % introduire la récursion compile-time et dire que c'est turing complet
