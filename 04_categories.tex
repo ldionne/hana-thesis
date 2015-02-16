@@ -1,16 +1,24 @@
 \section{Les catégories: premier contact}
+L'intérêt de se tourner vers la théorie des catégories est de guider le
+design de la bibliothèque pour obtenir des interfaces très généraux et
+spécifiés clairement, formellement. La généralité de la théorie permet
+d'avoir des interfaces qui sont très abstraits et qui en couvrent donc
+très large, ce qui réduit la complexité globale de la bibliothèque. La
+capacité de formaliser ces interfaces permet d'automatiser une bonne partie
+des tests et de raisonner à propos des programmes écrits avec Hana de manière
+très précise, quasiment mathématique.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Définition formelle}
-Une catégorie $\C$ est composée de trois choses:
-\begin{enumerate}
-    \item Une collection d'objets, habituellement notée $\ob(\C)$.
-    \item Une collection de flèches (aussi appelées morphismes) entre ces
-          objets, habituellement notée $\hom(\C)$.
-    \item Une opération binaire, habituellement notée $\circ$, permettant de
-          composer n'importe quelle paire de flèches dont les sources et
-          destinations sont compatibles pour en obtenir une troisième.
-\end{enumerate}
+\begin{définition}[Catégorie]
+    Une catégorie $\C$ est composée de trois choses:
+    \begin{enumerate}
+        \item Une collection d'objets, habituellement notée $\ob(\C)$.
+        \item Une collection de flèches (aussi appelées morphismes) entre ces
+              objets, habituellement notée $\hom(\C)$.
+        \item Une opération binaire, habituellement notée $\circ$, permettant de
+              composer n'importe quelle paire de flèches dont les sources et
+              destinations sont compatibles pour en obtenir une troisième.
+    \end{enumerate}
+\end{définition}
 
 Pour que $\C$ soit une catégorie, ces ``choses'' doivent aussi respecter
 certaines propriétés, qui seront expliquées un peu plus bas. Avant de
