@@ -52,7 +52,7 @@ Les créateurs du langage C++ se sont vite rendu compte que ce système,
 bien que plutôt simple à gérer pour le compilateur, limitait grandement
 l'expressivité du côté du programmeur. Par exemple, supposons que l'on
 ait une famille de types représentant des séquences d'objets, et que ces
-types aient tous un interface commun:
+types aient tous une interface commune:
 
 \begin{cpp}
     struct int_sequence {
@@ -77,8 +77,8 @@ types aient tous un interface commun:
 Dans cet exemple, \icpp{is_empty} retourne une valeur booléenne qui est \icpp{true}
 si la séquence est vide, et \icpp{false} sinon. \icpp{head} retourne la première
 valeur d'une séquence non-vide et \icpp{tail} retourne une nouvelle séquence
-qui contient toutes les valeurs sauf la première. À partir de cet interface
-minimal, il est possible de faire plusieurs choses utiles. Par exemple, on
+qui contient toutes les valeurs sauf la première. À partir de cette interface
+minimals, il est possible de faire plusieurs choses utiles. Par exemple, on
 peut aller chercher la n-ème valeur dans une séquence de la manière suivante:
 \begin{cpp}
     int_sequence int_sequence_nth_element(unsigned int n, int_sequence s) {
@@ -129,7 +129,7 @@ fonction générée pour le type \icpp{int_sequence}. L'idée est donc
 d'utiliser le compilateur comme un système de réécriture pour nous
 éviter des tâches répétitives dans certains cas. Cependant, il reste un cas
 très évident de répétition dans l'exemple que nous venons de donner; les
-séquences sont une famille de types qui possèdent tous un interface similaire
+séquences sont une famille de types qui possèdent tous une interface similaire
 et dont l'implémentation pourrait être similaire, mais nous avons quand même
 répété exactement le même code pour chacun de ces types. Heureusement, les
 templates peuvent aussi être utilisés pour créer des canevas de types:
@@ -166,9 +166,9 @@ que \icpp{sequence} stocke ses valeurs dans un tableau d'éléments contigus en
 mémoire, on peut remarquer qu'une représentation différente nous ferait sauver
 de l'espace. En effet, le type \icpp{bool} prend généralement 1 octet en mémoire
 parce qu'il s'agit de la petite unité adressable, mais nous n'avons en réalité
-besoin que d'une seule bit pour le représenter. Si on voulait stocker une
+besoin que d'un seul bit pour le représenter. Si on voulait stocker une
 séquence de booléens, on pourrait utiliser un tableau d'octets et n'utiliser
-qu'une seule bit par booléen. Le C++ rend ce genre d'optimisation très facile
+qu'un seul bit par booléen. Le C++ rend ce genre d'optimisation très facile
 à implémenter en utilisant une technique appelée \textit{spécialisation}:
 \begin{cpp}
     template <>
@@ -186,7 +186,7 @@ l'implémentation pour le cas général présenté au début de cette section,
 mais le type \icpp{sequence<bool>} fait référence à la représentation plus
 efficace qu'on vient de donner. De plus, tant qu'on ne change pas l'interface
 publique du type \icpp{sequence<bool>} en le spécialisant, toutes les fonctions
-qui n'utilisent que cet interface (comme \icpp{nth_element}) fonctionneront
+qui n'utilisent que cette interface (comme \icpp{nth_element}) fonctionneront
 encore. Cependant, il arrive fréquemment qu'il est possible d'implémenter une
 fonction de manière plus efficace si l'on tire avantage de la représentation
 d'un type. Le C++ permet donc aussi de spécifier une implémentation différente
@@ -324,7 +324,7 @@ première et c'est donc le premier argument qui est retourné. Si on avait
 , alors la deuxième fonction aurait été appelée et la \icpp{std::string} aurait
 été retournée. Tout l'intéret de cette technique est qu'elle permet aux objets
 dans les deux branches d'avoir des types incompatibles, ce qui n'est pas le cas
-avec l'opérateur \icpp{: ?} usuel. En effet, avec cet opérateur, les deux
+avec l'opérateur \icpp{? :} usuel. En effet, avec cet opérateur, les deux
 alternatives doivent avoir un type en commun, puisque le compilateur doit être
 en mesure de donner un type à cette expression au moment de la compilation. Or,
 il est possible que la condition ne soit connue qu'à l'exécution du programme.
