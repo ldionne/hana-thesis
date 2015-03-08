@@ -120,7 +120,7 @@ code suivant
     int i = nth_element(10, s);
 \end{cpp}
 
-, il commence par déterminer quel est le type qui devrait être substitué à
+il commence par déterminer quel est le type qui devrait être substitué à
 la place de \icpp{Sequence} dans le template écrit plus haut. Il détermine
 que le type à substituer est \icpp{int_sequence}, puis il génère une fonction
 équivalente à celle que nous avions écrite pour le type \icpp{int_sequence}.
@@ -152,7 +152,7 @@ compilateur voit
     sequence<float> s = ...;
 \end{cpp}
 
-, il génère un type équivalent à \icpp{float_sequence} en substituant \icpp{T}
+il génère un type équivalent à \icpp{float_sequence} en substituant \icpp{T}
 par \icpp{float} dans le canevas écrit plus haut, et c'est à ce type généré que
 l'écriture \icpp{sequence<float>} fait référence.
 
@@ -252,7 +252,7 @@ de \icpp{add} pour
     }
 \end{cpp}
 
-, le type de retour serait bien moins évident. Par exemple, si on appelle la
+le type de retour serait bien moins évident. Par exemple, si on appelle la
 fonction \icpp{add} avec une \icpp{std::string} et un \icpp{char const*}, il
 n'est pas du tout évident que le type de retour doit être \icpp{std::string}.
 \footnote{
@@ -315,13 +315,12 @@ au lieu d'être un \icpp{bool}. En effet, lorsqu'on écrit
 \begin{cpp}
     if_(_bool<true>{}, 1, std::string{"xyz"})
 \end{cpp}
-, le compilateur détermine que la version de \icpp{if_} à choisir est la
-première et c'est donc le premier argument qui est retourné. Si on avait
-écrit
+le compilateur détermine que la version de \icpp{if_} à choisir est la première
+et c'est donc le premier argument qui est retourné. Si on avait écrit
 \begin{cpp}
     if_(_bool<false>{}, 1, std::string{"xyz"})
 \end{cpp}
-, alors la deuxième fonction aurait été appelée et la \icpp{std::string} aurait
+alors la deuxième fonction aurait été appelée et la \icpp{std::string} aurait
 été retournée. Tout l'intéret de cette technique est qu'elle permet aux objets
 dans les deux branches d'avoir des types incompatibles, ce qui n'est pas le cas
 avec l'opérateur \icpp{? :} usuel. En effet, avec cet opérateur, les deux
