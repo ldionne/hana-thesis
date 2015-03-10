@@ -153,7 +153,101 @@ $\C$, on dira parfois que $F$ est un \textit{endofoncteur}.
 \subsubsection{Foncteurs dans Hana}
 Dans le cadre de la bibliothèque Hana, on s'intéressera principalement aux
 endofoncteurs sur la catégorie Hana, c'est-à-dire aux foncteurs du type
-$F : Hana \to Hana$.
+$F : Hana \to Hana$. D'abord, rappelons-nous que les objets de la catégorie
+Hana sont des types généralisés. Un foncteur $F$ devra donc envoyer un type
+généralisé $T$ vers un autre type généralisé $F(T)$. Ensuite, les flèches de
+Hana sont des fonctions dont le domaine et le codomaine sont des types
+généralisés. Ainsi, un foncteur $F$ devra envoyer une telle fonction
+$f : T \to U$ vers une fonction $F(f) : F(T) \to F(U)$. Dans Hana, un
+foncteur se matérialise comme un type généralisé paramétré et muni d'une
+fonction appelée \icpp{transform} ayant la pseudo-signature suivante:
+\[
+    \icpp{transform} : F(T) \times (T \to U) \to F(U)
+\]
+
+Sans grande surprise, si un type généralisé paramétré $F$ est un foncteur au
+sens de Hana, alors on dénote par $F(T)$ le type généralisé correspondant à
+l'image de $T$ par le foncteur $F$. Cependant, le rôle de \icpp{transform}
+demande un peu plus de justification. On notera que l'ordre des paramètres
+de \icpp{transform} est fâcheux pour l'explication qui suit. C'est tout de
+même cet ordre qui est utilisé dans Hana parce qu'il est avantageux lorsqu'on
+veut passer une fonction anonyme C++ à \icpp{transform}. On commence donc par
+échanger l'ordre des paramètres de \icpp{transform} en considérant plutôt la
+fonction \icpp{transform_}:
+\begin{align*}
+    \icpp{transform_} : (T \to U) \times F(T) &\to F(U)     \\
+                           \icpp{(f, xs)}     &\mapsto \icpp{transform(xs, f)}
+\end{align*}
+
+Supposons maintenant que l'on ait une fonction $f : T \to U$. On peut
+appliquer partiellement $f$ à \icpp{transform_} pour obtenir la
+fonction
+\[
+    \icpp{transform_(f)} : F(T) \to F(U)
+\]
+
+On peut remarquer que \icpp{transform_(f)} possède la signature requise
+pour être l'image d'une flèche de Hana par le foncteur $F$. Dans la catégorie
+Hana, un foncteur $F$ envoie donc un type généralisé $T$ sur un nouveau type
+généralisé $U$, et une fonction $f : T \to U$ sur une nouvelle fonction
+$\icpp{transform_(f)} : F(T) \to F(U)$. Bien entendu, pour qu'il s'agisse
+bien d'un foncteur, certaines propriétés doivent être respectées. D'abord,
+le foncteur doit respecter la loi de composition de Hana, i.e. pour toutes
+fonctions $f : A \to B$ et $g : B \to C$, on doit avoir que
+$F(g \circ f) = F(g) \circ F(f)$.
+
+Dans Hana, ceci devient simplement
+\[
+    \icpp{transform_(g} \circ \icpp{f)} = \icpp{transform_(g)} \circ \icpp{transform_(f)},
+\]
+
+ce qui est équivalent à dire que pour tout \icpp{xs} de type généralisé $F(T)$,
+\[
+    \icpp{transform(xs, g} \circ \icpp{f)} = \icpp{transform(transform(xs, f), g)}
+\]
+
+Ensuite, le foncteur doit aussi respecter l'identité, c'est à dire que
+$F(\id_T) = \id_{F(T)}$. Dans Hana, puisque l'identité est une fonction
+générique qui fonctionne sur tous les types généralisés, ceci se traduit
+simplement par
+\[
+    \icpp{transform_(id)} = \icpp{id},
+\]
+
+ce qui est équivalent à dire que pour tout \icpp{xs} de type généralisé $F(T)$,
+\[
+    \icpp{transform(xs, id)} = \icpp{xs}
+\]
+
+Voyons maintenant comment certaines structures fournies par Hana peuvent
+être vues comme des foncteurs.
+
+\subsubsection{Le foncteur Tuple}
+Un tuple peut être vu comme un foncteur d'au moins deux manières. D'abord,
+si l'on reste dans le contexte de la catégorie Hask classique, on peut voir
+un tuple à deux éléments comme un foncteur de la manière suivante. D'abord,
+on commence par fixer le type d'un des deux éléments du tuple. On a donc
+un type partiellement formé $(A, -)$ qu'on pourrait ensuite appliquer à un
+deuxième type $B$ pour obtenir $(A, B)$. Ensuite, étant donné une fonction
+$f : B \to C$, on peut donner la fonction
+\begin{align*}
+    snd(f) : (A, B) &\to (A, C)             \\
+             (a, b) &\mapsto (a, f(b))
+\end{align*}
+
+Ainsi, on peut voir le type partiellement formé $(A, -)$ comme un foncteur,
+qui associe à tout type $B$ le type $(A, B)$ et à toute fonction $f : B \to C$
+la fonction $snd(f) : (A, B) \to (A, C)$. Il est facile de vérifier que les
+propriétés d'un foncteur sont respectées. Cette manière de voir les foncteurs
+a son utilitée, mais Hana les voit de manière différente grâce à la notion de
+type généralisé.
+
+Dans Hana, les tuples sont considérés comme des tableaux de taille fixe
+contenant des objets d'un même type généralisé. Par exemple, un tuple
+\icpp{hana::_tuple<int, long, double>}
+
+\todo{je pense que je vais devoir revoir les gtypes...}
+
 
 \subsection{Les transformations naturelles}
 \subsection{Les monades}
