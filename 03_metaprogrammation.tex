@@ -336,12 +336,26 @@ complètement différents dans chaque branche.
 Le branchement à la compilation n'est pas la seule technique que nous pouvons
 exploiter à des fins de métaprogrammation. En effet, il est aussi possible
 d'écrire des fonctions complexes utilisant la récursion à l'intérieur même du
-compilateur. Prenons par exemple la fonction factorielle:
+compilateur. Pour illustrer ce fait, nous étudierons la fonction factorielle.
+Avant de regarder la factorielle elle-même, commençons par se créer un type
+qui représentera un entier connu au moment de la compilation --- ce sera ces
+objets que la factorielle manipulera:
 \begin{cpp}
-    // représente un entier connu au moment de la compilation
     template <int n>
     struct _int { };
+\end{cpp}
 
+Exactement comme \icpp{_bool} un peu plus haut, \icpp{_int} ne sert qu'à
+représenter une valeur connue au moment de la compilation à l'aide d'un type.
+Étant donné un objet de type \icpp{_int<i>}, la seule information qui nous
+intéresse est le type de cet objet, puisqu'il contient l'entier que nous
+souhaitons représenter. C'est d'ailleurs la seule information qui nous est
+donnée par un tel objet, puisque le type \icpp{_int<i>} est un type singleton,
+c'est-à-dire qu'il ne possède qu'une seule valeur possible. Les raisons qui
+nous poussent à représenter les entiers connus au moment de la compilation
+par des objets de types singletons deviendront claires plus tard. Nous pouvons
+maintenant regarder l'implémentation de la fonction factorielle:
+\begin{cpp}
     template <int n, int acc>
     auto fact_impl(_int<n>, _int<acc>)
     { return fact_impl(_int<n - 1>{}, _int<acc * n>{}); }
@@ -439,8 +453,8 @@ La valeur de retour, quant à elle, est complètement inutile puisque
 \icpp{_integral_constant<...>} ne possède qu'une seule valeur, c'est à dire
 \icpp{_integral_constant<...>{}}. L'idée derrière ceci est en fait très
 puissante; nous utilisons des objets de types singletons (n'ayant qu'une
-valeur possible) pour représenter des expressions constantes et pour faire
-des calculs au moment de la compilation.
+valeur possible) pour représenter des expressions constantes et faire des
+calculs au moment de la compilation.
 
 Il est aussi intéressant de noter qu'il ne s'agit jusqu'ici que d'une différence
 syntaxique avec les approches précédentes comme la bibliothèque \href{\MPL}{MPL},
@@ -479,7 +493,7 @@ peut retrouver l'expression constante qu'il représente, et ce même si cet obje
 n'en est pas une. En effet, il suffit d'utiliser \icpp{decltype}:
 \begin{cpp}
     // Supposons que `n` soit un `_integral_constant<...>`. À noter que
-    // `n` n'est vraiment pas une expression constante (volatile!).
+    // `n` n'est clairement pas une expression constante (volatile!).
     volatile auto n = ...;
     constexpr bool v = decltype(n)::value;
 \end{cpp}
@@ -629,7 +643,10 @@ l'expression \icpp{f(type<int>)}:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Les séquences hétérogènes}
-
+Jusqu'ici, nous avons vu comment faire des calculs arithmétiques et des
+transformations sur des types au moment de la compilation. Bien que ce soit
+utile, c'est en introduisant la notion de séquence hétérogène que la puissance
+de ces constructions deviendra claire. À la base, une séquence
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
