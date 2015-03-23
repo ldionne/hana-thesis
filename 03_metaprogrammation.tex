@@ -646,12 +646,106 @@ l'expression \icpp{f(type<int>)}:
 Jusqu'ici, nous avons vu comment faire des calculs arithmétiques et des
 transformations sur des types au moment de la compilation. Bien que ce soit
 utile, c'est en introduisant la notion de séquence hétérogène que la puissance
-de ces constructions deviendra claire. À la base, une séquence
+de ces constructions deviendra claire. À la base, une séquence hétérogène est
+
+\todo{Terminer cette section}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Les types généralisés}
-Tout ceci est bien beau, mais une question fondamentale se pose quand même:
-Comment fait-on pour raisonner à propos de notre code dans un contexte
-hétérogène? Sommes-nous en mesure d'écrire des fonctions utiles qui prennent
-en entrée des objets de types hétérogènes?
+En programmation conventionnelle, les types sont utilisés pour classifier
+des valeurs qui ont la même représentation afin, par exemple, d'écrire
+des fonctions qui sont capables de manipuler n'importe quelle valeur
+d'un type donné. L'importance de classifier les valeurs selon leur type
+vient entre autres du fait que cela nous permet de raisonner de manière
+générale à propos de toutes les valeurs de ce type en même temps.
+
+Mais jusqu'ici, nous avons utilisé les types pour un usage tout à fait
+différent. En effet, Hana utilise sans réserve les types pour encoder des
+valeurs connues au moment de la compilation. Les types deviennent donc un
+véhicule par lequel il est possible de faire faire des calculs au compilateur,
+ce qui nous arrange bien. Cependant, on y a perdu une chose fondamentale; il
+s'agit de la capacité de raisonner de manière formelle à propos de notre code.
+En particulier, il nous est pour l'instant difficile de définir le ``domaine''
+d'une fonction manipulant des objets de types hétérogènes, puisque nous
+utilisons les types -- qui seraient normalement utilisés pour représenter le
+domaine de la fonction -- comme un véhicule pour les valeurs que nous
+manipulons. Par exemple, considérons la fonction suivante, que nous avons
+déjà étudiée lorsque nous avons introduit les calculs sur des types:
+\begin{cpp}
+    template <typename T>
+    auto add_pointer(_type<T>) {
+        return type<T*>;
+    }
+\end{cpp}
+
+Quel est le domaine de cette fonction? Mécaniquement, on peut dire que le
+domaine est
+\[
+    \bigcup_{\text{tous les types T}} \icpp{_type<T>}
+\]
+
+Cependant, sous cette forme, ce domaine ne nous est pas vraiment utile. Pour
+pouvoir mettre un nom sur cet ensemble, Hana introduit le concept de type
+généralisé. En essence, un type généralisé est une étiquette qui rassemble
+une famille de types (comme \icpp{_type<...>}) sous une même banière. Ceci
+nous permet de manipuler des objets de n'importe quel type faisant partie
+de cette famille comme étant un représentant de la banière. Par exemple,
+pour représenter la famille de types \icpp{_type<...>}, on utilisera la
+banière \icpp{Type}. D'une certaine manière, on peut donc dire que
+\[
+    \icpp{Type} = \bigcup_{\text{tous les types T}} \icpp{_type<T>}
+\]
+
+Mais ce n'est pas tout. Le changement décisif qui est introduit dans Hana
+est l'utilisation de ces étiquettes comme étant le ``type'' des objets.
+Ainsi, les fonctions dans Hana sont spécifiées comme manipulant des objets
+d'un certain type généralisé, plutôt que d'un certain type. Ainsi, la
+définition rigoureuse de notre fonction \icpp{add_pointer} devient
+\[
+    \icpp{add_pointer} : \icpp{Type} \to \icpp{Type}
+\]
+
+ce qui veut dire que \icpp{add_pointer} accepte n'importe quel objet dont le
+type généralisé est \icpp{Type}, et ce peut importe son type réel (qui sera
+de la forme \icpp{_type<T>}. De plus, on peut se rendre compte que la notion
+de type généralisé est strictement plus générale que celle de type
+conventionnel, d'où le nom qui a été choisi. En effet, il suffirait de poser
+le type généralisé de tout type conventionnel comme étant ce type lui-même
+pour retomber sur la notion habituelle de type. C'est d'ailleurs ce qui est
+fait dans Hana. Plus précisément, le type généralisé d'un type est ce type
+lui-même par défaut, mais il est possible de spécifier le type généralisé
+d'une famille de type si on le désire. Par exemple, le type généralisé de
+\icpp{int} est \icpp{int}, mais celui de n'importe quel \icpp{_type<T>} est
+\icpp{Type}. Puisque la notion de type généralisé est plus générale, nous ne
+considérerons que cette notion pour la suite.
+
+Mais ce n'est pas tout. Le C++ possède la notion de \textit{template}, qui
+est dans l'essence un type paramétré, ou encore une fonction sur les types.
+Cette notion de type paramétré est fondamentale si l'on veut exprimer des
+types moindrement complexes, comme par exemple \icpp{std::vector<T>}. En
+bonne généralisation de la notion de type, Hana introduit la notion de
+type généralisé paramétré. Formellement, on peut voir ceci comme une
+fonction sur les types généralisés, exactement comme les \textit{templates}
+sont des fonctions sur les types.
+
+Sans s'en rendre compte, nous avons déjà vu une manifestation des types
+généralisés paramétrés lorsque que nous voulions manipuler des entiers
+au moment de la compilation. Au départ, nous avions commencé avec
+\icpp{_int<i>}, puis nous avions étendu le principe à
+\icpp{_integral_constant<T, i>} pour être capable de manipuler des entiers
+de n'importe quel type intégral \icpp{T}. En réalité, étant donné un type
+intégral \icpp{T}, le type généralisé de \icpp{_integral_constant<T, i>}
+est \icpp{IntegralConstant<T>}, et ce peut-importe l'entier \icpp{i} que
+\icpp{_integral_constant<T, i>} représente. Vu de cette manière,
+\icpp{IntegralConstant} est donc un type généralisé paramétré par
+le type généralisé de la valeur entière qu'il représente. Cependant, étant
+donné que \icpp{IntegralConstant} ne peut que représenter des valeurs de
+types intégraux (\icpp{int}, \icpp{long}, etc...), les types généralisés
+auxquels il fait du sens d'appliquer \icpp{IntegralConstant} coïncident
+tous avec des types standards du C++.
+
+Bien que la notion de type généralisé puisse sembler un peu vide de sens à
+ce stade, les prochaines sections mettrons en évidence l'importance des types
+généralisés comme brique de base de la bibliothèque et de sa formalisation
+présentée ici.
