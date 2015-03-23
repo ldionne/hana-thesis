@@ -1,0 +1,33 @@
+\section{Les transformations naturelles}
+Nous venons de voir la notion de foncteur, qui peuvent être vus comme
+des transformations entre les catégories. Pour continuer dans la même
+direction, nous allons maintenant considérer ce que sont les transformations
+entre foncteurs. Ces transformations portent le nom de transformations
+naturelles et jouent un rôle fondamental en théorie des catégories.
+
+\todo{
+    Qu'est-ce qu'on veut dire par morphisme entre foncteurs?
+    Quelles propriétés est-ce qu'on veut? Introduire les transformations
+    naturelles de manière graduelle en faisant ce travail là. Ensuite
+    on peut donner la définition formelle. Diagrammes pour montrer
+    l'intuition.
+}
+
+Pour aller de l'avant dans notre tentative de catégorifier autant que possible,
+nous remarquerons qu'il est possible de voir les transformations naturelles
+comme les flèches d'une catégorie bien spéciale. Il s'agit de la catégorie
+$Fun(\C, \D)$ des foncteurs entre deux catégories $\C$ et $\D$, ce qui nous
+mène à la définition suivante.
+
+\begin{définition}[Catégorie de foncteurs]
+    Soit $\C$ et $\D$ deux catégories. On appelle $Fun(\C, \D)$ la catégorie
+    des foncteurs entre $\C$ et $\D$, dont les objets sont les foncteurs
+    (covariants) entre $\C$ et $\D$. De plus, pour deux objets $F$ et $G$ de
+    la catégorie, l'ensemble des flèches $\hom(F, G)$ est l'ensemble des
+    transformations naturelles entre $F$ et $G$, qui, on se rappelle, sont
+    des foncteurs. Finalement, la loi de composition de la catégorie est
+    la composition usuelle de foncteurs.
+\end{définition}
+
+
+\subsection{Les transformations naturelles dans Hana}

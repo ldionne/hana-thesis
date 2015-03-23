@@ -1,78 +1,4 @@
-\section{Hana}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{La catégorie Hana}
-La catégorie Hana est définie de manière similaire à Hask, mais les types
-sont remplacés par la notion plus générale de type généralisé présentée
-précédemment. En particulier, les objets de Hana sont les types généralisés:
-\[
-    \ob(Hana) := \{ T \suchthat \text{T est un type généralisé} \}
-\]
-
-Les flèches de Hana sont les fonctions génériques qui travaillent sur des
-objets ayant un certain type généralisé, et ce peu importe le type réel de ces
-objets. Plus précisément, soit $X, Y \in \ob(Hana)$, c'est-à-dire que $X$ et $Y$
-sont deux types généralisés. Une flèche $f : X \to Y$ est un objet C++, disons
-\icpp{f}, avec un \icpp{operator()} tel que $\forall x \in X$,
-\begin{enumerate}
-    \item l'expression \icpp{f(x)} est bien formée, c'est-à-dire qu'elle compile
-    \item ${\tt f(x)} \in Y$, c'est-à-dire que le type généralisé de l'expression \icpp{f(x)} est $Y$
-    \item l'expression \icpp{f(x)} n'a pas d'effets de bord
-\end{enumerate}
-
-La propriété (3) est nécessaire pour s'assurer que les fonctions qu'on
-considère sont des fonctions au sens mathématique, c'est-à-dire que
-\[
-    x = y \implies f(x) = f(y)
-\]
-
-Sans se restreindre explicitement à cette classe de fonctions, on perdrait la
-capacité de raisonner mathématiquement à propos des fonctions de Hana puisque
-le langage C++ n'est pas pur, contrairement au Haskell. Ce n'est cependant pas
-une restriction qui nous handicap beaucoup, puisque Hana s'intéresse surtout à
-la manipulation d'objets hétérogènes, ce qui requiert l'utilisation d'un style
-de programmation fonctionnel de toute façon.
-
-Finalement, la loi de composition sur Hana est, sans grande surprise,
-l'extension de la composition de fonctions usuelle aux fonctions templates
-qui constituent les flèches de Hana, $\hom(Hana)$. Rigoureusement, soit
-$X, Y, Z \in \ob(Hana)$, c'est-à-dire que $X$, $Y$ et $Z$ sont des types
-généralisés. On peut définir la composition par
-\begin{minted}{c++}
-    template <typename X, typename Y, typename Z>
-    auto compose = [](auto f, auto g) {
-        return [=](auto x) {
-            static_assert(std::is_same<datatype_t<decltype(x)>, X>{}, "");
-            static_assert(std::is_same<datatype_t<decltype(g(x))>, Y>{}, "");
-            static_assert(std::is_same<datatype_t<decltype(f(g(x)))>, Z>{}, "");
-            return f(g(x));
-        };
-    };
-\end{minted}
-
-Dans la réalité, il est trop répétitif de préciser les types $X$, $Y$ et $Z$
-et on préfère la définition suivante pour \icpp{compose}:
-\begin{minted}{c++}
-    auto compose = [](auto f, auto g) {
-        return [=](auto x) {
-            return f(g(x));
-        };
-    };
-\end{minted}
-
-Il nous reste à démontrer que Hana est bien une catégorie. Pour ce faire, il
-suffit de vérifier qu'il existe une flèche identité pour chaque objet de
-la catégorie et que la composition est bien associative.
-
-% TODO
-\begin{proof}
-
-\end{proof}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Les foncteurs}
+\section{Les foncteurs}
 Nous avons introduit la notion de catégorie à l'aide d'exemples provenant de
 l'algèbre abstraite, de l'analyse puis de l'informatique. L'algorithme pour
 \textit{catégoriser} une théorie était toujours un peu le même: isoler les
@@ -246,9 +172,127 @@ Dans Hana, les tuples sont considérés comme des tableaux de taille fixe
 contenant des objets d'un même type généralisé. Par exemple, un tuple
 \icpp{hana::_tuple<int, long, double>}
 
-\todo{je pense que je vais devoir revoir les gtypes...}
 
 
-\subsection{Les transformations naturelles}
-\subsection{Les monades}
-\subsection{Les produits}
+%%%%%%%%%%%%%%%%%%%%%%% Ici je patauge un peu %%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{comment}
+Étant donné une collection de types généralisés $T_1, \hdots, T_n$,
+il est toujours possible de synthétiser un nouveau type généralisé
+$Common(T_1, \hdots, T_n)$ qu'on peut voir comme ``la plus petite
+généralisation'' des types $T_1, \hdots, T_n$. Puisque l'interface
+d'un type généralisé est représenté dans Hana par l'ensemble des
+concepts dont ce type est un modèle, on aimerait donc que ce nouveau
+type $Common(T_1, \hdots, T_n)$ possède l'interface qui est commun à
+tous les $T_k$. En d'autres mots, l'ensemble des concepts dont le type
+$Common(T_1, \hdots, T_n)$ est un modèle est:
+\[
+    Concepts(Common(T_1, \hdots, T_n)) := \bigcap_{k=1}^n Concepts(T_k)
+\]
+
+De plus, il est très facile de représenter le type généralisé
+$Common(T_1, \hdots, T_n)$ en C++. Nous n'avons qu'à utiliser
+les \textit{templates}:
+\begin{cpp}
+    template <typename ...Tn>
+    struct Common { };
+\end{cpp}
+
+De cette manière, étant donné des types généralisés \icpp{T1}, ..., \icpp{Tn},
+leur plus petite généralisation est représentée par le nouveau type généralisé
+\icpp{Common<T1, ..., Tn>}. Ensuite, étant donné des objets $x_1, \hdots, x_n$
+de types généralisés $T_1, \hdots, T_n$, il est facile de créer une nouvelle
+séquence d'objets $y_1, \hdots y_n$ qui ont tous le même type généralisé
+$Common(T_1, \hdots, T_n)$. Encore une fois, le truc est d'utiliser les
+\textit{templates}:
+\begin{cpp}
+    template <typename X, typename ...Tn>
+    struct wrapper {
+        X value;
+        struct hana { using datatype = Common<Tn...>; };
+    };
+\end{cpp}
+
+On aura alors que
+\begin{cpp}
+    y_k = wrapper<decltype(x_k), T1, ..., Tn>{x_k}
+\end{cpp}
+
+
+%%%%%%%%%%%%%%%%% Tentative 1 avec des wrappers
+Quand tu te crées un tuple, on prend le Common de tous les types que tu mets dedans.
+Ensuite, on wrap tous tes objets dans wrapper<...>. Vu que c'est de la marde de recevoir
+des wrapper<...>, on t'envoie le wrapper<...>.value au lieu dans toutes tes méthodes.
+C'est OK de faire ça, parce que pour chaque objet x, l'instance d'un concept
+C par wrapper est isomorphe avec l'instance du concept C pour x. L'isomorphisme
+est unique (wrapper<...>{x} <-> wrapper<...>{x}.value). Attention: pour mieux
+comprendre ceci, il faudrait considérer qu'on envoie des wrapper<...> à nos
+fonctions et qu'elle ne sont pas capable de les unwrapper, juste d'utiliser
+les instances que le wrapper fournit.
+
+HMMM, attention. Dans la réalité, les fonctions qui manipuleraient des Wrappers
+ne pourraient pas utiliser le .value, juste le wrapper lui-même. Ça serait OK
+parce que de toute façon le wrapper fournit exactement les modèles qui sont
+possible de provider. Cependant, qu'est-ce qui prouve que le fait d'accéder
+au .value préserve ces modèles exactement??? Il faut que le modèle qui est
+implémenté par le wrapper soit uniquement isomorphe au modèle du .value (? vérifier).
+Par le fait même, ceci requiert que tous les modèles tes T1, ..., Tn soient
+uniquement isomorphes.
+
+Étant donné des foncteurs F1 et F2, s'il existe un unique iso de foncteurs
+entre F1 et F2, alors on peut réduire F1 et F2 à (disons) F1 SPDG. Ensuite,
+on est simplement de retour à traiter un simple foncteur F1. Après, il est
+facile de créer un wrapper tel que Wrapper(F1) est un foncteur uniquement
+isomorphe à F1, et on fait le wrapping/unwrapping automatiquement pour
+simplifier la job de l'utilisateur.
+
+
+%%%%%%%%%%%%%%%%%%%%%% Tentative 2 avec des variants
+On peut voir un tuple comme un array de taille fixe qui contient des variants.
+Dans le fond,
+
+    _tuple<T1, ..., Tn>
+
+est grosso-modo la même chose que
+
+    array<variant<T1, ..., Tn>, n>
+
+Quand on voit un tuple de cette manière, il fait tout à coup du sens de
+mapper une fonction sur le tuple; c'est la même chose que de mapper une
+fonction dont le domaine serait le variant sur l'array. Ainsi, un tuple
+peut être vu comme un Fonteur en considérant ...
+    >> S'assurer qu'un array de variant est bien un foncteur et trouver une
+    >> manière élégante de faire le lien avec un tuple.
+
+
+
+Ensuite, supposons qu'on veut ordonner deux tuples. Quand est-ce que ça
+fait du sens de faire ça? Pour répondre à cette question, on commence
+par voir le tuple comme un array de variants. Ensuite, il suffit de faire
+une comparaison lexicographique standard sur cet array. Le problème devient
+donc de savoir comment on peut comparer deux variants. La nouvelle question
+se formule ainsi: Étant donné deux variants<T1, ..., Tn>, quand est-ce
+qu'il fait du sens d'ordonner ces variants. Pour nous faciliter la vie,
+on commence par réduire le problème en ne considérant que des variants
+binaires, c'est-à-dire des variants de la forme variant<T, U>. On ne perd
+aucune généralité parce qu'un variant n-aire variant<T1, ..., Tn> est
+équivalent à un variant binaire variant<T1, variant<T2, ..., Tn>>.
+La question est maintenant beaucoup plus simple: étant donné deux
+variants variant<T, U>, quand est-ce qu'il fait du sens de les comparer?
+Il se trouve que j'ai déjà la réponse dans Hana avec les cross-type
+operations!
+    >> Ok, pas certain qu'on veuille orderer les tuples comme des arrays de
+    >> variants. C'est peut-être mieux de juste les regarder comme des tuples
+    >> normaux.
+
+
+Ensuite, on peut faire le pont avec Hana en disant simplement que Hana
+considère qu'une fonction sur un variant connu au moment de la compilation
+n'est rien d'autre qu'une fonction overloadée, et que hana::_tuple est un
+array de variants qui est super optimisé pour les cas où on connaît
+ce qui est contenu dans chaque variant de l'array au moment de la
+compilation.
+
+[attention: ça veut dire que tuple<int, char> a le même ``type'' que tuple<char, int>]
+\end{comment}

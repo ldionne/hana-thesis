@@ -155,3 +155,72 @@ petite dose d'imagination.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{La catégorie Hask}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{La catégorie Hana}
+La catégorie Hana est définie de manière similaire à Hask, mais les types
+sont remplacés par la notion plus générale de type généralisé présentée
+précédemment. En particulier, les objets de Hana sont les types généralisés:
+\[
+    \ob(Hana) := \{ T \suchthat \text{T est un type généralisé} \}
+\]
+
+Les flèches de Hana sont les fonctions génériques qui travaillent sur des
+objets ayant un certain type généralisé, et ce peu importe le type réel de ces
+objets. Plus précisément, soit $X, Y \in \ob(Hana)$, c'est-à-dire que $X$ et $Y$
+sont deux types généralisés. Une flèche $f : X \to Y$ est un objet C++, disons
+\icpp{f}, avec un \icpp{operator()} tel que $\forall x \in X$,
+\begin{enumerate}
+    \item l'expression \icpp{f(x)} est bien formée, c'est-à-dire qu'elle compile
+    \item ${\tt f(x)} \in Y$, c'est-à-dire que le type généralisé de l'expression \icpp{f(x)} est $Y$
+    \item l'expression \icpp{f(x)} n'a pas d'effets de bord
+\end{enumerate}
+
+La propriété (3) est nécessaire pour s'assurer que les fonctions qu'on
+considère sont des fonctions au sens mathématique, c'est-à-dire que
+\[
+    x = y \implies f(x) = f(y)
+\]
+
+Sans se restreindre explicitement à cette classe de fonctions, on perdrait la
+capacité de raisonner mathématiquement à propos des fonctions de Hana puisque
+le langage C++ n'est pas pur, contrairement au Haskell. Ce n'est cependant pas
+une restriction qui nous handicap beaucoup, puisque Hana s'intéresse surtout à
+la manipulation d'objets hétérogènes, ce qui requiert l'utilisation d'un style
+de programmation fonctionnel de toute façon.
+
+Finalement, la loi de composition sur Hana est, sans grande surprise,
+l'extension de la composition de fonctions usuelle aux fonctions templates
+qui constituent les flèches de Hana, $\hom(Hana)$. Rigoureusement, soit
+$X, Y, Z \in \ob(Hana)$, c'est-à-dire que $X$, $Y$ et $Z$ sont des types
+généralisés. On peut définir la composition par
+\begin{cpp}
+    template <typename X, typename Y, typename Z>
+    auto compose = [](auto f, auto g) {
+        return [=](auto x) {
+            static_assert(std::is_same<datatype_t<decltype(x)>, X>{}, "");
+            static_assert(std::is_same<datatype_t<decltype(g(x))>, Y>{}, "");
+            static_assert(std::is_same<datatype_t<decltype(f(g(x)))>, Z>{}, "");
+            return f(g(x));
+        };
+    };
+\end{cpp}
+
+Dans la réalité, il est trop répétitif de préciser les types $X$, $Y$ et $Z$
+et on préfère la définition suivante pour \icpp{compose}:
+\begin{cpp}
+    auto compose = [](auto f, auto g) {
+        return [=](auto x) {
+            return f(g(x));
+        };
+    };
+\end{cpp}
+
+Il nous reste à démontrer que Hana est bien une catégorie. Pour ce faire, il
+suffit de vérifier qu'il existe une flèche identité pour chaque objet de
+la catégorie et que la composition est bien associative.
+
+% TODO
+\begin{proof}
+
+\end{proof}
