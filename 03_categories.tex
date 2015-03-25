@@ -190,10 +190,10 @@ la manipulation d'objets hétérogènes, ce qui requiert l'utilisation d'un styl
 de programmation fonctionnel de toute façon.
 
 Finalement, la loi de composition sur Hana est, sans grande surprise,
-l'extension de la composition de fonctions usuelle aux fonctions templates
-qui constituent les flèches de Hana, $\hom(Hana)$. Rigoureusement, soit
-$X, Y, Z \in \ob(Hana)$, c'est-à-dire que $X$, $Y$ et $Z$ sont des types
-généralisés. On peut définir la composition par
+l'extension de la composition de fonctions usuelle aux fonctions
+\textit{templates} qui constituent les flèches de Hana, $\hom(Hana)$.
+Rigoureusement, soit $X, Y, Z \in \ob(Hana)$, c'est-à-dire que $X$, $Y$ et
+$Z$ sont des types généralisés. On peut définir la composition par
 \begin{cpp}
     template <typename X, typename Y, typename Z>
     auto compose = [](auto f, auto g) {
@@ -206,6 +206,9 @@ généralisés. On peut définir la composition par
     };
 \end{cpp}
 
+Ainsi, `compose<X, Y, Z>` peut être appelée avec n'importe quelle fonctions
+$f$ et $g$, mais celles dont les domaines et codomaines ne coïncident pas
+avec \icpp{X}, \icpp{Y} et \icpp{Z} résulteront en une erreur de compilation.
 Dans la réalité, il est trop répétitif de préciser les types $X$, $Y$ et $Z$
 et on préfère la définition suivante pour \icpp{compose}:
 \begin{cpp}
@@ -216,11 +219,63 @@ et on préfère la définition suivante pour \icpp{compose}:
     };
 \end{cpp}
 
-Il nous reste à démontrer que Hana est bien une catégorie. Pour ce faire, il
-suffit de vérifier qu'il existe une flèche identité pour chaque objet de
-la catégorie et que la composition est bien associative.
+La tâche de s'assurer que les domaines et codomaines sont respectés est ainsi
+laissée au programmeur, mais l'interface qui en résulte est beaucoup plus
+facile à utiliser. Dans les preuves, la première définition de \icpp{compose}
+sera généralement utilisée, pour mettre en évidence les types généralisés des
+fonctions qui sont composées.
 
-% TODO
-\begin{proof}
+Il nous reste à démontrer que Hana est bien une catégorie. Pour ce faire,
+il suffit de vérifier qu'il existe une flèche identité pour chaque objet de
+la catégorie et que la composition est bien associative. D'abord, la flèche
+identité d'un type généralisé peut être définie en utilisant une fonction
+\textit{template} ou une fonction anonyme générique de la manière suivante:
+\begin{cpp}
+    template <typename X>
+    auto id = [](auto x) {
+        static_assert(std::is_same<datatype_t<decltype(x), X>>{}, "");
+        return x;
+    };
+\end{cpp}
 
-\end{proof}
+Ainsi, étant donné un type généralisé \icpp{X}, l'identité sur \icpp{X} est
+\icpp{id<X>}. Puisque le type C++ de l'argument de \icpp{id<X>} est quelconque,
+on peut passer n'importe quel objet à cette fonction, tant que le type
+généralisé de cet objet est exactement \icpp{X}. Si ce n'est pas le cas,
+le compilateur rapportera une erreur de compilation. De plus, il est clair
+que l'identité est un élément neutre de la loi de composition. En effet, soit
+$A$ et $B$ des types généralisés et $f : A \to B$ une fonction. Alors,
+\begin{cpp}
+    compose<A, B, B>(id<B>, f) == [](auto x) { return id<B>(f(x)); }
+                               == [](auto x) { return f(x); }
+                               == f
+\end{cpp}
+
+De manière similaire,
+\begin{cpp}
+    compose<A, A, B>(f, id<A>) == [](auto x) { return f(id<A>(x)); }
+                               == [](auto x) { return f(x); }
+                               == f
+\end{cpp}
+
+ce qui montre que l'identité est bien l'élément neutre de la composition.
+Ensuite, il reste à montrer que la composition est associative, ce qui n'est
+pas difficile non plus. Pour des types généralisés $A, B, C, D$, soit
+$f : A \to B$, $g : B \to C$ et $h : C \to D$ des fonctions. Alors,
+\begin{cpp}
+    compose<A, C, D>(h, compose<A, B, C>(g, f))
+        == [](auto x) { return h(compose<A, B, C>(g, f)(x)); }
+        == [](auto x) { return h([](auto x) { return g(f(x)); }(x)); }
+        == [](auto x) { return h(g(f(x))); }
+\end{cpp}
+
+De l'autre côté, on obtient que
+\begin{cpp}
+    compose<A, B, D>(compose<B, C, D>(h, g), f)
+        == [](auto x) { return compose<B, C, D>(h, g)(f(x)); }
+        == [](auto x) { return [](auto x) { return h(g(x)); }(f(x)); }
+        == [](auto x) { return h(g(f(x))); }
+\end{cpp}
+
+ce qui montre que la composition est associative, et Hana est donc bien une
+catégorie.
