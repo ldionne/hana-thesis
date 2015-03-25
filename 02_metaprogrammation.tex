@@ -688,41 +688,64 @@ domaine est
 Cependant, sous cette forme, ce domaine ne nous est pas vraiment utile. Pour
 pouvoir mettre un nom sur cet ensemble, Hana introduit le concept de type
 généralisé. En essence, un type généralisé est une étiquette qui rassemble
-une famille de types (comme \icpp{_type<...>}) sous une même banière. Ceci
+une famille de types (comme \icpp{_type<...>}) sous une même bannière. Ceci
 nous permet de manipuler des objets de n'importe quel type faisant partie
-de cette famille comme étant un représentant de la banière. Par exemple,
+de cette famille comme étant un représentant de la bannière. Par exemple,
 pour représenter la famille de types \icpp{_type<...>}, on utilisera la
-banière \icpp{Type}. D'une certaine manière, on peut donc dire que
+bannière \icpp{Type}. D'une certaine manière, on peut donc dire que
 \[
     \icpp{Type} = \bigcup_{\text{tous les types T}} \icpp{_type<T>}
 \]
 
-Mais ce n'est pas tout. Le changement décisif qui est introduit dans Hana
-est l'utilisation de ces étiquettes comme étant le ``type'' des objets.
-Ainsi, les fonctions dans Hana sont spécifiées comme manipulant des objets
-d'un certain type généralisé, plutôt que d'un certain type. Ainsi, la
-définition rigoureuse de notre fonction \icpp{add_pointer} devient
+Concrètement, les types généralisés sont implémentés comme des types
+conventionnels qui ne servent que d'étiquette à une famille de types
+conventionnels. La métafonction \icpp{datatype} de Hana permet d'obtenir
+le type généralisé d'un type conventionnel. Étant donné un type \icpp{T}
+quelconque, le type généralisé de \icpp{T} est \icpp{datatype<T>::type}:
+\begin{cpp}
+    using GeneralizedT = datatype<T>::type;
+\end{cpp}
+
+D'ailleurs, pour ceux qui sont familiers avec des bibliothèques comme
+Boost.Fusion et Boost.MPL, la notion de type généralisé coïncide avec
+la notion de \textit{tag} dans ces bibliothèques. Cependant, Hana pousse
+le principe beaucoup plus loin. Le changement décisif qui est introduit dans
+Hana est l'utilisation de ces étiquettes comme étant le ``type'' des objets.
+Ainsi, dans Hana, les objets sont classifiés par leur type généralisé et les
+fonctions spécifient leur domaine comme un type généralisé plutôt qu'un
+type conventionnel. Par exemple, la définition rigoureuse de notre fonction
+\icpp{add_pointer} devient
 \[
     \icpp{add_pointer} : \icpp{Type} \to \icpp{Type}
 \]
 
 ce qui veut dire que \icpp{add_pointer} accepte n'importe quel objet dont le
 type généralisé est \icpp{Type}, et ce peut importe son type réel (qui sera
-de la forme \icpp{_type<T>}. De plus, on peut se rendre compte que la notion
-de type généralisé est strictement plus générale que celle de type
-conventionnel, d'où le nom qui a été choisi. En effet, il suffirait de poser
-le type généralisé de tout type conventionnel comme étant ce type lui-même
-pour retomber sur la notion habituelle de type. C'est d'ailleurs ce qui est
-fait dans Hana. Plus précisément, le type généralisé d'un type est ce type
-lui-même par défaut, mais il est possible de spécifier le type généralisé
-d'une famille de type si on le désire. Par exemple, le type généralisé de
-\icpp{int} est \icpp{int}, mais celui de n'importe quel \icpp{_type<T>} est
-\icpp{Type}. Puisque la notion de type généralisé est plus générale, nous ne
-considérerons que cette notion pour la suite.
+de la forme \icpp{_type<T>}. Ceci permet de faire abstraction de la
+représentation des objets, qui n'est généralement qu'un détail
+d'implémentation dans le contexte de la métaprogrammation. De plus, on peut se
+rendre compte que la notion de type généralisé est strictement plus générale
+que celle de type conventionnel, d'où le nom qui a été choisi. En effet, il
+suffirait de poser le type généralisé de tout type conventionnel comme étant
+ce type lui-même pour retomber sur la notion habituelle de type. C'est
+d'ailleurs ce qui est fait dans Hana. Plus précisément, le type généralisé
+d'un type est ce type lui-même par défaut, mais il est possible de spécifier
+le type généralisé d'une famille de types si on le désire. Pour se faire, il
+suffit d'utiliser la spécialisation des \textit{templates} pour la métafonction
+\icpp{datatype}. Par exemple, le type généralisé de \icpp{int} est \icpp{int},
+mais celui de n'importe quel \icpp{_type<T>} est \icpp{Type}, puisque
+\icpp{datatype} est spécialisé de la manière suivante:
+\begin{cpp}
+    struct Type; // représente le type généralisé Type
+    template <typename T>
+    struct datatype<_type<T>> {
+        using type = Type;
+    };
+\end{cpp}
 
-Mais ce n'est pas tout. Le C++ possède la notion de \textit{template}, qui
-est dans l'essence un type paramétré, ou encore une fonction sur les types.
-Cette notion de type paramétré est fondamentale si l'on veut exprimer des
+Mais ce n'est pas tout. Le C++ possède la notion de \textit{template}, qui est
+dans l'essence un type paramétré, ou encore une fonction sur les types. Cette
+notion de type paramétré est fondamentale si l'on veut exprimer des
 types moindrement complexes, comme par exemple \icpp{std::vector<T>}. En
 bonne généralisation de la notion de type, Hana introduit la notion de
 type généralisé paramétré. Formellement, on peut voir ceci comme une
@@ -736,14 +759,23 @@ au moment de la compilation. Au départ, nous avions commencé avec
 \icpp{_integral_constant<T, i>} pour être capable de manipuler des entiers
 de n'importe quel type intégral \icpp{T}. En réalité, étant donné un type
 intégral \icpp{T}, le type généralisé de \icpp{_integral_constant<T, i>}
-est \icpp{IntegralConstant<T>}, et ce peut-importe l'entier \icpp{i} que
+est \icpp{IntegralConstant(T)}, et ce peut-importe l'entier \icpp{i} que
 \icpp{_integral_constant<T, i>} représente. Vu de cette manière,
 \icpp{IntegralConstant} est donc un type généralisé paramétré par
-le type généralisé de la valeur entière qu'il représente. Cependant, étant
-donné que \icpp{IntegralConstant} ne peut que représenter des valeurs de
-types intégraux (\icpp{int}, \icpp{long}, etc...), les types généralisés
-auxquels il fait du sens d'appliquer \icpp{IntegralConstant} coïncident
-tous avec des types standards du C++.
+le type généralisé \icpp{T} de la valeur entière qu'il représente.
+Cependant, étant donné que \icpp{IntegralConstant} ne peut que représenter
+des valeurs de types intégraux (\icpp{int}, \icpp{long}, etc...), les types
+généralisés auxquels il fait du sens d'appliquer \icpp{IntegralConstant}
+coïncident tous avec des types standards du C++.
+
+Au passage, on notera que nous utilisons la notation \icpp{IntegralConstant(T)}
+plutôt que \icpp{IntegralConstant<T>} pour dénoter l'application de
+\icpp{IntegralConstant} à \icpp{T}. Nous faisons ceci principalement pour deux
+raisons. D'abord, cela permet de mettre en évidence la différence entre les
+types généralisés et les \textit{templates}. De plus, la plupart des types
+généralisés paramétrés de Hana ne sont pas implémentés comme des
+\textit{templates} pour des raisons techniques; il serait donc mal
+choisi d'utiliser une notation associée aux \textit{templates}.
 
 Bien que la notion de type généralisé puisse sembler un peu vide de sens à
 ce stade, les prochaines sections mettrons en évidence l'importance des types
