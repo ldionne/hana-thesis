@@ -226,7 +226,7 @@ Bien entendu, cette vision des choses n'est pas parfaite. En effet, elle
 nous fait perdre certaines propriétés très utiles des tuples, mais nous en
 fait gagner d'autres. D'abord, à des fins de fonctorialité, les types
 \icpp{Tuple(T1, T2, ..., Tn)} et \icpp{Tuple(T2, T1, ..., Tn)} sont
-équivalents, puisqu'on les interpète tous deux comme
+équivalents, puisqu'on les interprète tous deux comme
 \icpp{array<variant<T1, T2, ..., Tn>, n>}. On a donc perdu l'information du
 type de l'objet qui se trouve à un index donné. De plus, on a aussi perdu
 l'information du nombre de types différents dans un tuple. En effet, les
