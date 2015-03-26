@@ -17,31 +17,25 @@ D'abord, une catégorie $\C$ possède non seulement des objets, mais aussi
 des flèches entre ces objets. Ainsi, peu importe la forme que prendra notre
 transformation inter-catégories, elle devra spécifier où elle envoie les
 objets, mais aussi les flèches. Considérons donc une application $F : \C \to \D$
-d'une catégorie $\C$ vers une catégorie $\D$. On devra avoir que
-\begin{enumerate}
-    \item Pour chaque objet $A \in \ob(\C)$, $F$ envoie $A$ vers un objet de
-          $\D$, disons $F(A) \in \ob(\D)$.
-    \item Pour chaque flèche $f : A \to B \in \hom(\C)$, $F$ envoie $f$ sur
-          une flèche de $\D$, disons $F(f) \in \hom(\D)$.
-\end{enumerate}
+d'une catégorie $\C$ vers une catégorie $\D$. On devra avoir que pour chaque
+objet $A \in \ob(\C)$, $F$ envoie $A$ vers un objet de $\D$, disons
+$F(A) \in \ob(\D)$. De manière similaire, pour chaque flèche
+$f : A \to B \in \hom(\C)$, $F$ devra envoyer $f$ sur une flèche
+de $\D$, disons $F(f) \in \hom(\D)$.
 
 Il est intéressant de remarquer que l'on a pas spécifié la source ni la
 destination de la flèche $F(f)$. En fait, pour une flèche $f : A \to B$,
-seuls deux choix s'offrent à nous:
-\begin{itemize}
-    \item $F(f) : F(A) \to F(B)$
-    \item $F(f) : F(B) \to F(A)$
-\end{itemize}
+seuls deux choix s'offrent à nous: soit $F(f) : F(A) \to F(B)$, soit
+$F(f) : F(B) \to F(A)$. Ces deux choix sont valables. Dans le premier cas,
+on dira que c'est un foncteur \textit{covariant}, ou juste un foncteur, et
+dans l'autre cas on dira que c'est un foncteur \textit{contravariant}. Dans
+le cadre actuel, nous nous intéresserons seulement aux foncteurs covariants.
 
-Ces deux choix sont valables. Dans le premier cas, on dira que c'est un
-foncteur \textit{covariant}, ou juste un foncteur, et dans l'autre cas on
-dira que c'est un foncteur \textit{contravariant}. Dans le cadre actuel,
-nous nous intéresserons seulement aux foncteurs covariants. Ensuite, une
-catégorie possède une loi de composition et chaque objet doit posséder une
-flèche identité; il serait probablement intéressant qu'une transformation
-entre catégories préserve ces propriétés d'une certaine manière. On demandera
-donc que la loi de composition soit respectée, c'est-à-dire que pour des
-flèches $f : A \to B$ et $g : B \to C$ de $\C$,
+Ensuite, une catégorie possède une loi de composition et chaque objet doit
+posséder une flèche identité; il serait probablement intéressant qu'une
+transformation entre catégories préserve ces propriétés d'une certaine manière.
+On demandera donc que la loi de composition soit respectée, c'est-à-dire que
+pour des flèches $f : A \to B$ et $g : B \to C$ de $\C$,
 \[
     F(g \circ_\C f) = F(g) \circ_\D F(f)
 \]
@@ -74,9 +68,10 @@ Lorsque le domaine et le codomaine d'un foncteur sont la même catégorie, i.e.
 lorsqu'on a un foncteur du type $F : \C \to \C$ pour une certaine catégorie
 $\C$, on dira parfois que $F$ est un \textit{endofoncteur}.
 
-\todo{Intuition}
+\todo{Intuition et diagramme commutatif pour expliquer le respect de la
+loi de composition}
 
-\subsubsection{Foncteurs dans Hana}
+\subsection{Les foncteurs dans Hana}
 Dans le cadre de la bibliothèque Hana, on s'intéressera principalement aux
 endofoncteurs sur la catégorie Hana, c'est-à-dire aux foncteurs du type
 $F : Hana \to Hana$. D'abord, rappelons-nous que les objets de la catégorie
@@ -91,14 +86,14 @@ fonction appelée \icpp{transform} ayant la pseudo-signature suivante:
     \icpp{transform} : F(T) \times (T \to U) \to F(U)
 \]
 
-Sans grande surprise, si un type généralisé paramétré $F$ est un foncteur au
-sens de Hana, alors on dénote par $F(T)$ le type généralisé correspondant à
-l'image de $T$ par le foncteur $F$. Cependant, le rôle de \icpp{transform}
-demande un peu plus de justification. On notera que l'ordre des paramètres
-de \icpp{transform} est fâcheux pour l'explication qui suit. C'est tout de
-même cet ordre qui est utilisé dans Hana parce qu'il est avantageux lorsqu'on
-veut passer une fonction anonyme C++ à \icpp{transform}. On commence donc par
-échanger l'ordre des paramètres de \icpp{transform} en considérant plutôt la
+Si un type généralisé paramétré $F$ est un foncteur au sens de Hana, alors
+$F(T)$ est le type généralisé correspondant à l'image de $T$ par le foncteur
+$F$. Cependant, le rôle de \icpp{transform} demande un peu plus de
+justification. On notera que l'ordre des paramètres de \icpp{transform} est
+fâcheux pour l'explication qui suit. C'est tout de même cet ordre qui est
+utilisé dans Hana parce qu'il est avantageux lorsqu'on veut passer une
+fonction anonyme C++ à \icpp{transform}. On commence donc par échanger
+l'ordre des paramètres de \icpp{transform} en considérant plutôt la
 fonction \icpp{transform_}:
 \begin{align*}
     \icpp{transform_} : (T \to U) \times F(T) &\to F(U)     \\
@@ -148,12 +143,29 @@ ce qui est équivalent à dire que pour tout \icpp{xs} de type généralisé $F(
 Voyons maintenant comment certaines structures fournies par Hana peuvent
 être vues comme des foncteurs.
 
-\subsubsection{Le foncteur Tuple}
+
+\subsection{Le foncteur Maybe}
+
+\todo{Introduire le foncteur Maybe sur des types généralisés}
+
+\subsection{Le foncteur Lazy}
+
+\todo{Introduire le foncteur Lazy sur des types généralisés}
+
+\subsection{Le foncteur Type}
+
+\todo{
+    Introduire le foncteur Type, qui n'est pas un endofoncteur.
+    Étudier les propriétés d'injectivité du foncteur pour prouver
+    que tout ce qui peut être fait dans MPL peut être fait dans Hana.
+}
+
+
+\subsection{Le foncteur Tuple}
 Un tuple peut être vu comme un foncteur d'au moins deux manières. D'abord,
-si l'on reste dans le contexte de la catégorie Hask classique, on peut voir
-un tuple à deux éléments comme un foncteur de la manière suivante. D'abord,
-on commence par fixer le type d'un des deux éléments du tuple. On a donc
-un type partiellement formé $(A, -)$ qu'on pourrait ensuite appliquer à un
+on peut voir un tuple à deux éléments comme un foncteur de la manière suivante.
+On commence par fixer le type d'un des deux éléments du tuple. On a donc un
+type partiellement formé $(A, -)$ qu'on pourrait ensuite appliquer à un
 deuxième type $B$ pour obtenir $(A, B)$. Ensuite, étant donné une fonction
 $f : B \to C$, on peut donner la fonction
 \begin{align*}
@@ -164,19 +176,107 @@ $f : B \to C$, on peut donner la fonction
 Ainsi, on peut voir le type partiellement formé $(A, -)$ comme un foncteur,
 qui associe à tout type $B$ le type $(A, B)$ et à toute fonction $f : B \to C$
 la fonction $snd(f) : (A, B) \to (A, C)$. Il est facile de vérifier que les
-propriétés d'un foncteur sont respectées. Cette manière de voir les foncteurs
-a son utilitée, mais Hana les voit de manière différente grâce à la notion de
-type généralisé.
+propriétés d'un foncteur sont respectées. Cette manière de voir les tuples
+a son utilité, mais Hana les voit d'une autre manière qui est plus utile à
+des fins de métaprogrammation. On aimerait voir un tuple comme une séquence
+de taille fixe contenant des éléments d'un certain type $T$, qui est indéterminé
+pour l'instant. Puisqu'on aurait une séquence homogène contenant des éléments
+de type $T$, il serait possible d'appliquer une fonction (dont le domaine est
+$T$) à chaque élément de la séquence pour d'obtenir une nouvelle séquence
+contenant les résultats. En tant que foncteur, une telle séquence pourrait
+donc associer à tout objet $A$ de $Hana$ un nouvel objet $[A]$ représentant
+une séquence d'éléments de type $A$, et à toute flèche $f : A \to B$ une
+nouvelle flèche $\icpp{transform(-, f)} : [A] \to [B]$, qui consisterait à
+appliquer $f$ à chaque élément d'une séquence, ce qui constitue une opération
+très utile en programmation. Notre but est donc de trouver une manière
+mathématiquement rigoureuse d'inscrire la notion de tuple dans cette notion
+de foncteur, que nous savons à la fois productive, utile pour raisonner à
+propos des programmes et intuitive pour les habitués de la métaprogrammation.
 
-Dans Hana, les tuples sont considérés comme des tableaux de taille fixe
-contenant des objets d'un même type généralisé. Par exemple, un tuple
-\icpp{hana::_tuple<int, long, double>}
+Pour comprendre comment Hana s'y prend, on peut se poser la question suivante.
+Étant donné un tuple $(T_1, \hdots, T_n)$ et une fonction $f$ dont le domaine
+n'est pas encore fixé, quel devrait être le domaine de $f$ pour qu'elle puisse
+être appliquée à tous les éléments du tuple? Il va sans dire que ce domaine
+devrait être au moins aussi général que les types de tous les éléments du
+tuple, sans quoi l'application de $f$ à certains éléments serait mal définie.
+Cependant, un domaine trop général --- par exemple l'ensemble de tous les types
+possibles --- ne donnerait pas assez d'information à la fonction pour qu'elle
+puisse manipuler ses entrées de manière utile. Le but serait donc de déterminer
+le domaine le plus spécifique --- donc fournissant le plus d'information sur
+les éléments du tuple --- qui serait au moins aussi général que tous les types
+du tuple. Or, puisque nous travaillons avec des tuples de taille finie, ce type
+est facile à spécifier; il s'agit simplement de l'union des types du tuple,
+qu'on appelle généralement \icpp{variant} en C++. Ainsi, étant donné un tuple
+$(T_1, \hdots, T_n)$, le domaine le plus spécifique de $f$ devrait simplement
+être $\bigcup_{k=1}^n T_k$! Dans Hana, à des fins de fonctorialité, on
+considérera donc un tuple \icpp{Tuple(T1, ..., Tn)} comme un tableau de
+taille fixe contenant des éléments d'un type \icpp{variant}, c'est-à-dire
+\icpp{array<variant<T1, ..., Tn>, n>}. Pour appliquer une fonction à chaque
+élément d'une telle séquence, on devra définir une fonction dont le domaine
+est l'union de tous les $T_k$. Or, il se trouve que le C++ fournit un outil
+très commode pour définir de telles fonctions; il s'agit de
+l'\textit{overloading}.
+
+\todo{
+    Exemples d'utilisation et justifier rigoureusement le fait qu'on ne prend
+    pas un variant<...> dans la fonction.
+}
+
+Bien entendu, cette vision des choses n'est pas parfaite. En effet, elle
+nous fait perdre certaines propriétés très utiles des tuples, mais nous en
+fait gagner d'autres. D'abord, à des fins de fonctorialité, les types
+\icpp{Tuple(T1, T2, ..., Tn)} et \icpp{Tuple(T2, T1, ..., Tn)} sont
+équivalents, puisqu'on les interpète tous deux comme
+\icpp{array<variant<T1, T2, ..., Tn>, n>}. On a donc perdu l'information du
+type de l'objet qui se trouve à un index donné. De plus, on a aussi perdu
+l'information du nombre de types différents dans un tuple. En effet, les
+types \icpp{Tuple(T, U)} et \icpp{Tuple(U, T)} sont maintenant tous les
+deux vus comme des \icpp{array<variant<T, U>, 2>}. Cependant, il est
+maintenant possible d'appliquer une fonction à chaque élément d'un
+tuple et d'obtenir un nouveau tuple qui contient les résultats.
+
+\todo{
+    1. Expliquer pourquoi on ne considère pas l'avenue des n-multifoncteurs.
+    2. Expliquer ce que ça nous donne d'avoir que les tuples sont des foncteurs.
+       En particulier, ça nous donne que transform(transform(xs, f), g) ==
+       transform(xs, g . f). Ça ouvre aussi la porte aux foncteurs applicatifs
+       et aux monades.
+}
+
+
+
+\begin{comment}
+Ensuite, supposons qu'on veut ordonner deux tuples. Quand est-ce que ça
+fait du sens de faire ça? Pour répondre à cette question, on commence
+par voir le tuple comme un array de variants. Ensuite, il suffit de faire
+une comparaison lexicographique standard sur cet array. Le problème devient
+donc de savoir comment on peut comparer deux variants. La nouvelle question
+se formule ainsi: Étant donné deux variants<T1, ..., Tn>, quand est-ce
+qu'il fait du sens d'ordonner ces variants. Pour nous faciliter la vie,
+on commence par réduire le problème en ne considérant que des variants
+binaires, c'est-à-dire des variants de la forme variant<T, U>. On ne perd
+aucune généralité parce qu'un variant n-aire variant<T1, ..., Tn> est
+équivalent à un variant binaire variant<T1, variant<T2, ..., Tn>>.
+La question est maintenant beaucoup plus simple: étant donné deux
+variants variant<T, U>, quand est-ce qu'il fait du sens de les comparer?
+Il se trouve que j'ai déjà la réponse dans Hana avec les cross-type
+operations!
+    >> Ok, pas certain qu'on veuille orderer les tuples comme des arrays de
+    >> variants. C'est peut-être mieux de juste les regarder comme des tuples
+    >> normaux.
+
+
+Ensuite, on peut faire le pont avec Hana en disant simplement que Hana
+considère qu'une fonction sur un variant connu au moment de la compilation
+n'est rien d'autre qu'une fonction overloadée, et que hana::_tuple est un
+array de variants qui est super optimisé pour les cas où on connaît
+ce qui est contenu dans chaque variant de l'array au moment de la
+compilation.
+\end{comment}
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%% Ici je patauge un peu %%%%%%%%%%%%%%%%%%%%%%%
-
-
 \begin{comment}
 Étant donné une collection de types généralisés $T_1, \hdots, T_n$,
 il est toujours possible de synthétiser un nouveau type généralisé
@@ -246,53 +346,4 @@ on est simplement de retour à traiter un simple foncteur F1. Après, il est
 facile de créer un wrapper tel que Wrapper(F1) est un foncteur uniquement
 isomorphe à F1, et on fait le wrapping/unwrapping automatiquement pour
 simplifier la job de l'utilisateur.
-
-
-%%%%%%%%%%%%%%%%%%%%%% Tentative 2 avec des variants
-On peut voir un tuple comme un array de taille fixe qui contient des variants.
-Dans le fond,
-
-    _tuple<T1, ..., Tn>
-
-est grosso-modo la même chose que
-
-    array<variant<T1, ..., Tn>, n>
-
-Quand on voit un tuple de cette manière, il fait tout à coup du sens de
-mapper une fonction sur le tuple; c'est la même chose que de mapper une
-fonction dont le domaine serait le variant sur l'array. Ainsi, un tuple
-peut être vu comme un Fonteur en considérant ...
-    >> S'assurer qu'un array de variant est bien un foncteur et trouver une
-    >> manière élégante de faire le lien avec un tuple.
-
-
-
-Ensuite, supposons qu'on veut ordonner deux tuples. Quand est-ce que ça
-fait du sens de faire ça? Pour répondre à cette question, on commence
-par voir le tuple comme un array de variants. Ensuite, il suffit de faire
-une comparaison lexicographique standard sur cet array. Le problème devient
-donc de savoir comment on peut comparer deux variants. La nouvelle question
-se formule ainsi: Étant donné deux variants<T1, ..., Tn>, quand est-ce
-qu'il fait du sens d'ordonner ces variants. Pour nous faciliter la vie,
-on commence par réduire le problème en ne considérant que des variants
-binaires, c'est-à-dire des variants de la forme variant<T, U>. On ne perd
-aucune généralité parce qu'un variant n-aire variant<T1, ..., Tn> est
-équivalent à un variant binaire variant<T1, variant<T2, ..., Tn>>.
-La question est maintenant beaucoup plus simple: étant donné deux
-variants variant<T, U>, quand est-ce qu'il fait du sens de les comparer?
-Il se trouve que j'ai déjà la réponse dans Hana avec les cross-type
-operations!
-    >> Ok, pas certain qu'on veuille orderer les tuples comme des arrays de
-    >> variants. C'est peut-être mieux de juste les regarder comme des tuples
-    >> normaux.
-
-
-Ensuite, on peut faire le pont avec Hana en disant simplement que Hana
-considère qu'une fonction sur un variant connu au moment de la compilation
-n'est rien d'autre qu'une fonction overloadée, et que hana::_tuple est un
-array de variants qui est super optimisé pour les cas où on connaît
-ce qui est contenu dans chaque variant de l'array au moment de la
-compilation.
-
-[attention: ça veut dire que tuple<int, char> a le même ``type'' que tuple<char, int>]
 \end{comment}
