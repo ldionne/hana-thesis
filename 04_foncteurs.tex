@@ -92,26 +92,18 @@ $F$. Cependant, le rôle de \icpp{transform} demande un peu plus de
 justification. On notera que l'ordre des paramètres de \icpp{transform} est
 fâcheux pour l'explication qui suit. C'est tout de même cet ordre qui est
 utilisé dans Hana parce qu'il est avantageux lorsqu'on veut passer une
-fonction anonyme C++ à \icpp{transform}. On commence donc par échanger
-l'ordre des paramètres de \icpp{transform} en considérant plutôt la
-fonction \icpp{transform_}:
-\begin{align*}
-    \icpp{transform_} : (T \to U) \times F(T) &\to F(U)     \\
-                           \icpp{(f, xs)}     &\mapsto \icpp{transform(xs, f)}
-\end{align*}
-
-Supposons maintenant que l'on ait une fonction $f : T \to U$. On peut
-appliquer partiellement $f$ à \icpp{transform_} pour obtenir la
-fonction
+fonction anonyme C++ à \icpp{transform}. Supposons que l'on ait une fonction
+$f : T \to U$. On peut appliquer partiellement $f$ à \icpp{transform} pour
+obtenir la fonction
 \[
-    \icpp{transform_(f)} : F(T) \to F(U)
+    \icpp{transform(-, f)} : F(T) \to F(U)
 \]
 
-On peut remarquer que \icpp{transform_(f)} possède la signature requise
+On peut remarquer que \icpp{transform(-, f)} possède la signature requise
 pour être l'image d'une flèche de Hana par le foncteur $F$. Dans la catégorie
 Hana, un foncteur $F$ envoie donc un type généralisé $T$ sur un nouveau type
 généralisé $U$, et une fonction $f : T \to U$ sur une nouvelle fonction
-$\icpp{transform_(f)} : F(T) \to F(U)$. Bien entendu, pour qu'il s'agisse
+$\icpp{transform(-, f)} : F(T) \to F(U)$. Bien entendu, pour qu'il s'agisse
 bien d'un foncteur, certaines propriétés doivent être respectées. D'abord,
 le foncteur doit respecter la loi de composition de Hana, i.e. pour toutes
 fonctions $f : A \to B$ et $g : B \to C$, on doit avoir que
@@ -119,7 +111,7 @@ $F(g \circ f) = F(g) \circ F(f)$.
 
 Dans Hana, ceci devient simplement
 \[
-    \icpp{transform_(g} \circ \icpp{f)} = \icpp{transform_(g)} \circ \icpp{transform_(f)},
+    \icpp{transform(-, g} \circ \icpp{f)} = \icpp{transform(-, g)} \circ \icpp{transform(-, f)},
 \]
 
 ce qui est équivalent à dire que pour tout \icpp{xs} de type généralisé $F(T)$,
@@ -132,7 +124,7 @@ $F(\id_T) = \id_{F(T)}$. Dans Hana, puisque l'identité est une fonction
 générique qui fonctionne sur tous les types généralisés, ceci se traduit
 simplement par
 \[
-    \icpp{transform_(id)} = \icpp{id},
+    \icpp{transform(-, id)} = \icpp{id},
 \]
 
 ce qui est équivalent à dire que pour tout \icpp{xs} de type généralisé $F(T)$,
@@ -145,8 +137,182 @@ Voyons maintenant comment certaines structures fournies par Hana peuvent
 
 
 \subsection{Le foncteur Maybe}
+En programmation, on est souvent amené à utiliser des fonctions qui peuvent
+échouer. Par exemple, lorsqu'on divise une quantité par une autre, il peut
+arriver que le dénominateur soit nul, auquel cas la division ne peut avoir
+lieu. Un autre exemple serait une fonction qui accède au n-ième élément
+d'une séquence; il peut arriver que la séquence contienne moins de $n$
+éléments, auquel cas la fonction ne peut pas retourner de résultat. Or,
+en programmation, il nous faut une manière de gérer ces éventualités. Un
+mécanisme classique pour y arriver est d'utiliser des exceptions. Cependant,
+un des désavantages des exceptions est qu'elles ne sont généralement pas
+encodées dans le type de la fonction qui peut les produire, et le fardeau
+de bien les gérer appartient donc au programmeur. Un autre problème majeur
+dans le contexte de la métaprogrammation est que les exceptions n'existent
+pas au moment de la compilation, et ce mécanisme nous est donc complètement
+inaccessible.
 
-\todo{Introduire le foncteur Maybe sur des types généralisés}
+Une autre manière de gérer la possibilité d'un échec est d'introduire la
+notion de valeur optionnelle. Essentiellement, une valeur optionnelle est
+une valeur qui peut être là ou ne pas y être, accompagnée d'un mécanisme
+pour savoir si la valeur est là ou non. Pour une valeur de type \icpp{T},
+on dénotera une valeur optionnelle de ce type par le type \icpp{Maybe(T)}.
+Une valeur optionnelle peut être créée de deux manières. D'abord, on peut
+créer une valeur optionnelle (qui existe) avec \icpp{just(x)}, où \icpp{x}
+est une valeur de type \icpp{T}. Ensuite, on peut créer une valeur optionnelle
+qui est vide avec \icpp{nothing}. Ainsi, alors qu'on pourrait écrire une
+fonction qui effectue une division comme:
+\begin{align*}
+    div : \mathbb{R} \times \mathbb{R} &\to \mathbb{R} \\
+           x, y &\mapsto x / y
+\end{align*}
+
+on pourrait aussi écrire une fonction qui effectue la division de manière
+sécuritaire en utilisant \icpp{Maybe}:
+\begin{align*}
+    safe\_div : \mathbb{R} \times \mathbb{R} &\to Maybe(\mathbb{R}) \\
+                 x, y &\mapsto  \begin{cases}
+                                    nothing \text{ si y = 0} \\
+                                    just(x / y) \text{ sinon}
+                                \end{cases}
+\end{align*}
+
+Pour l'instant, ceci ne nous est pas très utile parce que nous n'avons pas
+de façon d'extraire la valeur optionnelle lorsqu'elle existe. C'est le rôle
+de la fonction \icpp{from_just}, qui est définie par
+\begin{align*}
+    from\_just : Maybe(T) &\to T \\
+                 just(x) &\mapsto x \\
+                 nothing &\mapsto erreur
+\end{align*}
+
+Pour que ceci nous soit d'une quelconque utilité, il nous faut aussi une
+manière de savoir quand est-ce qu'une valeur optionnelle est vide ou pleine:
+\begin{align*}
+    is\_nothing : Maybe(T) &\to bool \\
+                 just(x) &\mapsto false \\
+                 nothing &\mapsto true
+\end{align*}
+
+On peut ensuite utiliser le résultat de \icpp{safe_div} comme suit:
+\begin{cpp}
+    auto maybe_result = safe_div(x, y);
+    if (!is_nothing(maybe_result)) {
+        auto result = from_just(maybe_result);
+        ...
+    }
+\end{cpp}
+
+On constate rapidement que le gain est plutôt faible par rapport à une
+solution où on vérifierait explicitement que \icpp{y != 0} et où l'on
+n'utiliserait pas de \icpp{Maybe}. En effet, il est quand même nécessaire
+de vérifier si la valeur optionnelle est vide ou pleine avant de pouvoir
+utiliser le résultat de la fonction (si résultat il y a). Ce qu'on aimerait
+est une manière de seulement spécifier le contenu de la branche (par exemple
+comme une fonction) et de soit appliquer la fonction au contenu du \icpp{Maybe},
+soit ne pas l'appliquer et avoir \icpp{nothing}. Mathématiquement, si la
+branche est représentée par une fonction
+\begin{align*}
+    f : A &\to B \\
+        x &\mapsto f(x)
+\end{align*}
+
+on aimerait (automatiquement) être capable de produire une fonction
+\begin{align*}
+    g : Maybe(A) &\to Maybe(B) \\
+        just(x) &\mapsto just(f(x)) \\
+        nothing &\mapsto nothing
+\end{align*}
+
+De cette manière, on pourrait simplement écrire
+\begin{cpp}
+    auto maybe_result = safe_div(x, y);
+    g(maybe_result);
+\end{cpp}
+
+Comme on pouvait s'en douter, nous venons de mettre le doigt sur un foncteur.
+En effet, étant donné un objet $A$ de la catégorie $Hana$, le foncteur $Maybe$
+envoie $A$ sur $Maybe(A)$. Ensuite, étant donné une flèche $f : A \to B$,
+$Maybe$ envoie $f$ sur
+\begin{align*}
+    transform(-, f) : Maybe(A) &\to Maybe(B)        \\
+                      just(x) &\mapsto just(f(x))   \\
+                      nothing &\mapsto nothing
+\end{align*}
+
+Afin de démontrer la fonctorialité de \icpp{Maybe}, commençons par regarder
+comment celui-ci est implémenté dans Hana. D'abord, on a \icpp{just} et
+\icpp{nothing}, qui représentent des valeurs optionnelles.
+\begin{cpp}
+    template <typename T>
+    struct _just { T value; };
+
+    auto just = [](auto x) {
+        return _just<decltype(x)>{x};
+    };
+
+    struct _nothing { };
+    _nothing nothing{};
+\end{cpp}
+
+Ensuite, on a la fonction \icpp{transform}, qui applique une fonction à une
+valeur optionnelle et qui retourne un résultat optionnel. On notera
+l'utilisation de l'\textit{overloading} dans l'implémentation:
+\begin{cpp}
+    template <typename T, typename F>
+    auto transform(_just<T> x, F f) {
+        return just(f(x.value));
+    }
+
+    template <typename F>
+    auto transform(_nothing, F) {
+        return nothing;
+    }
+\end{cpp}
+
+Si un \icpp{just(x)} est passé à \icpp{transform}, on applique la fonction
+\icpp{f} à \icpp{x} et on retourne le résultat comme un \icpp{Maybe}. Sinon,
+on retourne simplement \icpp{nothing}, puisqu'il n'y a pas de valeur à
+laquelle on pourrait appliquer \icpp{f}. Montrons maintenant que \icpp{Maybe}
+est un endofoncteur sur $Hana$. D'abord, on doit montrer que \icpp{transform}er
+une valeur optionnelle avec la fonction identité ne change pas cette valeur
+optionnelle. Soit donc $x \in Maybe(A)$ une valeur optionnelle de type $A$.
+Si $x$ est de la forme $just(v)$, alors
+\begin{cpp}
+    transform(x, id) == transform(just(v), id)
+                     == just(id(v))
+                     == just(v)
+                     == x
+\end{cpp}
+
+Si, au contraire, $x$ est un $nothing$, alors
+\begin{cpp}
+    transform(x, id) == transform(nothing, id)
+                     == nothing
+\end{cpp}
+
+ce qui montre que \icpp{transform(-, id) == id}. Ensuite, il faut montrer
+que la composition des fonctions est respectée par \icpp{transform}. Soit
+$x \in Maybe(A)$ une valeur optionnelle et $f : A \to B$ et $g : B \to C$
+des fonctions quelconques. Si $x$ est de la forme $just(v)$, alors
+\begin{cpp}
+    transform(x, compose(g, f)) == transform(just(v), compose(g, f))
+                                == just(compose(g, f)(v))
+                                == just(g(f(v)))
+\end{cpp}
+
+d'un autre côté, on a que
+\begin{cpp}
+    transform(transform(x, f), g) == transform(transform(just(v), f), g)
+                                  == transform(just(f(v)), g)
+                                  == just(g(f(v)))
+\end{cpp}
+
+ce qui montre l'égalité recherchée. Ainsi, $Maybe$ est bien un foncteur
+sur la catégorie $Hana$.
+
+\todo{Exemples d'utilisation. Pourquoi est-ce utile?}
+
 
 \subsection{Le foncteur Lazy}
 
