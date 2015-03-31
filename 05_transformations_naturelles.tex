@@ -5,13 +5,92 @@ direction, nous allons maintenant considérer ce que sont les transformations
 entre foncteurs. Ces transformations portent le nom de transformations
 naturelles et jouent un rôle fondamental en théorie des catégories.
 
-\todo{
-    Qu'est-ce qu'on veut dire par morphisme entre foncteurs?
-    Quelles propriétés est-ce qu'on veut? Introduire les transformations
-    naturelles de manière graduelle en faisant ce travail là. Ensuite
-    on peut donner la définition formelle. Diagrammes pour montrer
-    l'intuition.
-}
+Mais que veut-on dire exactement par transformation entre foncteurs?
+Étant donné deux foncteurs $F : \C \to \D$ et $G : \C \to \D$, on aimerait
+avoir une transformation ...
+
+\todo{Intuition. Comment arriver à la définition formelle graduellement?}
+
+\begin{définition}[Transformation naturelle]
+    Soit $\C$ et $\D$ deux catégories. Une transformation naturelle entre
+    deux foncteurs $F : \C \to \D$ et $G : \C \to \D$ est une application
+    $\eta : \ob(\C) \to \hom(\D)$ qui à chaque objet $X \in \ob(\C)$ associe
+    une flèche $\eta(X) : F(X) \to G(X) \in \hom(\D)$ telle que pour tout
+    objet $Y \in \ob(\C)$ et toute flèche $f : X \to Y \in \hom(\C)$, on a
+    \[
+        \eta(Y) \circ F(f) = G(f) \circ \eta(X)
+    \]
+
+    Pour dire que $\eta$ est une transformation naturelle entre $F$ et $G$,
+    on notera parfois $\eta : F \to G$. De plus, on appellera $\eta(X)$ la
+    composante de $\eta$ en $X$.
+\end{définition}
+
+On notera que dans la littérature, $\eta$ est aussi souvent présentée comme
+une famille de flèches qui à chaque objet $X \in \ob(\C)$ associe une flèche
+$\eta_X : F(X) \to G(X) \in \hom(\D)$. Les deux présentations sont
+évidemment équivalentes.
+
+Assurons-nous maintenant que l'égalité $\eta(Y) \circ F(f) = G(f) \circ \eta(X)$
+fait bien du sens. Du côté gauche, on a que $\eta(Y) : F(Y) \to G(Y)$ est une
+flèche de $\D$ et que $F(f) : F(X) \to F(Y)$ est aussi une flèche de $\D$.
+Ainsi, la composition de ces deux flèches fait du sens et nous donne une flèche
+$\eta(Y) \circ F(f) : F(X) \to G(Y)$ de $\D$. Du côté droit, on a que
+$G(f) : G(X) \to G(Y)$ est une flèche de $\D$ et que $\eta(X) : F(X) \to G(X)$
+est aussi une flèche de $\D$. Ainsi, la composition de ces deux flèches fait
+du sens et nous donne une flèche $G(f) \circ \eta(X) : F(X) \to G(Y)$ de $\D$.
+Si elle n'est pas très intuitive, l'égalité de ces deux expressions fait donc
+au moins du sens.
+
+Or, il existe une manière visuelle de se représenter cette équation qui nous
+aidera à en tirer un peu d'intuition. D'abord, on représente les catégories
+$\C$ et $\D$ ainsi que l'action des foncteurs $F : \C \to \D$ et $G : \C \to \D$
+sur deux objets quelconques $X,Y \in \ob(\C)$ et une flèche $f : X \to Y$.
+
+\todo{Compléter ce diagramme.}
+\begin{tikzpicture}
+    \draw (2,2) ellipse (1.5cm and 2cm); % Catégorie C
+    \draw (2,1) node {.}; % X
+    \draw (2,3) node {.}; % Y
+
+    \draw (8,2) ellipse (1.5cm and 2cm); % Catégorie D
+    \draw (7,1) node {.}; % F(X)
+    \draw (9,1) node {.}; % G(X)
+
+    \draw (7,3) node {.}; % F(Y)
+    \draw (9,3) node {.}; % G(Y)
+\end{tikzpicture}
+
+Ajoutons maintenant la représentation de $\eta$ appliquée à ces objets. On
+obtient
+
+\todo{Compléter ce diagramme.}
+\begin{tikzpicture}
+    \draw (2,2) ellipse (1.5cm and 2cm); % Catégorie C
+    \draw (2,1) node {.}; % X
+    \draw (2,3) node {.}; % Y
+
+    \draw (8,2) ellipse (1.5cm and 2cm); % Catégorie D
+    \draw (7,1) node {.}; % F(X)
+    \draw (9,1) node {.}; % G(X)
+
+    \draw (7,3) node {.}; % F(Y)
+    \draw (9,3) node {.}; % G(Y)
+\end{tikzpicture}
+
+L'équation $\eta(Y) \circ F(f) = G(f) \circ \eta(X)$ peut se lire comme
+``$\eta(Y)$ après $F(f)$ doit être égal à $G(f)$ après $\eta(X)$'', ce
+qui veut simplement dire que les chemins rouges et bleus doivent en fait
+donner le même résultat, et ce peut importe les $X$, $Y$ et $f$ considérés.
+Ainsi, l'équation présentée plus haut peut se réécrire sous une forme plus
+visuelle en affirmant que le diagramme suivant commute:
+
+\[
+\begin{tikzcd}
+    F(X) \arrow[d, "\eta(X)"'] \arrow[r, "F(f)"] & F(Y) \arrow[d, "\eta(Y)"] \\
+    G(X) \arrow[r, "G(f)"] & G(Y)
+\end{tikzcd}
+\]
 
 Pour aller de l'avant dans notre tentative de catégorifier autant que possible,
 nous remarquerons qu'il est possible de voir les transformations naturelles
@@ -24,9 +103,8 @@ mène à la définition suivante.
     des foncteurs entre $\C$ et $\D$, dont les objets sont les foncteurs
     (covariants) entre $\C$ et $\D$. De plus, pour deux objets $F$ et $G$ de
     la catégorie, l'ensemble des flèches $\hom(F, G)$ est l'ensemble des
-    transformations naturelles entre $F$ et $G$, qui, on se rappelle, sont
-    des foncteurs. Finalement, la loi de composition de la catégorie est
-    la composition usuelle de foncteurs.
+    transformations naturelles entre $F$ et $G$. Finalement, la loi de
+    composition de la catégorie est la composition usuelle de foncteurs.
 \end{définition}
 
 
