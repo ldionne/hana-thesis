@@ -12,33 +12,33 @@ avoir une transformation ...
 \todo{Intuition. Comment arriver à la définition formelle graduellement?}
 
 \begin{définition}[Transformation naturelle]
-    Soit $\C$ et $\D$ deux catégories. Une transformation naturelle entre
-    deux foncteurs $F : \C \to \D$ et $G : \C \to \D$ est une application
-    $\eta : \ob(\C) \to \hom(\D)$ qui à chaque objet $X \in \ob(\C)$ associe
-    une flèche $\eta(X) : F(X) \to G(X) \in \hom(\D)$ telle que pour tout
-    objet $Y \in \ob(\C)$ et toute flèche $f : X \to Y \in \hom(\C)$, on a
+    Soit $\C$ et $\D$ deux catégories. Une transformation naturelle
+    $\eta : F \to G$ entre deux foncteurs $F : \C \to \D$ et $G : \C \to \D$
+    est une famille de flèches qui à chaque objet $X \in \ob(\C)$ associe une
+    flèche $\eta_X : F(X) \to G(X) \in \hom(\D)$ telle que pour tout objet
+    $Y \in \ob(\C)$ et toute flèche $f : X \to Y \in \hom(\C)$, on a
     \[
-        \eta(Y) \circ F(f) = G(f) \circ \eta(X)
+        \eta_Y \circ F(f) = G(f) \circ \eta_X
     \]
-
-    Pour dire que $\eta$ est une transformation naturelle entre $F$ et $G$,
-    on notera parfois $\eta : F \to G$. De plus, on appellera $\eta(X)$ la
-    composante de $\eta$ en $X$.
 \end{définition}
 
-On notera que dans la littérature, $\eta$ est aussi souvent présentée comme
-une famille de flèches qui à chaque objet $X \in \ob(\C)$ associe une flèche
-$\eta_X : F(X) \to G(X) \in \hom(\D)$. Les deux présentations sont
-évidemment équivalentes.
+Le fait que $\eta$ soit une famille de flèches plutôt qu'une application
+peut sembler un peu déconcertant. Il suffit alors de se rappeler qu'une
+famille indexée n'est en fait qu'une fonction sous le couvert. Ainsi, on
+aurait aussi pu voir $\eta$ comme une application $\eta : \ob(\C) \to \hom(\D)$
+qui à chaque objet $X \in \ob(\C)$ associe une flèche
+$\eta(X) : F(X) \to G(X) \in \hom(\D)$. On préfère ici la notation indexée
+parce qu'elle est plus commune dans la littérature et qu'elle nous évite
+certaines difficultés de notation un peu plus loin.
 
-Assurons-nous maintenant que l'égalité $\eta(Y) \circ F(f) = G(f) \circ \eta(X)$
-fait bien du sens. Du côté gauche, on a que $\eta(Y) : F(Y) \to G(Y)$ est une
+Assurons-nous maintenant que l'égalité $\eta_Y \circ F(f) = G(f) \circ \eta_X$
+fait bien du sens. Du côté gauche, on a que $\eta_Y : F(Y) \to G(Y)$ est une
 flèche de $\D$ et que $F(f) : F(X) \to F(Y)$ est aussi une flèche de $\D$.
 Ainsi, la composition de ces deux flèches fait du sens et nous donne une flèche
-$\eta(Y) \circ F(f) : F(X) \to G(Y)$ de $\D$. Du côté droit, on a que
-$G(f) : G(X) \to G(Y)$ est une flèche de $\D$ et que $\eta(X) : F(X) \to G(X)$
+$\eta_Y \circ F(f) : F(X) \to G(Y)$ de $\D$. Du côté droit, on a que
+$G(f) : G(X) \to G(Y)$ est une flèche de $\D$ et que $\eta_X : F(X) \to G(X)$
 est aussi une flèche de $\D$. Ainsi, la composition de ces deux flèches fait
-du sens et nous donne une flèche $G(f) \circ \eta(X) : F(X) \to G(Y)$ de $\D$.
+du sens et nous donne une flèche $G(f) \circ \eta_X : F(X) \to G(Y)$ de $\D$.
 Si elle n'est pas très intuitive, l'égalité de ces deux expressions fait donc
 au moins du sens.
 
@@ -78,34 +78,36 @@ obtient
     \draw (9,3) node {.}; % G(Y)
 \end{tikzpicture}
 
-L'équation $\eta(Y) \circ F(f) = G(f) \circ \eta(X)$ peut se lire comme
-``$\eta(Y)$ après $F(f)$ doit être égal à $G(f)$ après $\eta(X)$'', ce
+L'équation $\eta_Y \circ F(f) = G(f) \circ \eta_X$ peut se lire comme
+``$\eta_Y$ après $F(f)$ doit être égal à $G(f)$ après $\eta_X$'', ce
 qui veut simplement dire que les chemins rouges et bleus doivent en fait
 donner le même résultat, et ce peut importe les $X$, $Y$ et $f$ considérés.
 Ainsi, l'équation présentée plus haut peut se réécrire sous une forme plus
 visuelle en affirmant que le diagramme suivant commute:
-
 \[
 \begin{tikzcd}
-    F(X) \arrow[d, "\eta(X)"'] \arrow[r, "F(f)"] & F(Y) \arrow[d, "\eta(Y)"] \\
+    F(X) \arrow[d, "\eta_X"'] \arrow[r, "F(f)"] & F(Y) \arrow[d, "\eta_Y"] \\
     G(X) \arrow[r, "G(f)"] & G(Y)
 \end{tikzcd}
 \]
 
-Pour aller de l'avant dans notre tentative de catégorifier autant que possible,
-nous remarquerons qu'il est possible de voir les transformations naturelles
-comme les flèches d'une catégorie bien spéciale. Il s'agit de la catégorie
-$Fun(\C, \D)$ des foncteurs entre deux catégories $\C$ et $\D$, ce qui nous
-mène à la définition suivante.
-
-\begin{définition}[Catégorie de foncteurs]
-    Soit $\C$ et $\D$ deux catégories. On appelle $Fun(\C, \D)$ la catégorie
-    des foncteurs entre $\C$ et $\D$, dont les objets sont les foncteurs
-    (covariants) entre $\C$ et $\D$. De plus, pour deux objets $F$ et $G$ de
-    la catégorie, l'ensemble des flèches $\hom(F, G)$ est l'ensemble des
-    transformations naturelles entre $F$ et $G$. Finalement, la loi de
-    composition de la catégorie est la composition usuelle de foncteurs.
-\end{définition}
-
-
 \subsection{Les transformations naturelles dans Hana}
+Dans Hana, un foncteur est un type généralisé paramétré et une flèche
+$f : X \to Y$ est une fonction d'un type généralisé $X$ vers un type
+généralisé $Y$. Ainsi, étant donné deux types généralisés paramétrés $F$
+et $G$ qui sont des foncteurs, une transformation naturelle sera une
+famille de fonctions qui à chaque type généralisé $X$ associe une fonction
+$\eta_X : F(X) \to G(X)$. De plus, la loi énoncée plus haut se traduit comme
+suit dans le langage de Hana: Pour tout type généralisé $Y$ et toute fonction
+$f : X \to Y$, on doit avoir
+\begin{cpp}
+    to<G(Y)> . transform(-, f) == transform(-, f) . to<G(X)>
+\end{cpp}
+
+Par exemple, qu'arriverait-il si on choisissait $F = \icpp{Maybe}$ et $G = \icpp{Tuple}$?
+On obtiendrait alors une transformation naturelle \icpp{to<Tuple(X)>} de
+type $Maybe(X) \to Tuple(X)$ qui devrait faire en sorte que pour tout type
+généralisé $Y$ et toute fonction $f : X \to Y$, on ait
+\begin{cpp}
+    to<Tuple(Y)> . transform(-, f) == transform(-, f) . to<Tuple(X)>
+\end{cpp}

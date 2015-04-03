@@ -40,9 +40,20 @@ pour des flèches $f : A \to B$ et $g : B \to C$ de $\C$,
     F(g \circ_\C f) = F(g) \circ_\D F(f)
 \]
 
-De manière similaire, on demandera que les flèches identité soient préservées
-par la transformation, c'est-à-dire que pour un objet $A$ de $\C$, on devra
-avoir
+Il est possible de visualiser cette équation sous la forme d'un diagramme.
+En effet, dire que cette équation est satisfaite est équivalent à dire que
+le diagramme suivant commute:
+\[
+\begin{tikzcd}
+    A \arrow[r, red, "f" black] \arrow[d, blue, "F" black] & B \arrow[r, red, "g" black] & C \arrow[d, red, "F" black] \\
+    F(A) \arrow[r, blue, "F(f)" black] & F(B) \arrow[r, blue, "F(g)" black] & F(C)
+\end{tikzcd}
+\]
+
+En d'autres mots, on souhaite que les chemins bleus et rouges donnent
+exactement la même réponse. Ensuite, au même titre qu'on souhaite que la loi
+de composition soit respectée, on demandera que les flèches identité soient
+préservées par un foncteur, c'est-à-dire que pour un objet $A$ de $\C$,
 \[
     F(id_A) = id_{F(A)}
 \]
@@ -65,11 +76,9 @@ Ceci nous mène à la définition formelle suivante:
 \end{définition}
 
 Lorsque le domaine et le codomaine d'un foncteur sont la même catégorie, i.e.
-lorsqu'on a un foncteur du type $F : \C \to \C$ pour une certaine catégorie
-$\C$, on dira parfois que $F$ est un \textit{endofoncteur}.
+lorsqu'on a un foncteur du type $F : \C \to \C$, on dira parfois que $F$ est
+un \textit{endofoncteur}.
 
-\todo{Intuition et diagramme commutatif pour expliquer le respect de la
-loi de composition}
 
 \subsection{Les foncteurs dans Hana}
 Dans le cadre de la bibliothèque Hana, on s'intéressera principalement aux
@@ -136,6 +145,7 @@ Voyons maintenant comment certaines structures fournies par Hana peuvent
 être vues comme des foncteurs.
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Le foncteur Maybe}
 En programmation, on est souvent amené à utiliser des fonctions qui peuvent
 échouer. Par exemple, lorsqu'on divise une quantité par une autre, il peut
@@ -311,12 +321,180 @@ d'un autre côté, on a que
 ce qui montre l'égalité recherchée. Ainsi, $Maybe$ est bien un foncteur
 sur la catégorie $Hana$.
 
-\todo{Exemples d'utilisation. Pourquoi est-ce utile?}
+\todo{Exemples d'utilisation. Pourquoi est-ce utile?
+Ça serait possible de mixer ça avec des calculs sur les types et la SFINAE.}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Le foncteur Tuple}
+Jusqu'ici, nous avons vu comment faire des calculs arithmétiques et des
+transformations sur des types au moment de la compilation. Nous avons aussi
+vu comment il est possible de représenter une valeur optionnelle à l'aide d'un
+foncteur, ce qui est particulièrement utile pour représenter le résultat
+d'une fonction qui peut échouer. Nous allons maintenant voir comment il est
+possible de manipuler des séquences d'objets, et comment la notion de foncteur
+peut nous aider à formaliser ceci.
+
+Étant donné une séquence d'objets $x_1, \hdots, x_n$ de type $X$ et une
+fonction $f : X \to Y$, il est fréquemment utile d'appliquer $f$ à chaque
+élément de la séquence pour obtenir une nouvelle séquence $f(x_1), \hdots, f(x_n)$.
+On aimerait donc formaliser ce \textit{pattern} puis le généraliser, si possible.
+Premièrement, il nous faut une séquence capable de contenir des objets d'un
+type généralisé $X$ quelconque. On notera que puisque des objets d'un même type
+généralisé n'ont pas forcément le même type C++, on ne peut pas utiliser une
+séquence conventionnelle comme \icpp{std::vector}. On devra en effet utiliser
+une séquence hétérogène capable de contenir des objets ayant différents types
+C++. La véritable construction dans Hana est assez complexe pour des raisons
+techniques, mais l'idée est essentiellement la suivante:
+\begin{cpp}
+    template <int i, typename T>
+    struct _element { T value; };
+
+    template <typename T1, ..., typename Tn>
+    struct _tuple : _element<0, T1>, ..., _element<n-1, Tn> {
+        // ... constructeur omis pour la simplicité
+    };
+
+    template <typename ...T>
+    _tuple<T...> make_tuple(T ...t) {
+        return {t...};
+    }
+\end{cpp}
+
+On utilise le type \icpp{_element<i, T>} pour stocker l'objet de type \icpp{T}
+situé à l'index \icpp{i} dans la séquence. On se donne aussi un peu de sucre
+syntaxique (\icpp{make_tuple}), qui nous permettra de construire des
+\icpp{_tuple} sans devoir spécifier le type de chacun des éléments.
+La raison pour laquelle on hérite de tous les \icpp{_element}s dans
+\icpp{_tuple} et que cela nous permet d'accéder à chaque élément individuel
+grâce à l'astuce suivante:
+\begin{cpp}
+    template <int i, typename T>
+    T get(_element<i, T> e) {
+        return e.value;
+    }
+
+    char y = get<3>(make_tuple('x', 'y', 'z'));
+\end{cpp}
+
+Puisque \icpp{_tuple} hérite de tous les \icpp{_element}s, il existe une
+conversion de \icpp{_tuple} vers n'importe laquelle de ses classes de base.
+Ensuite, puisqu'on fixe le \icpp{i} explicitement en appelant \icpp{get<i>},
+le compilateur constate que la seule signature possible pour \icpp{get} est
+\icpp{char get(_element<3, char>)}. Il suffit ensuite de retourner la valeur
+associée à cet élément. En bref, on a donc que
+\icpp{get<i>(make_tuple(x1, ..., xn)) == xi}.
+
+Étant donné une séquence d'objets $x_1, \hdots, x_n$ de type généralisé $X$,
+on dénotera par $Tuple(X)$ le type généralisé de \icpp{make_tuple(x1, ..., xn)}.
+De cette manière, on considérera $Tuple$ comme un type généralisé paramétré,
+où le paramètre représente le type généralisé des éléments que le $Tuple$
+contient. On notera en passant qu'il serait possible de stocker des éléments
+ayant des types généralisés différents au sein d'un même \icpp{_tuple}, puisque
+\icpp{_tuple} ne pose aucune restriction sur le type de ces éléments. Cependant,
+on restreindra notre étude aux \icpp{_tuple}s qui contiennent tous des éléments
+d'un même type généralisé, puisque c'est ceux-là qui nous donnent les propriétés
+les plus intéressantes.
+
+Nous sommes maintenant en mesure de formuler concrètement le problème initial
+qui était d'appliquer une fonction à chaque élément d'une séquence. Étant
+donné une fonction $f : X \to Y$ et une séquence \icpp{make_tuple(x1, ..., xn)}
+de type généralisé $Tuple(X)$, on aimerait obtenir une séquence
+\icpp{make_tuple(f(x1), ..., f(xn))} (de type généralisé $Tuple(Y)$).
+Voici comment on pourrait faire ceci:
+\begin{cpp}
+    template <typename T1, ..., typename Tn, typename F>
+    auto transform(_tuple<T1, ..., Tn> ts, F f) {
+        return make_tuple(f(get<0>(ts)), ..., f(get<n-1>(ts)));
+    }
+\end{cpp}
+
+Étant donné une séquence d'objets sous la forme d'un \icpp{_tuple}, on
+applique simplement \icpp{f} à chaque élément (extrait avec \icpp{get}),
+puis on retourne une nouvelle séquence qui contient le résultat. À ce
+point-ci, le foncteur caché sous le tapis devrait commencer à être évident.
+
+En effet, en tant que foncteur, \icpp{Tuple} associe à tout objet $X$ de $Hana$
+un nouvel objet $Tuple(X)$ représentant une séquence d'éléments de type $X$,
+et à toute flèche $f : X \to Y$ une nouvelle flèche $\icpp{transform(-, f)} :
+Tuple(X) \to Tuple(Y)$, qui consiste à appliquer $f$ à chaque élément d'une
+telle séquence.
+
+Démontrons maintenant que \icpp{Tuple} est bien un foncteur. D'abord, étant
+donné un objet quelconque \icpp{xs} de type généralisé \icpp{Tuple(X)},
+appliquer \icpp{transform} à \icpp{xs} et la fonction identité sur $X$
+ne change pas \icpp{xs} du tout. En effet, en supposant que \icpp{xs}
+contienne $n$ éléments, on a alors
+\begin{cpp}
+    transform(xs, id) == make_tuple(id(get<0>(xs)), ..., id(get<n-1>(xs)))
+                      == make_tuple(get<0>(xs), ..., get<n-1>(xs))
+                      == xs
+\end{cpp}
+
+Ainsi, on a bien que \icpp{transform(-, id) == id}, et \icpp{Tuple} respecte
+donc les flèches identités. Il reste à montrer que \icpp{Tuple} respecte la
+loi de composition, c'est-à-dire que pour toutes fonctions $f : X \to Y$ et
+$g : Y \to Z$, on a
+\begin{cpp}
+    transform(transform(xs, f), g) == transform(xs, compose(g, f))
+\end{cpp}
+
+Or, on trouve facilement que
+\begin{cpp}
+    transform(transform(xs, f), g)
+        == transform(make_tuple(f(get<0>(xs)), ..., f(get<n-1>(xs))), g)
+        == make_tuple(g(f(get<0>(xs))), ..., g(f(get<n-1>(xs))))
+        == make_tuple(compose(g, f)(get<0>(xs)), ..., compose(g, f)(get<n-1>(xs)))
+        == transform(xs, compose(g, f))
+\end{cpp}
+
+ce qui montre que la loi de composition est bien respectée. Le fait d'exiger
+que \icpp{Tuple} soit un foncteur est bien plus qu'un simple caprice de
+mathématicien. En effet, exiger que la composition soit respectée par
+\icpp{transform} permet de faire des optimisations pour éliminer des
+structures temporaires inutiles. Par exemple, lorsque l'on applique
+\begin{cpp}
+    transform(transform(xs, f), g)
+\end{cpp}
+
+alors un \icpp{_tuple} intermédiaire qui contient \icpp{transform(xs, f)} doit
+être créé, puis envoyé aux deuxième \icpp{transform}. Si les objets retournés
+par \icpp{f} sont coûteux à copier, ceci peut représenter un problème. Or, la
+loi des foncteurs nous dit qu'on peut réécrire cette ligne comme
+\icpp{transform(xs, compose(g, f))}, qui ne crée pas de structure
+temporaire inutile.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Sections optionnelles
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{comment}
 \subsection{Le foncteur Lazy}
+Une propriété intéressante de certains langages de programmation fonctionnelle
+est l'évaluation paresseuse. L'évaluation paresseuse est le principe selon
+lequel la valeur d'une expression n'est pas calculée tant que celle-ci n'est
+pas utilisée. Par exemple, en C++, si on écrit
+\begin{cpp}
 
-\todo{Introduire le foncteur Lazy sur des types généralisés}
+\end{cpp}
+
+alors xyz est toujours calculée, même si elle n'est en fait pas utilisée. Au
+contraire, en Haskell, lorsqu'on écrit
+\begin{minted}{haskell}
+
+\end{minted}
+
+alors xyz n'est jamais appelée, puisque son résultat n'est jamais utilisé.
+La capacité de contrôler quand une expression est évaluée peut être une chose
+très importante, par exemple lorsqu'on désire implémenter un langage dédié
+dans lequel il y a une notion de branchement. En effet, il sera alors
+nécessaire de contrôler laquelle des deux branches est évaluée, et quand
+celle-ci est évaluée. Bien que le C++ ne permette pas ce genre de contrôle
+de manière native, il est possible de créer une couche d'abstraction qui
+permet d'émuler l'évaluation paresseuse. De plus, comme nous le verrons
+ici, cette abstraction aura des qualités fonctorielles (et même bien plus).
+
 
 \subsection{Le foncteur Type}
 
@@ -326,190 +504,4 @@ sur la catégorie $Hana$.
     que tout ce qui peut être fait dans MPL peut être fait dans Hana.
 }
 
-
-\subsection{Le foncteur Tuple}
-Un tuple peut être vu comme un foncteur d'au moins deux manières. D'abord,
-on peut voir un tuple à deux éléments comme un foncteur de la manière suivante.
-On commence par fixer le type d'un des deux éléments du tuple. On a donc un
-type partiellement formé $(A, -)$ qu'on pourrait ensuite appliquer à un
-deuxième type $B$ pour obtenir $(A, B)$. Ensuite, étant donné une fonction
-$f : B \to C$, on peut donner la fonction
-\begin{align*}
-    snd(f) : (A, B) &\to (A, C)             \\
-             (a, b) &\mapsto (a, f(b))
-\end{align*}
-
-Ainsi, on peut voir le type partiellement formé $(A, -)$ comme un foncteur,
-qui associe à tout type $B$ le type $(A, B)$ et à toute fonction $f : B \to C$
-la fonction $snd(f) : (A, B) \to (A, C)$. Il est facile de vérifier que les
-propriétés d'un foncteur sont respectées. Cette manière de voir les tuples
-a son utilité, mais Hana les voit d'une autre manière qui est plus utile à
-des fins de métaprogrammation. On aimerait voir un tuple comme une séquence
-de taille fixe contenant des éléments d'un certain type $T$, qui est indéterminé
-pour l'instant. Puisqu'on aurait une séquence homogène contenant des éléments
-de type $T$, il serait possible d'appliquer une fonction (dont le domaine est
-$T$) à chaque élément de la séquence pour d'obtenir une nouvelle séquence
-contenant les résultats. En tant que foncteur, une telle séquence pourrait
-donc associer à tout objet $A$ de $Hana$ un nouvel objet $[A]$ représentant
-une séquence d'éléments de type $A$, et à toute flèche $f : A \to B$ une
-nouvelle flèche $\icpp{transform(-, f)} : [A] \to [B]$, qui consisterait à
-appliquer $f$ à chaque élément d'une séquence, ce qui constitue une opération
-très utile en programmation. Notre but est donc de trouver une manière
-mathématiquement rigoureuse d'inscrire la notion de tuple dans cette notion
-de foncteur, que nous savons à la fois productive, utile pour raisonner à
-propos des programmes et intuitive pour les habitués de la métaprogrammation.
-
-Pour comprendre comment Hana s'y prend, on peut se poser la question suivante.
-Étant donné un tuple $(T_1, \hdots, T_n)$ et une fonction $f$ dont le domaine
-n'est pas encore fixé, quel devrait être le domaine de $f$ pour qu'elle puisse
-être appliquée à tous les éléments du tuple? Il va sans dire que ce domaine
-devrait être au moins aussi général que les types de tous les éléments du
-tuple, sans quoi l'application de $f$ à certains éléments serait mal définie.
-Cependant, un domaine trop général --- par exemple l'ensemble de tous les types
-possibles --- ne donnerait pas assez d'information à la fonction pour qu'elle
-puisse manipuler ses entrées de manière utile. Le but serait donc de déterminer
-le domaine le plus spécifique --- donc fournissant le plus d'information sur
-les éléments du tuple --- qui serait au moins aussi général que tous les types
-du tuple. Or, puisque nous travaillons avec des tuples de taille finie, ce type
-est facile à spécifier; il s'agit simplement de l'union des types du tuple,
-qu'on appelle généralement \icpp{variant} en C++. Ainsi, étant donné un tuple
-$(T_1, \hdots, T_n)$, le domaine le plus spécifique de $f$ devrait simplement
-être $\bigcup_{k=1}^n T_k$! Dans Hana, à des fins de fonctorialité, on
-considérera donc un tuple \icpp{Tuple(T1, ..., Tn)} comme un tableau de
-taille fixe contenant des éléments d'un type \icpp{variant}, c'est-à-dire
-\icpp{array<variant<T1, ..., Tn>, n>}. Pour appliquer une fonction à chaque
-élément d'une telle séquence, on devra définir une fonction dont le domaine
-est l'union de tous les $T_k$. Or, il se trouve que le C++ fournit un outil
-très commode pour définir de telles fonctions; il s'agit de
-l'\textit{overloading}.
-
-\todo{
-    Exemples d'utilisation et justifier rigoureusement le fait qu'on ne prend
-    pas un variant<...> dans la fonction.
-}
-
-Bien entendu, cette vision des choses n'est pas parfaite. En effet, elle
-nous fait perdre certaines propriétés très utiles des tuples, mais nous en
-fait gagner d'autres. D'abord, à des fins de fonctorialité, les types
-\icpp{Tuple(T1, T2, ..., Tn)} et \icpp{Tuple(T2, T1, ..., Tn)} sont
-équivalents, puisqu'on les interprète tous deux comme
-\icpp{array<variant<T1, T2, ..., Tn>, n>}. On a donc perdu l'information du
-type de l'objet qui se trouve à un index donné. De plus, on a aussi perdu
-l'information du nombre de types différents dans un tuple. En effet, les
-types \icpp{Tuple(T, U)} et \icpp{Tuple(U, T)} sont maintenant tous les
-deux vus comme des \icpp{array<variant<T, U>, 2>}. Cependant, il est
-maintenant possible d'appliquer une fonction à chaque élément d'un
-tuple et d'obtenir un nouveau tuple qui contient les résultats.
-
-\todo{
-    1. Expliquer pourquoi on ne considère pas l'avenue des n-multifoncteurs.
-    2. Expliquer ce que ça nous donne d'avoir que les tuples sont des foncteurs.
-       En particulier, ça nous donne que transform(transform(xs, f), g) ==
-       transform(xs, g . f). Ça ouvre aussi la porte aux foncteurs applicatifs
-       et aux monades.
-}
-
-
-
-\begin{comment}
-Ensuite, supposons qu'on veut ordonner deux tuples. Quand est-ce que ça
-fait du sens de faire ça? Pour répondre à cette question, on commence
-par voir le tuple comme un array de variants. Ensuite, il suffit de faire
-une comparaison lexicographique standard sur cet array. Le problème devient
-donc de savoir comment on peut comparer deux variants. La nouvelle question
-se formule ainsi: Étant donné deux variants<T1, ..., Tn>, quand est-ce
-qu'il fait du sens d'ordonner ces variants. Pour nous faciliter la vie,
-on commence par réduire le problème en ne considérant que des variants
-binaires, c'est-à-dire des variants de la forme variant<T, U>. On ne perd
-aucune généralité parce qu'un variant n-aire variant<T1, ..., Tn> est
-équivalent à un variant binaire variant<T1, variant<T2, ..., Tn>>.
-La question est maintenant beaucoup plus simple: étant donné deux
-variants variant<T, U>, quand est-ce qu'il fait du sens de les comparer?
-Il se trouve que j'ai déjà la réponse dans Hana avec les cross-type
-operations!
-    >> Ok, pas certain qu'on veuille orderer les tuples comme des arrays de
-    >> variants. C'est peut-être mieux de juste les regarder comme des tuples
-    >> normaux.
-
-
-Ensuite, on peut faire le pont avec Hana en disant simplement que Hana
-considère qu'une fonction sur un variant connu au moment de la compilation
-n'est rien d'autre qu'une fonction overloadée, et que hana::_tuple est un
-array de variants qui est super optimisé pour les cas où on connaît
-ce qui est contenu dans chaque variant de l'array au moment de la
-compilation.
-\end{comment}
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%% Ici je patauge un peu %%%%%%%%%%%%%%%%%%%%%%%
-\begin{comment}
-Étant donné une collection de types généralisés $T_1, \hdots, T_n$,
-il est toujours possible de synthétiser un nouveau type généralisé
-$Common(T_1, \hdots, T_n)$ qu'on peut voir comme ``la plus petite
-généralisation'' des types $T_1, \hdots, T_n$. Puisque l'interface
-d'un type généralisé est représenté dans Hana par l'ensemble des
-concepts dont ce type est un modèle, on aimerait donc que ce nouveau
-type $Common(T_1, \hdots, T_n)$ possède l'interface qui est commun à
-tous les $T_k$. En d'autres mots, l'ensemble des concepts dont le type
-$Common(T_1, \hdots, T_n)$ est un modèle est:
-\[
-    Concepts(Common(T_1, \hdots, T_n)) := \bigcap_{k=1}^n Concepts(T_k)
-\]
-
-De plus, il est très facile de représenter le type généralisé
-$Common(T_1, \hdots, T_n)$ en C++. Nous n'avons qu'à utiliser
-les \textit{templates}:
-\begin{cpp}
-    template <typename ...Tn>
-    struct Common { };
-\end{cpp}
-
-De cette manière, étant donné des types généralisés \icpp{T1}, ..., \icpp{Tn},
-leur plus petite généralisation est représentée par le nouveau type généralisé
-\icpp{Common<T1, ..., Tn>}. Ensuite, étant donné des objets $x_1, \hdots, x_n$
-de types généralisés $T_1, \hdots, T_n$, il est facile de créer une nouvelle
-séquence d'objets $y_1, \hdots y_n$ qui ont tous le même type généralisé
-$Common(T_1, \hdots, T_n)$. Encore une fois, le truc est d'utiliser les
-\textit{templates}:
-\begin{cpp}
-    template <typename X, typename ...Tn>
-    struct wrapper {
-        X value;
-        struct hana { using datatype = Common<Tn...>; };
-    };
-\end{cpp}
-
-On aura alors que
-\begin{cpp}
-    y_k = wrapper<decltype(x_k), T1, ..., Tn>{x_k}
-\end{cpp}
-
-
-%%%%%%%%%%%%%%%%% Tentative 1 avec des wrappers
-Quand tu te crées un tuple, on prend le Common de tous les types que tu mets dedans.
-Ensuite, on wrap tous tes objets dans wrapper<...>. Vu que c'est de la marde de recevoir
-des wrapper<...>, on t'envoie le wrapper<...>.value au lieu dans toutes tes méthodes.
-C'est OK de faire ça, parce que pour chaque objet x, l'instance d'un concept
-C par wrapper est isomorphe avec l'instance du concept C pour x. L'isomorphisme
-est unique (wrapper<...>{x} <-> wrapper<...>{x}.value). Attention: pour mieux
-comprendre ceci, il faudrait considérer qu'on envoie des wrapper<...> à nos
-fonctions et qu'elle ne sont pas capable de les unwrapper, juste d'utiliser
-les instances que le wrapper fournit.
-
-HMMM, attention. Dans la réalité, les fonctions qui manipuleraient des Wrappers
-ne pourraient pas utiliser le .value, juste le wrapper lui-même. Ça serait OK
-parce que de toute façon le wrapper fournit exactement les modèles qui sont
-possible de provider. Cependant, qu'est-ce qui prouve que le fait d'accéder
-au .value préserve ces modèles exactement??? Il faut que le modèle qui est
-implémenté par le wrapper soit uniquement isomorphe au modèle du .value (? vérifier).
-Par le fait même, ceci requiert que tous les modèles tes T1, ..., Tn soient
-uniquement isomorphes.
-
-Étant donné des foncteurs F1 et F2, s'il existe un unique iso de foncteurs
-entre F1 et F2, alors on peut réduire F1 et F2 à (disons) F1 SPDG. Ensuite,
-on est simplement de retour à traiter un simple foncteur F1. Après, il est
-facile de créer un wrapper tel que Wrapper(F1) est un foncteur uniquement
-isomorphe à F1, et on fait le wrapping/unwrapping automatiquement pour
-simplifier la job de l'utilisateur.
 \end{comment}

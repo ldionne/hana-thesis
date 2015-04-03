@@ -153,10 +153,6 @@ petite dose d'imagination.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{La catégorie Hask}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{La catégorie Hana}
 La catégorie Hana est définie de manière similaire à Hask, mais les types
 sont remplacés par la notion plus générale de type généralisé présentée
@@ -206,7 +202,7 @@ $Z$ sont des types généralisés. On peut définir la composition par
     };
 \end{cpp}
 
-Ainsi, `compose<X, Y, Z>` peut être appelée avec n'importe quelle fonctions
+Ainsi, \icpp{compose<X, Y, Z>} peut être appelée avec n'importe quelle fonctions
 $f$ et $g$, mais celles dont les domaines et codomaines ne coïncident pas
 avec \icpp{X}, \icpp{Y} et \icpp{Z} résulteront en une erreur de compilation.
 Dans la réalité, il est trop répétitif de préciser les types $X$, $Y$ et $Z$

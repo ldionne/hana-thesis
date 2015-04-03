@@ -1,2 +1,54 @@
 \section{Les monades}
 
+\todo{Introduction avec un peu d'intuition; on s'en va tranquillement vers
+la définition formelle.}
+
+\begin{définition}[Monade]
+    Soit $\C$ une catégorie et $I_\C : \C \to \C$ le foncteur identité sur
+    $\C$. Une monade est un endofoncteur $F : \C \to \C$ accompagné de deux
+    transformation naturelles $\eta : I_\C \to F$ et $\mu : F \circ F \to F$
+    telles que pour tout objet $X \in \ob(\C)$ et toute flèche
+    $f : X \to Y \in \hom(\C)$,
+    \begin{enumerate}
+        \item $\mu_X \circ F(\mu_X) = \mu_X \circ \mu_{F(X)}$
+        \item $\mu_X \circ F(\eta_X) = \mu_X \circ \eta_{F(X)} = id_{F(X)}$
+        \item $\eta \circ f = F(f) \circ \eta$
+        \item $\mu \circ F(F(f)) = F(f) \circ \mu$
+    \end{enumerate}
+\end{définition}
+
+Pour déchiffrer cette définition un peu opaque, commençons par donner un nom
+plus descriptif aux transformations naturelles $\eta$ et $\mu$. Puisque $\eta$
+associe à tout objet $X \in \ob(\C)$ une flèche $\eta_X : I_\C(X) = X \to F(X)$,
+on l'appellera $lift$. L'intuition est que $lift$ sert à prendre un objet de
+$\C$ pour le ``monter'' dans le foncteur $F$. Ensuite, puisque $\mu$ associe
+à tout objet $X \in \ob(\C)$ une flèche $\mu_X : F(F(X)) \to F(X)$, on
+l'appellera $flatten$. Ici, l'intuition est que $flatten$ prend un objet
+qui est appliqué deux fois à un foncteur et qu'il élimine, ou écrase, un
+niveau de fonctorialité.
+
+\todo{Je dois présenter un exemple de Monade dans Hana, puis déchiffrer les
+lois à l'aide de cet exemple. Sinon, c'est pas intéressant.}
+
+En reformulant la définition d'une monade de cette manière, on obtient que
+les deux transformations naturelles doivent respecter les équations suivantes:
+\begin{enumerate}
+    \item $flatten_X \circ F(flatten_X) = flatten_X \circ flatten_{F(X)}$\\
+    Du côté gauche, on a que $flatten_X$ est une flèche de type $F(F(X)) \to F(X)$,
+    et donc $F(flatten_X)$ est une flèche de type $F(F(F(X))) \to F(F(X))$. Ainsi,
+    la composition $flatten_X \circ F(flatten_X)$ fait du sens et nous donne une
+    flèche de type $F(F(F(X))) \to F(X)$. Notons que cette flèche fait bien
+    partie de la catégorie $\C$, puisque $F$ est un endofoncteur. Du côté
+    droit, on a $flatten_X \circ flatten_{F(X)}$, ce qui nous donne une flèche
+    de type $F(F(F(X))) \to F(X)$. L'équation fait donc bien du sens.
+    Intuitivement, cette équation représente le fait que \todo{intuition}
+
+    \item $flatten_X \circ F(lift_X) = flatten_X \circ lift_{F(X)} = id_{F(X)}$\\
+    Du côté gauche, on a $flatten_X : F(F(X)) \to F(X)$ et
+    $F(lift_{X}) : F(X) \to F(F(X))$. La composition donne donc une flèche
+    $flatten_X \circ F(lift_X) : F(X) \to F(X)$.
+
+    Du côté droit, on a $flatten_X : F(F(X)) \to F(X)$ et
+    $lift_{F(X)} : F(X) \to F(F(X))$. La composition donne donc aussi une
+    flèche $F(X) \to F(X)$.
+\end{enumerate}
