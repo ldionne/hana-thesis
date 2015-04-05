@@ -91,23 +91,130 @@ visuelle en affirmant que le diagramme suivant commute:
 \end{tikzcd}
 \]
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Les transformations naturelles dans Hana}
 Dans Hana, un foncteur est un type généralisé paramétré et une flèche
-$f : X \to Y$ est une fonction d'un type généralisé $X$ vers un type
-généralisé $Y$. Ainsi, étant donné deux types généralisés paramétrés $F$
-et $G$ qui sont des foncteurs, une transformation naturelle sera une
-famille de fonctions qui à chaque type généralisé $X$ associe une fonction
-$\eta_X : F(X) \to G(X)$. De plus, la loi énoncée plus haut se traduit comme
-suit dans le langage de Hana: Pour tout type généralisé $Y$ et toute fonction
-$f : X \to Y$, on doit avoir
+$f : X \to Y$ est une fonction d'un type généralisé \icpp{X} vers un type
+généralisé \icpp{Y}. Ainsi, étant donné deux types généralisés paramétrés
+\icpp{F} et \icpp{G} qui sont des foncteurs, une transformation naturelle
+$\icpp{nat} : \icpp{F} \to \icpp{G}$ sera une famille de fonctions qui à
+chaque type généralisé \icpp{X} associe une fonction
+$\icpp{nat<X>} : \icpp{F(X)} \to \icpp{G(X)}$. De plus, la loi
+énoncée plus haut se traduit dans le langage de Hana en disant que pour tout
+type généralisé \icpp{Y} et toute fonction $\icpp{f} : \icpp{X} \to \icpp{Y}$,
+on doit avoir
 \begin{cpp}
-    to<G(Y)> . transform(-, f) == transform(-, f) . to<G(X)>
+    compose(nat<Y>, transform(-, f)) == compose(transform(-, f), nat<X>)
 \end{cpp}
 
-Par exemple, qu'arriverait-il si on choisissait $F = \icpp{Maybe}$ et $G = \icpp{Tuple}$?
-On obtiendrait alors une transformation naturelle \icpp{to<Tuple(X)>} de
-type $Maybe(X) \to Tuple(X)$ qui devrait faire en sorte que pour tout type
-généralisé $Y$ et toute fonction $f : X \to Y$, on ait
+Par exemple, essayons d'écrire une fonction qui serait une transformation
+naturelle du foncteur \icpp{Maybe} vers le foncteur \icpp{Tuple}. On cherche
+donc une famille de fonctions qui à chaque type généralisé \icpp{X} associe
+une fonction $\icpp{toTuple<X>} : \icpp{Maybe(X)} \to \icpp{Tuple(X)}$. La
+définition la plus évidente d'une telle fonction serait
+\begin{align*}
+    \icpp{toTuple<X>} : \icpp{Maybe(X)} &\to \icpp{Tuple(X)} \\
+                        \icpp{just(x)} &\mapsto \icpp{make_tuple(x)} \\
+                        \icpp{nothing} &\mapsto \icpp{make_tuple()}
+\end{align*}
+
+ce qui se traduit dans Hana par
 \begin{cpp}
-    to<Tuple(Y)> . transform(-, f) == transform(-, f) . to<Tuple(X)>
+    template <typename X, typename T>
+    auto toTuple(_just<T> j) {
+        return make_tuple(from_just(j));
+    }
+
+    template <typename X>
+    auto toTuple(_nothing) {
+        return make_tuple();
+    }
 \end{cpp}
+
+A-t-on vraiment une transformation naturelle? Si c'est le cas, on devrait
+avoir que pour tout type généralisé \icpp{Y} et toute fonction
+$\icpp{f} : \icpp{X} \to \icpp{Y}$,
+\begin{cpp}
+    compose(toTuple<Y>, transform(-, f)) == compose(transform(-, f), toTuple<X>)
+\end{cpp}
+
+ce qui est équivalent à dire que pour tout objet \icpp{m} de type généralisé
+\icpp{Maybe(X)},
+\begin{cpp}
+    toTuple<Y>(transform(m, f)) == transform(toTuple<X>(m), f)
+\end{cpp}
+
+Énoncé de cette manière, il est assez évident que c'est le cas. En effet, si
+\icpp{m} est un \icpp{just(x)}, alors
+\begin{cpp}
+    toTuple<Y>(transform(just(x), f)) == toTuple<Y>(just(f(x)))
+                                      == make_tuple(f(x))
+                                      == transform(make_tuple(x), f)
+                                      == transform(toTuple<X>(just(x)), f)
+\end{cpp}
+
+De manière similaire, si \icpp{m} est un \icpp{nothing}, alors
+\begin{cpp}
+    toTuple<Y>(transform(nothing, f)) == toTuple<Y>(nothing)
+                                      == make_tuple()
+                                      == transform(make_tuple(), f)
+                                      == transform(toTuple<X>(nothing), f)
+\end{cpp}
+
+et \icpp{toTuple} est donc bien une transformation naturelle. Cependant, cette
+définition n'est pas la seule qui permette à \icpp{toTuple} d'être une
+transformation naturelle. En effet, on aurait aussi pu considérer
+\begin{cpp}
+    template <typename X, typename T>
+    auto toTuple2(_just<T> j) {
+        return make_tuple(from_just(j), from_just(j));
+    }
+
+    template <typename X>
+    auto toTuple2(_nothing) {
+        return make_tuple();
+    }
+\end{cpp}
+
+Ici, la différence est que l'on crée un tuple avec deux copies du même élément
+lorsqu'on a un \icpp{just(x)}. Il est facile de voir que c'est une
+transformation naturelle. En effet, on a
+\begin{cpp}
+    toTuple2<Y>(transform(just(x), f)) == toTuple2<Y>(just(f(x)))
+                                       == make_tuple(f(x), f(x))
+                                       == transform(make_tuple(x, x), f)
+                                       == transform(toTuple2<X>(just(x)), f)
+\end{cpp}
+
+Ceci est en fait une manifestation du résultat plus général suivant.
+\begin{théorème}
+    Soit $F,G,H : \C \to \D$ des foncteurs et $\alpha : F \to G$, $\beta : G \to H$
+    des transformations naturelles. Alors la famille de flèches $\beta \circ \alpha$
+    définie par $(\beta \circ \alpha)_X = \beta_X \circ \alpha_X$ est une
+    transformation naturelle $F \to H$. En d'autres mots, la composition de
+    deux transformations naturelles est une transformation naturelle.
+\end{théorème}
+\begin{proof}
+    Soit $X, Y \in \ob(\C)$ des objets de $\C$ et $f : X \to Y \in \hom(\C)$
+    une flèche de $\C$. Premièrement, $\beta_X \circ \alpha_X$ est bien une
+    flèche $F(X) \to H(X)$, puisque $\alpha_X$ est une flèche $F(X) \to G(X)$
+    et $\beta_X$ est une flèche $G(X) \to H(X)$. Ensuite, on a
+    \begin{align*}
+        (\beta \circ \alpha)_Y \circ F(f)
+            &= (\beta_Y \circ \alpha_Y) \circ F(f)                          \\
+            &= \beta_Y \circ (G(f) \circ \alpha_X)                          \\
+            &= (H(f) \circ \beta_X) \circ \alpha_X                          \\
+            &= H(f) \circ (\beta \circ \alpha)_X
+    \end{align*}
+
+    ce qui montre que $\beta \circ \alpha$ est naturelle.
+\end{proof}
+
+Dans l'exemple plus haut, \icpp{toTuple2} était simplement la composition
+de la transformation naturelle \icpp{toTuple} définie plus haut avec la
+transformation naturelle \icpp{twice} définie par
+\begin{align*}
+    \icpp{twice<X>} : \icpp{Tuple(X)} &\to \icpp{Tuple(X)} \\
+                      \icpp{make_tuple(x1, ..., xn)} &\mapsto \icpp{make_tuple(x1, ..., xn, x1, ..., xn)}
+\end{align*}
