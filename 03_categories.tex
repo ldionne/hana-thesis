@@ -154,21 +154,24 @@ petite dose d'imagination.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{La catégorie Hana}
-La catégorie Hana est définie de manière similaire à Hask, mais les types
-sont remplacés par la notion plus générale de type généralisé présentée
-précédemment. En particulier, les objets de Hana sont les types généralisés:
+Il est possible de représenter l'univers dans lequel on évolue en
+métaprogrammation à l'aide d'une catégorie. Ceci nous permettra
+d'importer des concepts de la théorie des catégories vers la
+métaprogrammation. Précisément,la catégorie Hana est la catégorie dont les
+objets sont l'ensemble des types généralisés:
 \[
-    \ob(Hana) := \{ T \suchthat \text{T est un type généralisé} \}
+    \ob(Hana) := \{ \icpp{T} \, \suchthat \text{\icpp{T} est un type généralisé} \}
 \]
 
-Les flèches de Hana sont les fonctions génériques qui travaillent sur des
-objets ayant un certain type généralisé, et ce peu importe le type réel de ces
-objets. Plus précisément, soit $X, Y \in \ob(Hana)$, c'est-à-dire que $X$ et $Y$
-sont deux types généralisés. Une flèche $f : X \to Y$ est un objet C++, disons
-\icpp{f}, avec un \icpp{operator()} tel que $\forall x \in X$,
+Ensuite, les flèches de Hana sont les fonctions génériques qui travaillent sur
+des objets ayant un certain type généralisé, et ce peu importe leur type réel.
+Plus précisément, soit $\icpp{X}, \icpp{Y} \in \ob(Hana)$, c'est-à-dire que
+\icpp{X} et \icpp{X} sont deux types généralisés. Une flèche
+$\icpp{f} : \icpp{X} \to \icpp{Y}$ est un objet C++ avec un \icpp{operator()}
+tel que $\forall \icpp{x} \in \icpp{X}$,
 \begin{enumerate}
     \item l'expression \icpp{f(x)} est bien formée, c'est-à-dire qu'elle compile
-    \item ${\tt f(x)} \in Y$, c'est-à-dire que le type généralisé de l'expression \icpp{f(x)} est $Y$
+    \item $\icpp{f(x)} \in \icpp{Y}$, c'est-à-dire que le type généralisé de l'expression \icpp{f(x)} est \icpp{Y}
     \item l'expression \icpp{f(x)} n'a pas d'effets de bord
 \end{enumerate}
 
@@ -188,8 +191,8 @@ de programmation fonctionnel de toute façon.
 Finalement, la loi de composition sur Hana est, sans grande surprise,
 l'extension de la composition de fonctions usuelle aux fonctions
 \textit{templates} qui constituent les flèches de Hana, $\hom(Hana)$.
-Rigoureusement, soit $X, Y, Z \in \ob(Hana)$, c'est-à-dire que $X$, $Y$ et
-$Z$ sont des types généralisés. On peut définir la composition par
+Rigoureusement, soit $\icpp{X}, \icpp{Y}, \icpp{Z} \in \ob(Hana)$ des
+types généralisés. On peut définir la composition par
 \begin{cpp}
     template <typename X, typename Y, typename Z>
     auto compose = [](auto f, auto g) {
@@ -203,10 +206,10 @@ $Z$ sont des types généralisés. On peut définir la composition par
 \end{cpp}
 
 Ainsi, \icpp{compose<X, Y, Z>} peut être appelée avec n'importe quelle fonctions
-$f$ et $g$, mais celles dont les domaines et codomaines ne coïncident pas
-avec \icpp{X}, \icpp{Y} et \icpp{Z} résulteront en une erreur de compilation.
-Dans la réalité, il est trop répétitif de préciser les types $X$, $Y$ et $Z$
-et on préfère la définition suivante pour \icpp{compose}:
+\icpp{f} et \icpp{g}, mais celles dont les domaines et codomaines ne coïncident
+pas avec \icpp{X}, \icpp{Y} et \icpp{Z} résulteront en une erreur de compilation.
+Dans la réalité, il est trop répétitif de préciser les types \icpp{X}, \icpp{Y} et
+\icpp{Z} et on préfère la définition suivante pour \icpp{compose}:
 \begin{cpp}
     auto compose = [](auto f, auto g) {
         return [=](auto x) {
@@ -234,13 +237,14 @@ identité d'un type généralisé peut être définie en utilisant une fonction
     };
 \end{cpp}
 
-Ainsi, étant donné un type généralisé \icpp{X}, l'identité sur \icpp{X} est
-\icpp{id<X>}. Puisque le type C++ de l'argument de \icpp{id<X>} est quelconque,
+Ainsi, étant donné un type généralisé \cc{X}, l'identité sur \cc{X} est
+\cc{id<X>}. Puisque le type C++ de l'argument de \cc{id<X>} est quelconque,
 on peut passer n'importe quel objet à cette fonction, tant que le type
-généralisé de cet objet est exactement \icpp{X}. Si ce n'est pas le cas,
+généralisé de cet objet est exactement \cc{X}. Si ce n'est pas le cas,
 le compilateur rapportera une erreur de compilation. De plus, il est clair
 que l'identité est un élément neutre de la loi de composition. En effet, soit
-$A$ et $B$ des types généralisés et $f : A \to B$ une fonction. Alors,
+\cc{A} et \cc{B} des types généralisés et $\cc{f} : \cc{A} \to \cc{B}$
+une fonction. Alors,
 \begin{cpp}
     compose<A, B, B>(id<B>, f) == [](auto x) { return id<B>(f(x)); }
                                == [](auto x) { return f(x); }
@@ -256,8 +260,9 @@ De manière similaire,
 
 ce qui montre que l'identité est bien l'élément neutre de la composition.
 Ensuite, il reste à montrer que la composition est associative, ce qui n'est
-pas difficile non plus. Pour des types généralisés $A, B, C, D$, soit
-$f : A \to B$, $g : B \to C$ et $h : C \to D$ des fonctions. Alors,
+pas difficile non plus. Pour des types généralisés \cc{A}, \cc{B}, \cc{C},
+\cc{D}, soit $\cc{f} : \cc{A} \to \cc{B}$, $\cc{g} : \cc{B} \to \cc{C}$ et
+$\cc{h} : \cc{C} \to \cc{D}$ des fonctions. Alors,
 \begin{cpp}
     compose<A, C, D>(h, compose<A, B, C>(g, f))
         == [](auto x) { return h(compose<A, B, C>(g, f)(x)); }

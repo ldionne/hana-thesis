@@ -5,12 +5,6 @@ direction, nous allons maintenant considérer ce que sont les transformations
 entre foncteurs. Ces transformations portent le nom de transformations
 naturelles et jouent un rôle fondamental en théorie des catégories.
 
-Mais que veut-on dire exactement par transformation entre foncteurs?
-Étant donné deux foncteurs $F : \C \to \D$ et $G : \C \to \D$, on aimerait
-avoir une transformation ...
-
-\todo{Intuition. Comment arriver à la définition formelle graduellement?}
-
 \begin{définition}[Transformation naturelle]
     Soit $\C$ et $\D$ deux catégories. Une transformation naturelle
     $\eta : F \to G$ entre deux foncteurs $F : \C \to \D$ et $G : \C \to \D$
@@ -86,8 +80,8 @@ Ainsi, l'équation présentée plus haut peut se réécrire sous une forme plus
 visuelle en affirmant que le diagramme suivant commute:
 \[
 \begin{tikzcd}
-    F(X) \arrow[d, "\eta_X"'] \arrow[r, "F(f)"] & F(Y) \arrow[d, "\eta_Y"] \\
-    G(X) \arrow[r, "G(f)"] & G(Y)
+    F(X) \arrow[d, blue, "\eta_X"' black] \arrow[r, red, "F(f)" black] & F(Y) \arrow[d, red, "\eta_Y" black] \\
+    G(X) \arrow[r, blue, "G(f)" black] & G(Y)
 \end{tikzcd}
 \]
 

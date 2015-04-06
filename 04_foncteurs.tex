@@ -83,63 +83,55 @@ un \textit{endofoncteur}.
 \subsection{Les foncteurs dans Hana}
 Dans le cadre de la bibliothèque Hana, on s'intéressera principalement aux
 endofoncteurs sur la catégorie Hana, c'est-à-dire aux foncteurs du type
-$F : Hana \to Hana$. D'abord, rappelons-nous que les objets de la catégorie
+$Hana \to Hana$. D'abord, rappelons-nous que les objets de la catégorie
 Hana sont des types généralisés. Un foncteur $F$ devra donc envoyer un type
-généralisé $T$ vers un autre type généralisé $F(T)$. Ensuite, les flèches de
-Hana sont des fonctions dont le domaine et le codomaine sont des types
-généralisés. Ainsi, un foncteur $F$ devra envoyer une telle fonction
-$f : T \to U$ vers une fonction $F(f) : F(T) \to F(U)$. Dans Hana, un
-foncteur se matérialise comme un type généralisé paramétré et muni d'une
-fonction appelée \icpp{transform} ayant la pseudo-signature suivante:
+généralisé \cc{T} vers un autre type généralisé $F(\cc{T})$. Ensuite, les
+flèches de Hana sont des fonctions dont le domaine et le codomaine sont des
+types généralisés. Ainsi, $F$ devra envoyer une telle fonction
+$\cc{f} : \cc{T} \to \cc{U}$ vers une fonction $F(\cc{f}) : F(\cc{T}) \to F(\cc{U})$.
+Dans Hana, un foncteur se matérialise comme un type généralisé paramétré muni
+d'une fonction appelée \cc{transform} ayant la pseudo-signature suivante:
 \[
-    \icpp{transform} : F(T) \times (T \to U) \to F(U)
+    \cc{transform} : \cc{F(T)} \times (\cc{T} \to \cc{U}) \to \cc{F(U)}
 \]
 
-Si un type généralisé paramétré $F$ est un foncteur au sens de Hana, alors
-$F(T)$ est le type généralisé correspondant à l'image de $T$ par le foncteur
-$F$. Cependant, le rôle de \icpp{transform} demande un peu plus de
-justification. On notera que l'ordre des paramètres de \icpp{transform} est
-fâcheux pour l'explication qui suit. C'est tout de même cet ordre qui est
-utilisé dans Hana parce qu'il est avantageux lorsqu'on veut passer une
-fonction anonyme C++ à \icpp{transform}. Supposons que l'on ait une fonction
-$f : T \to U$. On peut appliquer partiellement $f$ à \icpp{transform} pour
-obtenir la fonction
+Comme on pouvait s'en douter, étant donné un type généralisé \cc{T}, \cc{F}
+envoie \cc{T} sur un nouveau type généralisé \cc{F(T)}. Cependant, le rôle de
+\cc{transform} demande un peu plus de justification. On notera que l'ordre des
+paramètres de \cc{transform} est fâcheux pour l'explication qui suit. C'est
+tout de même cet ordre qui est utilisé dans Hana parce qu'il est avantageux
+lorsqu'on veut passer une fonction anonyme C++ à \cc{transform}. Supposons que
+l'on ait une fonction $\cc{f} : \cc{T} \to \cc{U}$. On peut appliquer partiellement
+\cc{f} à \cc{transform} pour obtenir la fonction
 \[
-    \icpp{transform(-, f)} : F(T) \to F(U)
+    \cc{transform(-, f)} : \cc{F(T)} \to \cc{F(U)}
 \]
 
-On peut remarquer que \icpp{transform(-, f)} possède la signature requise
-pour être l'image d'une flèche de Hana par le foncteur $F$. Dans la catégorie
-Hana, un foncteur $F$ envoie donc un type généralisé $T$ sur un nouveau type
-généralisé $U$, et une fonction $f : T \to U$ sur une nouvelle fonction
-$\icpp{transform(-, f)} : F(T) \to F(U)$. Bien entendu, pour qu'il s'agisse
-bien d'un foncteur, certaines propriétés doivent être respectées. D'abord,
-le foncteur doit respecter la loi de composition de Hana, i.e. pour toutes
-fonctions $f : A \to B$ et $g : B \to C$, on doit avoir que
-$F(g \circ f) = F(g) \circ F(f)$.
+On peut remarquer que \cc{transform(-, f)} possède la signature requise
+pour être l'image d'une flèche de Hana par le foncteur \cc{F}. Dans la catégorie
+Hana, un foncteur \cc{F} envoie donc un type généralisé \cc{T} sur un nouveau
+type généralisé \cc{U}, et une fonction $\cc{f} : \cc{T} \to \cc{U}$ sur une
+nouvelle fonction $\cc{transform(-, f)} : \cc{F(T)} \to \cc{F(U)}$. Bien entendu,
+pour qu'il s'agisse bien d'un foncteur, certaines propriétés doivent être
+respectées. D'abord, le foncteur doit respecter la loi de composition de Hana,
+i.e. pour toutes fonctions $\cc{f} : \cc{A} \to \cc{B}$ et $\cc{g} : \cc{B} \to \cc{C}$,
+on doit avoir que
+\begin{cpp}
+    compose(transform(-, g), f) == compose(transform(-, g), transform(-, f))
+\end{cpp}
 
-Dans Hana, ceci devient simplement
-\[
-    \icpp{transform(-, g} \circ \icpp{f)} = \icpp{transform(-, g)} \circ \icpp{transform(-, f)},
-\]
-
-ce qui est équivalent à dire que pour tout \icpp{xs} de type généralisé $F(T)$,
-\[
-    \icpp{transform(xs, g} \circ \icpp{f)} = \icpp{transform(transform(xs, f), g)}
-\]
+ce qui est équivalent à dire que pour tout \cc{xs} de type généralisé \cc{F(T)},
+\begin{cpp}
+    transform(xs, compose(g, f)) == transform(transform(xs, f), g)
+\end{cpp}
 
 Ensuite, le foncteur doit aussi respecter l'identité, c'est à dire que
-$F(\id_T) = \id_{F(T)}$. Dans Hana, puisque l'identité est une fonction
-générique qui fonctionne sur tous les types généralisés, ceci se traduit
-simplement par
-\[
-    \icpp{transform(-, id)} = \icpp{id},
-\]
-
-ce qui est équivalent à dire que pour tout \icpp{xs} de type généralisé $F(T)$,
-\[
-    \icpp{transform(xs, id)} = \icpp{xs}
-\]
+$F(\id_{\cc{T}}) = \id_{\cc{F(T)}}$. Dans Hana, puisque l'identité est une
+fonction générique qui fonctionne sur tous les types généralisés, ceci se
+traduit simplement en disant que pour tout \cc{x} de type généralisé \cc{F(T)},
+\begin{cpp}
+    transform(x, id) == x
+\end{cpp}
 
 Voyons maintenant comment certaines structures fournies par Hana peuvent
 être vues comme des foncteurs.
@@ -165,46 +157,46 @@ inaccessible.
 Une autre manière de gérer la possibilité d'un échec est d'introduire la
 notion de valeur optionnelle. Essentiellement, une valeur optionnelle est
 une valeur qui peut être là ou ne pas y être, accompagnée d'un mécanisme
-pour savoir si la valeur est là ou non. Pour une valeur de type \icpp{T},
-on dénotera une valeur optionnelle de ce type par le type \icpp{Maybe(T)}.
+pour savoir si la valeur est là ou non. Pour une valeur de type \cc{T},
+on dénotera une valeur optionnelle de ce type par le type \cc{Maybe(T)}.
 Une valeur optionnelle peut être créée de deux manières. D'abord, on peut
-créer une valeur optionnelle (qui existe) avec \icpp{just(x)}, où \icpp{x}
-est une valeur de type \icpp{T}. Ensuite, on peut créer une valeur optionnelle
-qui est vide avec \icpp{nothing}. Ainsi, alors qu'on pourrait écrire une
+créer une valeur optionnelle (qui existe) avec \cc{just(x)}, où \cc{x}
+est une valeur de type \cc{T}. Ensuite, on peut créer une valeur optionnelle
+qui est vide avec \cc{nothing}. Ainsi, alors qu'on pourrait écrire une
 fonction qui effectue une division comme:
 \begin{align*}
-    div : \mathbb{R} \times \mathbb{R} &\to \mathbb{R} \\
-           x, y &\mapsto x / y
+    \cc{div} : \cc{float} \times \cc{float} &\to \cc{float} \\
+                                       x, y &\mapsto x / y
 \end{align*}
 
 on pourrait aussi écrire une fonction qui effectue la division de manière
 sécuritaire en utilisant \icpp{Maybe}:
 \begin{align*}
-    safe\_div : \mathbb{R} \times \mathbb{R} &\to Maybe(\mathbb{R}) \\
-                 x, y &\mapsto  \begin{cases}
-                                    nothing \text{ si y = 0} \\
-                                    just(x / y) \text{ sinon}
-                                \end{cases}
+    \cc{safe_div} : \cc{float} \times \cc{float} &\to \cc{Maybe(float)} \\
+                    \cc{x}, \cc{y} &\mapsto \begin{cases}
+                                        \cc{nothing} \text{ si y = 0} \\
+                                        \cc{just(x / y)} \text{ sinon}
+                                    \end{cases}
 \end{align*}
 
 Pour l'instant, ceci ne nous est pas très utile parce que nous n'avons pas
 de façon d'extraire la valeur optionnelle lorsqu'elle existe. C'est le rôle
-de la fonction \icpp{from_just}, qui est définie par
+de la fonction \cc{from_just}, qui est définie par
 \begin{align*}
-    from\_just : Maybe(T) &\to T \\
-                 just(x) &\mapsto x \\
-                 nothing &\mapsto erreur
+    \cc{from_just} : \cc{Maybe(T)} &\to \cc{T} \\
+                        \cc{just(x)} &\mapsto \cc{x} \\
+                        \cc{nothing} &\mapsto \cc{erreur}
 \end{align*}
 
 Pour que ceci nous soit d'une quelconque utilité, il nous faut aussi une
 manière de savoir quand est-ce qu'une valeur optionnelle est vide ou pleine:
 \begin{align*}
-    is\_nothing : Maybe(T) &\to bool \\
-                 just(x) &\mapsto false \\
-                 nothing &\mapsto true
+    \cc{is_nothing} : \cc{Maybe(T)} &\to \cc{bool} \\
+                      \cc{just(x)} &\mapsto \cc{false} \\
+                      \cc{nothing} &\mapsto \cc{true}
 \end{align*}
 
-On peut ensuite utiliser le résultat de \icpp{safe_div} comme suit:
+On peut ensuite utiliser le résultat de \cc{safe_div} comme suit:
 \begin{cpp}
     auto maybe_result = safe_div(x, y);
     if (!is_nothing(maybe_result)) {
@@ -214,24 +206,19 @@ On peut ensuite utiliser le résultat de \icpp{safe_div} comme suit:
 \end{cpp}
 
 On constate rapidement que le gain est plutôt faible par rapport à une
-solution où on vérifierait explicitement que \icpp{y != 0} et où l'on
-n'utiliserait pas de \icpp{Maybe}. En effet, il est quand même nécessaire
+solution où on vérifierait explicitement que \cc{y != 0} et où l'on
+n'utiliserait pas de \cc{Maybe}. En effet, il est quand même nécessaire
 de vérifier si la valeur optionnelle est vide ou pleine avant de pouvoir
 utiliser le résultat de la fonction (si résultat il y a). Ce qu'on aimerait
 est une manière de seulement spécifier le contenu de la branche (par exemple
-comme une fonction) et de soit appliquer la fonction au contenu du \icpp{Maybe},
-soit ne pas l'appliquer et avoir \icpp{nothing}. Mathématiquement, si la
-branche est représentée par une fonction
+comme une fonction) et de soit appliquer la fonction au contenu du \cc{Maybe},
+soit ne pas l'appliquer et avoir \cc{nothing}. Mathématiquement, si la
+branche est représentée par une fonction $\cc{f} : \cc{A} \to \cc{B}$, on
+aimerait (automatiquement) être capable de produire une fonction
 \begin{align*}
-    f : A &\to B \\
-        x &\mapsto f(x)
-\end{align*}
-
-on aimerait (automatiquement) être capable de produire une fonction
-\begin{align*}
-    g : Maybe(A) &\to Maybe(B) \\
-        just(x) &\mapsto just(f(x)) \\
-        nothing &\mapsto nothing
+    \cc{g} : \cc{Maybe(A)} &\to \cc{Maybe(B)}       \\
+             \cc{just(x)} &\mapsto \cc{just(f(x))}  \\
+             \cc{nothing} &\mapsto \cc{nothing}
 \end{align*}
 
 De cette manière, on pourrait simplement écrire
@@ -241,18 +228,18 @@ De cette manière, on pourrait simplement écrire
 \end{cpp}
 
 Comme on pouvait s'en douter, nous venons de mettre le doigt sur un foncteur.
-En effet, étant donné un objet $A$ de la catégorie $Hana$, le foncteur $Maybe$
-envoie $A$ sur $Maybe(A)$. Ensuite, étant donné une flèche $f : A \to B$,
-$Maybe$ envoie $f$ sur
+En effet, étant donné un objet \cc{A} de la catégorie Hana, le foncteur
+\cc{Maybe} envoie \cc{A} sur \cc{Maybe(A)}. Ensuite, étant donné une flèche
+$\cc{f} : \cc{A} \to \cc{B}$, \cc{Maybe} envoie \cc{f} sur
 \begin{align*}
-    transform(-, f) : Maybe(A) &\to Maybe(B)        \\
-                      just(x) &\mapsto just(f(x))   \\
-                      nothing &\mapsto nothing
+    \cc{transform(-, f)} : \cc{Maybe(A)} &\to \cc{Maybe(B)}             \\
+                           \cc{just(x)} &\mapsto \cc{just(f(x))}        \\
+                           \cc{nothing} &\mapsto \cc{nothing}
 \end{align*}
 
-Afin de démontrer la fonctorialité de \icpp{Maybe}, commençons par regarder
-comment celui-ci est implémenté dans Hana. D'abord, on a \icpp{just} et
-\icpp{nothing}, qui représentent des valeurs optionnelles.
+Afin de démontrer la fonctorialité de \cc{Maybe}, commençons par regarder
+comment celui-ci est implémenté dans Hana. D'abord, on a \cc{just} et
+\cc{nothing}, qui représentent des valeurs optionnelles.
 \begin{cpp}
     template <typename T>
     struct _just { T value; };
@@ -265,7 +252,7 @@ comment celui-ci est implémenté dans Hana. D'abord, on a \icpp{just} et
     _nothing nothing{};
 \end{cpp}
 
-Ensuite, on a la fonction \icpp{transform}, qui applique une fonction à une
+Ensuite, on a la fonction \cc{transform}, qui applique une fonction à une
 valeur optionnelle et qui retourne un résultat optionnel. On notera
 l'utilisation de l'\textit{overloading} dans l'implémentation:
 \begin{cpp}
@@ -280,14 +267,14 @@ l'utilisation de l'\textit{overloading} dans l'implémentation:
     }
 \end{cpp}
 
-Si un \icpp{just(x)} est passé à \icpp{transform}, on applique la fonction
-\icpp{f} à \icpp{x} et on retourne le résultat comme un \icpp{Maybe}. Sinon,
-on retourne simplement \icpp{nothing}, puisqu'il n'y a pas de valeur à
-laquelle on pourrait appliquer \icpp{f}. Montrons maintenant que \icpp{Maybe}
-est un endofoncteur sur $Hana$. D'abord, on doit montrer que \icpp{transform}er
+Si un \cc{just(x)} est passé à \cc{transform}, on applique la fonction
+\cc{f} à \cc{x} et on retourne le résultat comme un \cc{Maybe}. Sinon,
+on retourne simplement \cc{nothing}, puisqu'il n'y a pas de valeur à
+laquelle on pourrait appliquer \cc{f}. Montrons maintenant que \cc{Maybe}
+est un endofoncteur sur Hana. D'abord, on doit montrer que \cc{transform}er
 une valeur optionnelle avec la fonction identité ne change pas cette valeur
-optionnelle. Soit donc $x \in Maybe(A)$ une valeur optionnelle de type $A$.
-Si $x$ est de la forme $just(v)$, alors
+optionnelle. Soit donc $\cc{x} \in \cc{Maybe(A)}$ une valeur optionnelle de
+type \cc{A}. Si \cc{x} est de la forme \cc{just(v)}, alors
 \begin{cpp}
     transform(x, id) == transform(just(v), id)
                      == just(id(v))
@@ -295,16 +282,17 @@ Si $x$ est de la forme $just(v)$, alors
                      == x
 \end{cpp}
 
-Si, au contraire, $x$ est un $nothing$, alors
+Si, au contraire, \cc{x} est un \cc{nothing}, alors
 \begin{cpp}
     transform(x, id) == transform(nothing, id)
                      == nothing
 \end{cpp}
 
-ce qui montre que \icpp{transform(-, id) == id}. Ensuite, il faut montrer
-que la composition des fonctions est respectée par \icpp{transform}. Soit
-$x \in Maybe(A)$ une valeur optionnelle et $f : A \to B$ et $g : B \to C$
-des fonctions quelconques. Si $x$ est de la forme $just(v)$, alors
+ce qui montre que \cc{transform(-, id) == id}. Ensuite, il faut montrer
+que la composition des fonctions est respectée par \cc{transform}. Soit
+$\cc{x} \in \cc{Maybe(A)}$ une valeur optionnelle et $\cc{f} : \cc{A} \to \cc{B}$
+et $\cc{g} : \cc{B} \to \cc{C}$ des fonctions quelconques. Si \cc{x} est de la
+forme \cc{just(v)}, alors
 \begin{cpp}
     transform(x, compose(g, f)) == transform(just(v), compose(g, f))
                                 == just(compose(g, f)(v))
@@ -318,8 +306,8 @@ d'un autre côté, on a que
                                   == just(g(f(v)))
 \end{cpp}
 
-ce qui montre l'égalité recherchée. Ainsi, $Maybe$ est bien un foncteur
-sur la catégorie $Hana$.
+ce qui montre l'égalité recherchée. Ainsi, \cc{Maybe} est bien un foncteur
+sur la catégorie Hana.
 
 \todo{Exemples d'utilisation. Pourquoi est-ce utile?
 Ça serait possible de mixer ça avec des calculs sur les types et la SFINAE.}
@@ -335,15 +323,16 @@ d'une fonction qui peut échouer. Nous allons maintenant voir comment il est
 possible de manipuler des séquences d'objets, et comment la notion de foncteur
 peut nous aider à formaliser ceci.
 
-Étant donné une séquence d'objets $x_1, \hdots, x_n$ de type $X$ et une
-fonction $f : X \to Y$, il est fréquemment utile d'appliquer $f$ à chaque
-élément de la séquence pour obtenir une nouvelle séquence $f(x_1), \hdots, f(x_n)$.
-On aimerait donc formaliser ce \textit{pattern} puis le généraliser, si possible.
-Premièrement, il nous faut une séquence capable de contenir des objets d'un
-type généralisé $X$ quelconque. On notera que puisque des objets d'un même type
-généralisé n'ont pas forcément le même type C++, on ne peut pas utiliser une
-séquence conventionnelle comme \icpp{std::vector}. On devra en effet utiliser
-une séquence hétérogène capable de contenir des objets ayant différents types
+Étant donné une séquence d'objets $x_1, \hdots, x_n$ d'un ensemble $X$ et une
+fonction $f : X \to Y$, il est parfois utile d'appliquer $f$ à chaque élément
+de la séquence pour obtenir une nouvelle séquence $f(x_1), \hdots, f(x_n)$.
+Ce \textit{pattern} étant omniprésent en programmation, on aimerait le
+formaliser dans Hana et le généraliser, si possible. Premièrement, il nous
+faut une séquence capable de contenir des objets d'un type généralisé \cc{X}
+quelconque. On notera que puisque des objets d'un même type généralisé n'ont
+pas forcément le même type C++, on ne peut pas utiliser une séquence
+conventionnelle comme \icpp{std::vector}. On devra en effet utiliser une
+séquence hétérogène capable de contenir des objets ayant différents types
 C++. La véritable construction dans Hana est assez complexe pour des raisons
 techniques, mais l'idée est essentiellement la suivante:
 \begin{cpp}
@@ -361,12 +350,12 @@ techniques, mais l'idée est essentiellement la suivante:
     }
 \end{cpp}
 
-On utilise le type \icpp{_element<i, T>} pour stocker l'objet de type \icpp{T}
-situé à l'index \icpp{i} dans la séquence. On se donne aussi un peu de sucre
-syntaxique (\icpp{make_tuple}), qui nous permettra de construire des
-\icpp{_tuple} sans devoir spécifier le type de chacun des éléments.
-La raison pour laquelle on hérite de tous les \icpp{_element}s dans
-\icpp{_tuple} et que cela nous permet d'accéder à chaque élément individuel
+On utilise le type \cc{_element<i, T>} pour stocker l'objet de type \cc{T}
+situé à l'index \cc{i} dans la séquence. On se donne aussi un peu de sucre
+syntaxique (\cc{make_tuple}), qui nous permettra de construire des
+\cc{_tuple} sans devoir spécifier le type de chacun des éléments.
+La raison pour laquelle on hérite de tous les \cc{_element}s dans
+\cc{_tuple} et que cela nous permet d'accéder à chaque élément individuel
 grâce à l'astuce suivante:
 \begin{cpp}
     template <int i, typename T>
@@ -377,30 +366,30 @@ grâce à l'astuce suivante:
     char y = get<3>(make_tuple('x', 'y', 'z'));
 \end{cpp}
 
-Puisque \icpp{_tuple} hérite de tous les \icpp{_element}s, il existe une
-conversion de \icpp{_tuple} vers n'importe laquelle de ses classes de base.
-Ensuite, puisqu'on fixe le \icpp{i} explicitement en appelant \icpp{get<i>},
-le compilateur constate que la seule signature possible pour \icpp{get} est
-\icpp{char get(_element<3, char>)}. Il suffit ensuite de retourner la valeur
+Puisque \cc{_tuple} hérite de tous les \cc{_element}s, il existe une
+conversion de \cc{_tuple} vers n'importe laquelle de ses classes de base.
+Ensuite, puisqu'on fixe le \cc{i} explicitement en appelant \cc{get<i>},
+le compilateur constate que la seule signature possible pour \cc{get} est
+\cc{char get(_element<3, char>)}. Il suffit ensuite de retourner la valeur
 associée à cet élément. En bref, on a donc que
-\icpp{get<i>(make_tuple(x1, ..., xn)) == xi}.
+\cc{get<i>(make_tuple(x1, ..., xn)) == xi}.
 
-Étant donné une séquence d'objets $x_1, \hdots, x_n$ de type généralisé $X$,
-on dénotera par $Tuple(X)$ le type généralisé de \icpp{make_tuple(x1, ..., xn)}.
-De cette manière, on considérera $Tuple$ comme un type généralisé paramétré,
-où le paramètre représente le type généralisé des éléments que le $Tuple$
+Étant donné une séquence d'objets $\cc{x1}, \hdots, \cc{xn}$ de type généralisé
+\cc{X}, on dénotera par \cc{Tuple(X)} le type généralisé de \cc{make_tuple(x1, ..., xn)}.
+De cette manière, on considérera \cc{Tuple} comme un type généralisé paramétré,
+où le paramètre représente le type généralisé des éléments que le \cc{Tuple}
 contient. On notera en passant qu'il serait possible de stocker des éléments
-ayant des types généralisés différents au sein d'un même \icpp{_tuple}, puisque
-\icpp{_tuple} ne pose aucune restriction sur le type de ces éléments. Cependant,
-on restreindra notre étude aux \icpp{_tuple}s qui contiennent tous des éléments
+ayant des types généralisés différents au sein d'un même \cc{_tuple}, puisque
+\cc{_tuple} ne pose aucune restriction sur le type de ces éléments. Cependant,
+on restreindra notre étude aux \cc{_tuple}s qui contiennent tous des éléments
 d'un même type généralisé, puisque c'est ceux-là qui nous donnent les propriétés
 les plus intéressantes.
 
 Nous sommes maintenant en mesure de formuler concrètement le problème initial
 qui était d'appliquer une fonction à chaque élément d'une séquence. Étant
-donné une fonction $f : X \to Y$ et une séquence \icpp{make_tuple(x1, ..., xn)}
-de type généralisé $Tuple(X)$, on aimerait obtenir une séquence
-\icpp{make_tuple(f(x1), ..., f(xn))} (de type généralisé $Tuple(Y)$).
+donné une fonction $\cc{f} : \cc{X} \to \cc{Y}$ et une séquence \cc{make_tuple(x1, ..., xn)}
+de type généralisé \cc{Tuple(X)}, on aimerait obtenir une séquence
+\cc{make_tuple(f(x1), ..., f(xn))} (de type généralisé \cc{Tuple(Y)}).
 Voici comment on pourrait faire ceci:
 \begin{cpp}
     template <typename T1, ..., typename Tn, typename F>
@@ -409,21 +398,21 @@ Voici comment on pourrait faire ceci:
     }
 \end{cpp}
 
-Étant donné une séquence d'objets sous la forme d'un \icpp{_tuple}, on
-applique simplement \icpp{f} à chaque élément (extrait avec \icpp{get}),
+Étant donné une séquence d'objets sous la forme d'un \cc{_tuple}, on
+applique simplement \cc{f} à chaque élément (extrait avec \cc{get}),
 puis on retourne une nouvelle séquence qui contient le résultat. À ce
 point-ci, le foncteur caché sous le tapis devrait commencer à être évident.
 
-En effet, en tant que foncteur, \icpp{Tuple} associe à tout objet $X$ de $Hana$
-un nouvel objet $Tuple(X)$ représentant une séquence d'éléments de type $X$,
-et à toute flèche $f : X \to Y$ une nouvelle flèche $\icpp{transform(-, f)} :
-Tuple(X) \to Tuple(Y)$, qui consiste à appliquer $f$ à chaque élément d'une
-telle séquence.
+En effet, en tant que foncteur, \cc{Tuple} associe à tout objet \cc{X} de $Hana$
+un nouvel objet \cc{Tuple(X)} représentant une séquence d'éléments de type \cc{X},
+et à toute flèche $\cc{f} : \cc{X} \to \cc{Y}$ une nouvelle flèche $\cc{transform(-, f)} :
+\cc{Tuple(X)} \to \cc{Tuple(Y)}$, qui consiste à appliquer \cc{f} à chaque
+élément d'une telle séquence.
 
-Démontrons maintenant que \icpp{Tuple} est bien un foncteur. D'abord, étant
-donné un objet quelconque \icpp{xs} de type généralisé \icpp{Tuple(X)},
-appliquer \icpp{transform} à \icpp{xs} et la fonction identité sur $X$
-ne change pas \icpp{xs} du tout. En effet, en supposant que \icpp{xs}
+Démontrons maintenant que \cc{Tuple} est bien un foncteur. D'abord, étant
+donné un objet quelconque \cc{xs} de type généralisé \cc{Tuple(X)},
+appliquer \cc{transform} à \cc{xs} et la fonction identité sur \cc{X}
+ne change pas \cc{xs} du tout. En effet, en supposant que \cc{xs}
 contienne $n$ éléments, on a alors
 \begin{cpp}
     transform(xs, id) == make_tuple(id(get<0>(xs)), ..., id(get<n-1>(xs)))
@@ -431,10 +420,10 @@ contienne $n$ éléments, on a alors
                       == xs
 \end{cpp}
 
-Ainsi, on a bien que \icpp{transform(-, id) == id}, et \icpp{Tuple} respecte
-donc les flèches identités. Il reste à montrer que \icpp{Tuple} respecte la
-loi de composition, c'est-à-dire que pour toutes fonctions $f : X \to Y$ et
-$g : Y \to Z$, on a
+Ainsi, on a bien que \cc{transform(-, id) == id}, et \cc{Tuple} respecte
+donc les flèches identités. Il reste à montrer que \cc{Tuple} respecte la
+loi de composition, c'est-à-dire que pour toutes fonctions $\cc{f} : \cc{X} \to \cc{Y}$
+et $\cc{g} : \cc{Y} \to \cc{Z}$, on a
 \begin{cpp}
     transform(transform(xs, f), g) == transform(xs, compose(g, f))
 \end{cpp}
@@ -449,19 +438,19 @@ Or, on trouve facilement que
 \end{cpp}
 
 ce qui montre que la loi de composition est bien respectée. Le fait d'exiger
-que \icpp{Tuple} soit un foncteur est bien plus qu'un simple caprice de
+que \cc{Tuple} soit un foncteur est bien plus qu'un simple caprice de
 mathématicien. En effet, exiger que la composition soit respectée par
-\icpp{transform} permet de faire des optimisations pour éliminer des
+\cc{transform} permet de faire des optimisations pour éliminer des
 structures temporaires inutiles. Par exemple, lorsque l'on applique
 \begin{cpp}
     transform(transform(xs, f), g)
 \end{cpp}
 
-alors un \icpp{_tuple} intermédiaire qui contient \icpp{transform(xs, f)} doit
-être créé, puis envoyé aux deuxième \icpp{transform}. Si les objets retournés
-par \icpp{f} sont coûteux à copier, ceci peut représenter un problème. Or, la
+alors un \cc{_tuple} intermédiaire qui contient \cc{transform(xs, f)} doit
+être créé, puis envoyé aux deuxième \cc{transform}. Si les objets retournés
+par \cc{f} sont coûteux à copier, ceci peut représenter un problème. Or, la
 loi des foncteurs nous dit qu'on peut réécrire cette ligne comme
-\icpp{transform(xs, compose(g, f))}, qui ne crée pas de structure
+\cc{transform(xs, compose(g, f))}, qui ne crée pas de structure
 temporaire inutile.
 
 

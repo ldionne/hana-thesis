@@ -42,8 +42,8 @@ entiers non-négatifs, on devra d'abord décider d'une représentation concrète
 pour chacun de ces ensembles. Supposons que l'on choisisse le type
 \icpp{std::string} pour représenter l'ensemble des chaînes de caractères et le
 type \icpp{unsigned int} pour représenter l'ensemble des entiers non-négatifs.
-Une fonction $f : \text{{\tt std::string}} \to \text{{\tt unsigned int}}$
-s'écrira alors
+Une fonction $\icpp{f} : \icpp{std::string} \to \icpp{unsigned int}$ s'écrira
+alors
 \begin{cpp}
     unsigned int f(std::string);
 \end{cpp}
@@ -522,7 +522,7 @@ type \icpp{T*}. Attention, ici \icpp{T} n'est pas le domaine de la fonction
 \icpp{f}. En fait, mathématiquement, on pourrait écrire
 \begin{align*}
     f : \{\text{tous les types C++}\} &\to \{\text{tous les types C++}\}\\
-                             T &\mapsto T*
+                             \icpp{T} &\mapsto \icpp{T*}
 \end{align*}
 
 Comment pourrait-on écrire une telle fonction en C++? Une option est d'utiliser
@@ -672,7 +672,7 @@ déjà étudiée lorsque nous avons introduit les calculs sur des types:
 Quel est le domaine de cette fonction? Mécaniquement, on peut dire que le
 domaine est
 \[
-    \bigcup_{\text{tous les types T}} \icpp{_type<T>}
+    \bigcup_{\text{tous les types \icpp{T}}} \icpp{_type<T>}
 \]
 
 Cependant, sous cette forme, ce domaine ne nous est pas vraiment utile. Pour
@@ -684,7 +684,7 @@ de cette famille comme étant un représentant de la bannière. Par exemple,
 pour représenter la famille de types \icpp{_type<...>}, on utilisera la
 bannière \icpp{Type}. D'une certaine manière, on peut donc dire que
 \[
-    \icpp{Type} = \bigcup_{\text{tous les types T}} \icpp{_type<T>}
+    \icpp{Type} = \bigcup_{\text{tous les types \icpp{T}}} \icpp{_type<T>}
 \]
 
 Concrètement, les types généralisés sont implémentés comme des types
