@@ -12,43 +12,90 @@ la définition formelle.}
     \begin{enumerate}
         \item $\mu_X \circ F(\mu_X) = \mu_X \circ \mu_{F(X)}$
         \item $\mu_X \circ F(\eta_X) = \mu_X \circ \eta_{F(X)} = id_{F(X)}$
-        \item $\eta \circ f = F(f) \circ \eta$
-        \item $\mu \circ F(F(f)) = F(f) \circ \mu$
+        \item $\eta_Y \circ f = F(f) \circ \eta_X$
+        \item $\mu_Y \circ F(F(f)) = F(f) \circ \mu_X$
     \end{enumerate}
 \end{définition}
 
-Pour déchiffrer cette définition un peu opaque, commençons par donner un nom
-plus descriptif aux transformations naturelles $\eta$ et $\mu$. Puisque $\eta$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Les monades dans Hana}
+Pour déchiffrer cette définition un peu opaque, regardons maintenant comment
+une monade est représentée dans Hana. Premièrement, on donne un nom plus
+descriptif aux transformations naturelles $\eta$ et $\mu$. Puisque $\eta$
 associe à tout objet $X \in \ob(\C)$ une flèche $\eta_X : I_\C(X) = X \to F(X)$,
-on l'appellera $lift$. L'intuition est que $lift$ sert à prendre un objet de
-$\C$ pour le ``monter'' dans le foncteur $F$. Ensuite, puisque $\mu$ associe
-à tout objet $X \in \ob(\C)$ une flèche $\mu_X : F(F(X)) \to F(X)$, on
-l'appellera $flatten$. Ici, l'intuition est que $flatten$ prend un objet
-qui est appliqué deux fois à un foncteur et qu'il élimine, ou écrase, un
-niveau de fonctorialité.
+on l'appellera \cc{lift}. Plus précisément, étant donné un type généralisé
+paramétré \cc{F} et un type généralisé \cc{X}, $\cc{lift<X>} : \cc{X} \to \cc{F(X)}$
+prend un objet de \cc{X} et ``l'injecte'' ou le ``monte'' dans le foncteur \cc{F}.
 
-\todo{Je dois présenter un exemple de Monade dans Hana, puis déchiffrer les
-lois à l'aide de cet exemple. Sinon, c'est pas intéressant.}
-
+Ensuite, puisque $\mu$ associe à tout objet $X \in \ob(\C)$ une flèche
+$\mu_X : F(F(X)) \to F(X)$, on l'appellera \cc{flatten}. Ici, l'intuition
+est que $\cc{flatten<X>} : \cc{F(F(X))} \to \cc{F(X)}$ prend un objet
+enveloppé dans deux niveaux de fonctorialité et élimine, ou écrase, un niveau
+de fonctorialité. Pour alléger la notation, on notera parfois simplement
+\cc{flatten} et \cc{lift} au lieu de \cc{flatten<...>} et \cc{lift<...>}.
 En reformulant la définition d'une monade de cette manière, on obtient que
-les deux transformations naturelles doivent respecter les équations suivantes:
-\begin{enumerate}
-    \item $flatten_X \circ F(flatten_X) = flatten_X \circ flatten_{F(X)}$\\
-    Du côté gauche, on a que $flatten_X$ est une flèche de type $F(F(X)) \to F(X)$,
-    et donc $F(flatten_X)$ est une flèche de type $F(F(F(X))) \to F(F(X))$. Ainsi,
-    la composition $flatten_X \circ F(flatten_X)$ fait du sens et nous donne une
-    flèche de type $F(F(F(X))) \to F(X)$. Notons que cette flèche fait bien
-    partie de la catégorie $\C$, puisque $F$ est un endofoncteur. Du côté
-    droit, on a $flatten_X \circ flatten_{F(X)}$, ce qui nous donne une flèche
-    de type $F(F(F(X))) \to F(X)$. L'équation fait donc bien du sens.
-    Intuitivement, cette équation représente le fait que \todo{intuition}
+les deux transformations naturelles doivent respecter les équations suivantes.
+D'abord, on doit avoir que
+\begin{cpp}
+    compose(flatten<X>, transform(-, flatten<X>))
+        == compose(flatten<X>, flatten<F(X)>)
+\end{cpp}
 
-    \item $flatten_X \circ F(lift_X) = flatten_X \circ lift_{F(X)} = id_{F(X)}$\\
-    Du côté gauche, on a $flatten_X : F(F(X)) \to F(X)$ et
-    $F(lift_{X}) : F(X) \to F(F(X))$. La composition donne donc une flèche
-    $flatten_X \circ F(lift_X) : F(X) \to F(X)$.
+ce qui est équivalent à dire que pour tout objet $\cc{xs} \in \cc{F(F(F(X)))}$,
+\begin{cpp}
+    flatten(transform(xs, flatten)) == flatten(flatten(xs))
+\end{cpp}
 
-    Du côté droit, on a $flatten_X : F(F(X)) \to F(X)$ et
-    $lift_{F(X)} : F(X) \to F(F(X))$. La composition donne donc aussi une
-    flèche $F(X) \to F(X)$.
-\end{enumerate}
+Considérant \cc{xs} comme une strucutre à ``3 niveaux'', cette loi dit donc
+qu'écraser les niveaux intérieurs puis ensuite les niveaux extérieurs est
+équivalent à écraser les niveaux extérieurs puis ensuite les niveaux
+intérieurs. Quant à la deuxième loi, elle peut s'écrire comme
+\begin{cpp}
+    compose(flatten<X>, transform(-, lift<X>))
+        == compose(flatten<X>, lift<F(X)>)
+        == id
+\end{cpp}
+
+ce qui est équivalent à dire que pour tout objet $\cc{xs} \in \cc{F(X)}$,
+\begin{cpp}
+    flatten(transform(xs, lift)) == flatten(lift(xs)) == xs
+\end{cpp}
+
+D'abord, à droite on a \cc{flatten(lift(xs)) == xs}, ce qui veut simplement
+dire que monter une valeur dans un foncteur puis écraser ce niveau de
+fonctorialité devrait être équivalent à ne rien faire du tout. À gauche, on
+a que \cc{flatten(transform(xs, lift)) == xs}, ce qui veut dire que monter
+les valeurs dans un foncteur puis ensuite écraser ce nouveau niveau de
+fonctorialité devrait être équivalent à ne rien faire. Cette loi permet
+de s'assurer que \cc{flatten} et \cc{lift} ne cachent pas d'effets arbitraires.
+Pour la suite, supposons que \cc{f} est une fonction $\cc{X} \to \cc{Y}$. La
+troisième loi peut s'écrire comme
+\begin{cpp}
+    compose(lift<Y>, f) == compose(transform(-, f), lift<X>)
+\end{cpp}
+
+De manière équivalente, on peut dire que pour tout objet $\cc{x} \in \cc{X}$,
+\begin{cpp}
+    lift(f(x)) == transform(lift(x), f)
+\end{cpp}
+
+Ceci représente le fait qu'appliquer une fonction à une valeur simple montée
+avec \cc{lift} à l'intérieur du foncteur est la même chose que d'effectuer
+la transformation à l'extérieur du foncteur, puis de monter le résultat dans
+le foncteur. Finalement, étant donné un objet $\cc{xs} \in \cc{F(F(X))}$, on
+peut écrire la quatrième loi comme
+\begin{cpp}
+    flatten(transform(xs, transform(-, f))) == transform(flatten(xs), f)
+\end{cpp}
+
+Il est plus difficile de développer une intuition pour cette loi. Voyons
+maintenant des exemples de Monades qui sont utilisées dans Hana.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{La monade Maybe}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{La monade Tuple}
