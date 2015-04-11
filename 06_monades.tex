@@ -95,6 +95,126 @@ maintenant des exemples de Monades qui sont utilisées dans Hana.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{La monade Maybe}
+Nous avons vu précédemment que \cc{Maybe} était un foncteur. En fait,
+\cc{Maybe} est plus qu'un foncteur; c'est aussi une monade. D'abord,
+l'opération \cc{lift} devrait avoir une signature $\cc{X} \to \cc{Maybe(X)}$.
+La définition la plus naturelle pour une fonction ayant cette signature est
+$\cc{lift} = \cc{just}$.
+
+Ainsi, \cc{lift} prend une valeur normale et la ``monte'' dans une valeur
+optionnelle. Ensuite, la fonction \cc{flatten} devrait avoir une signature
+$\cc{Maybe(Maybe(X))} \to \cc{Maybe(X)}$. Encore une fois, la définition la
+plus naturelle est la bonne:
+\begin{align*}
+    \cc{flatten} : \cc{Maybe(Maybe(X))} &\to \cc{Maybe(X)} \\
+    \cc{just(just(x))} &\mapsto \cc{just(x)} \\
+    \cc{just(nothing)} &\mapsto \cc{nothing} \\
+    \cc{nothing} &\mapsto \cc{nothing}
+\end{align*}
+
+Montrons maintenant qu'il s'agit bien d'une monade. Pour montrer que la
+première loi tient, considérons $\cc{mmm} \in \cc{Maybe(Maybe(Maybe(X)))}$.
+Il y a quatre cas possibles.
+\begin{enumerate}
+    \item Si $\cc{mmm} = \cc{nothing}$, alors
+    \begin{cpp}
+        flatten(transform(nothing, flatten))
+            == flatten(nothing)
+            == nothing
+            == flatten(flatten(nothing))
+    \end{cpp}
+
+    \item Si $\cc{mmm} = \cc{just(nothing)}$, alors
+    \begin{cpp}
+        flatten(transform(just(nothing), flatten))
+            == flatten(just(flatten(nothing)))
+            == flatten(just(nothing))
+            == nothing
+            == flatten(flatten(just(nothing)))
+    \end{cpp}
+
+    \item Si $\cc{mmm} = \cc{just(just(nothing))}$, alors
+    \begin{cpp}
+        flatten(transform(just(just(nothing)), flatten))
+            == flatten(just(flatten(just(nothing))))
+            == flatten(just(nothing))
+            == nothing
+            == flatten(flatten(just(just(nothing))))
+    \end{cpp}
+
+    \item Si au contraire on a $\cc{mmm} = \cc{just(just(just(x)))}$, alors
+    \begin{cpp}
+        flatten(transform(just(just(just(x))), flatten))
+            == flatten(just(flatten(just(just(x)))))
+            == flatten(just(just(x)))
+            == flatten(flatten(just(just(just(x)))))
+    \end{cpp}
+\end{enumerate}
+
+Ceci montre que la première loi est bien respectée. Pour la deuxième loi,
+considérons maintenant $\cc{m} \in \cc{Maybe(X)}$. Il y a deux cas possibles.
+\begin{enumerate}
+    \item Si $\cc{m} = \cc{nothing}$, alors
+    \begin{cpp}
+        flatten(transform(nothing, lift)) == flatten(nothing)
+                                          == nothing
+                                          == flatten(just(nothing))
+                                          == flatten(lift(nothing))
+    \end{cpp}
+
+    \item Si $\cc{m} = \cc{just(x)}$, alors
+    \begin{cpp}
+        flatten(transform(just(x), lift)) == flatten(just(lift(x)))
+                                          == flatten(just(just(x)))
+                                          == flatten(lift(just(x)))
+                                          == just(x)
+    \end{cpp}
+\end{enumerate}
+
+La troisième loi est facile à montrer. Soit $\cc{x} \in \cc{X}$ et
+$\cc{f} : \cc{X} \to \cc{Y}$. Alors
+\begin{cpp}
+    lift(f(x)) == just(f(x))
+               == transform(just(x), f)
+               == transform(lift(x), f)
+\end{cpp}
+
+Finalement, pour un $\cc{mm} \in \cc{F(F(X))}$ la quatrième loi nous donne
+\begin{enumerate}
+    \item Si $\cc{mm} = \cc{nothing}$, alors
+    \begin{cpp}
+        flatten(transform(nothing, transform(-, f)))
+            == flatten(nothing)
+            == nothing
+            == transform(nothing, f)
+            == transform(flatten(nothing), f)
+    \end{cpp}
+
+    \item Si $\cc{mm} = \cc{just(nothing)}$, alors
+    \begin{cpp}
+        flatten(transform(just(nothing), transform(-, f)))
+            == flatten(just(transform(nothing, f)))
+            == flatten(just(nothing))
+            == nothing
+            == transform(nothing, f)
+            == transform(flatten(just(nothing)), f)
+    \end{cpp}
+
+    \item Si $\cc{mm} = \cc{just(just(x))}$, alors
+    \begin{cpp}
+        flatten(transform(just(just(x)), transform(-, f)))
+            == flatten(just(transform(just(x), f)))
+            == flatten(just(just(f(x))))
+            == just(f(x))
+            == transform(just(x), f)
+            == transform(flatten(just(just(x))), f)
+    \end{cpp}
+\end{enumerate}
+
+Ceci montre que \cc{Maybe} est bien une monade. Mais à quoi ceci peut bien
+servir?
+
+\todo{Montrer l'utilité de composer des fonctions monadiques.}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
