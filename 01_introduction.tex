@@ -1,1 +1,35 @@
 \section{Introduction}
+Certains langages de programmation utilisent des concepts tirés des
+mathématiques pour faciliter le raisonnement à propos des programmes.
+C'est notamment le cas de certains langages fonctionnels, qui, avec
+Haskell en tête, utilisent des notions de théorie des catégories pour
+définir des interfaces génériques encapsulant des phénomènes omniprésents
+en programmation comme le non-déterminisme et la propagation d'erreurs.
+Il en résulte des programmes qui sont généralement plus simples et surtout
+plus souvent corrects.
+
+À l'opposé du spectre des langages se trouve le C++, langage typiquement
+associé à la programmation de bas niveau et peu reconnu pour ses qualités
+d'expressivité, encore moins d'esthétisme mathématique. De plus, le coeur
+du système de typage du C++ renferme une bête indomptée qui fut découverte
+Turing complète par accident peu après sa création. Il s'agit du système des
+\textit{templates}, dont les créateurs n'avaient initialement pas soupçonné
+la puissance. Ce système forme un langage purement fonctionnel interprété par
+le compilateur et qui a donné naissance à la métaprogrammation statique, outil
+devenu omniprésent dans le C++ moderne de par ce qu'il permet d'accomplir.
+
+L'utilisation des \textit{templates} comme modèle de calcul étant désagréable
+au mieux, certaines bibliothèques comme la MPL et Fusion sont apparues il y a
+quelques années, dans le but de rendre la métaprogrammation plus accessible.
+Cependant, le langage C++ ayant beaucoup évolué dans les récentes années, le
+domaine du possible s'est vu exploser et plusieurs bibliothèques de
+métaprogrammation ont vu le jour, avec différents niveaux de succès.
+
+Parmi ces bibliothèques se trouve Hana, une bibliothèque qui fusionne la
+programmation statique et la programmation dynamique en fournissant une
+syntaxe unifiée pour exprimer les calculs, ce qui n'avait jamais été fait
+auparavant. Les outils fournis par cette bibliothèque sont spécifiés dans
+un langage mathématique semi-formel dont les idées sont tirées du Haskell,
+de la théorie des catégories et parfois carrément nouvelles. Ce texte se
+veut à la fois une introduction à la métaprogrammation moderne en C++ et
+une formalisation de celle-ci, sous l'oeil de la bibliothèque Hana.
