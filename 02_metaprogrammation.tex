@@ -256,8 +256,9 @@ le type de retour serait bien moins évident. Par exemple, si on appelle la
 fonction \icpp{add} avec une \icpp{std::string} et un \icpp{char const*}, il
 n'est pas du tout évident que le type de retour doit être \icpp{std::string}.
 \footnote{
-    En effet, le fichier \icpp{<string>} fournit un opérateur avec la signature
-    \icpp{std::string operator+(std::string, char const*)}, qui sera utilisé ici.
+    En effet, le fichier \icpp{<string>} fournit une fonction \cc{operator+}
+    ayant une signature de \cc{std::string(std::string, char const*)}. C'est
+    cet opérateur qui sera utilisé ici.
 }
 En général, il sera très difficile ou même impossible pour un programmeur
 d'écrire explicitement le type d'une expression lorsque celui-ci dépend de
