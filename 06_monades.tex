@@ -219,3 +219,60 @@ servir?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{La monade Tuple}
+Un autre foncteur que nous avons vu dans une section précédente est \cc{Tuple}.
+Tout comme \cc{Maybe}, il s'agit non seulement d'un foncteur mais aussi d'une
+monade. Afin d'alléger la notation, on dénotera par \cc{[x1, ..., xn]}
+l'expression \cc{make_tuple(x1, ..., xn)}. Premièrement, on peut définir
+\cc{lift} comme
+\begin{align*}
+    \cc{lift} : \cc{X} &\to \cc{Tuple(X)}           \\
+                \cc{x} &\mapsto \cc{[x]}  \\
+\end{align*}
+
+\cc{lift} prend simplement un élément et le met dans un tuple singleton.
+Ensuite, on peut définir \cc{flatten} comme
+\begin{align*}
+    \cc{flatten} : \cc{Tuple(Tuple(X))} &\to \cc{Tuple(X)} \\
+                   \cc{[[x1, ..., xn], ..., [y1, ..., ym]]} &\mapsto \cc{[x1, ..., xn, y1, ..., ym]}
+\end{align*}
+
+Montrons maintenant que \cc{Tuple} est bien une monade. D'abord, pour montrer
+la première loi, considérons $\cc{xss} \in \cc{Tuple(Tuple(Tuple(X)))}$. Pour
+simplifier la notation, on écrira \cc{xss = [[[x...]...]...]}, et \cc{x... ...}
+représentera la concaténation des listes contenues dans \cc{[[x...]...]}.
+On a alors
+\begin{cpp}
+    flatten(transform([[[x...]...]...], flatten))
+        == flatten([flatten([[x...]...]])...])
+        == flatten([[x... ...]...])
+        == flatten(flatten([[[x...]...]...]))
+\end{cpp}
+
+Ensuite, pour la deuxième loi, on a bien que pour tout
+$\cc{xs = [x...]} \in \cc{Tuple(X)}$,
+\begin{cpp}
+    flatten(transform([x...], lift)) == flatten([lift(x)...])
+                                     == flatten([[x]...])
+                                     == [x...]
+                                     == flatten([[x...]])
+                                     == flatten(lift([x...]))
+\end{cpp}
+
+La troisième loi est facile à voir. Étant donné un objet $\cc{x} \in \cc{X}$
+et une fonction $\cc{f} : \cc{X} \to \cc{Y}$, on a bien
+\begin{cpp}
+    lift(f(x)) == [f(x)]
+               == transform([x], f)
+               == transform(lift(x), f)
+\end{cpp}
+
+Finalement, la quatrième et dernière loi est elle aussi respectée, puisque
+pour un objet $\cc{xs = [[x...]...]} \in \cc{Tuple(Tuple(X))}$, on a
+\begin{cpp}
+    flatten(transform([[x...]...], transform(-, f)))
+                        == flatten([transform([x...], f)...])
+                        == flatten([[f(x)...]...])
+                        == [f(x)... ...]
+                        == transform([x... ...], f)
+                        == transform(flatten([[x...]...]), f)
+\end{cpp}
