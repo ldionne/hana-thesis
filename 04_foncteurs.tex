@@ -162,19 +162,20 @@ on dénotera une valeur optionnelle de ce type par le type \cc{Maybe(T)}.
 Une valeur optionnelle peut être créée de deux manières. D'abord, on peut
 créer une valeur optionnelle (qui existe) avec \cc{just(x)}, où \cc{x}
 est une valeur de type \cc{T}. Ensuite, on peut créer une valeur optionnelle
-qui est vide avec \cc{nothing}. Ainsi, alors qu'on pourrait écrire une
-fonction qui effectue une division comme:
+qui est vide avec \cc{nothing}. Par exemple, on pourrait écrire une fonction
+qui effectue une division entière de la manière suivante (en écrivant \cc{Int}
+au lieu de \cc{IntegralConstant(int)} pour alléger):
 \begin{align*}
-    \cc{div} : \cc{float} \times \cc{float} &\to \cc{float} \\
-                                       x, y &\mapsto x / y
+    \cc{div} : \cc{Int} \times \cc{Int} &\to \cc{Int} \\
+                                   x, y &\mapsto x / y
 \end{align*}
 
-on pourrait aussi écrire une fonction qui effectue la division de manière
-sécuritaire en utilisant \icpp{Maybe}:
+Cependant, on pourrait aussi écrire une fonction qui effectue la division de
+manière sécuritaire en utilisant \icpp{Maybe}:
 \begin{align*}
-    \cc{safe_div} : \cc{float} \times \cc{float} &\to \cc{Maybe(float)} \\
+    \cc{safe_div} : \cc{Int} \times \cc{Int} &\to \cc{Maybe(Int)} \\
                     \cc{x}, \cc{y} &\mapsto \begin{cases}
-                                        \cc{nothing} \text{ si y = 0} \\
+                                        \cc{nothing} \text{ si \cc{y == int_<0>}} \\
                                         \cc{just(x / y)} \text{ sinon}
                                     \end{cases}
 \end{align*}
@@ -191,15 +192,15 @@ de la fonction \cc{from_just}, qui est définie par
 Pour que ceci nous soit d'une quelconque utilité, il nous faut aussi une
 manière de savoir quand est-ce qu'une valeur optionnelle est vide ou pleine:
 \begin{align*}
-    \cc{is_nothing} : \cc{Maybe(T)} &\to \cc{bool} \\
-                      \cc{just(x)} &\mapsto \cc{false} \\
-                      \cc{nothing} &\mapsto \cc{true}
+    \cc{is_just} : \cc{Maybe(T)} &\to \cc{IntegralConstant(bool)} \\
+                   \cc{just(x)} &\mapsto \cc{true_} \\
+                   \cc{nothing} &\mapsto \cc{false_}
 \end{align*}
 
 On peut ensuite utiliser le résultat de \cc{safe_div} comme suit:
 \begin{cpp}
     auto maybe_result = safe_div(x, y);
-    if (!is_nothing(maybe_result)) {
+    if (is_just(maybe_result)) {
         auto result = from_just(maybe_result);
         ...
     }
@@ -307,10 +308,25 @@ d'un autre côté, on a que
 \end{cpp}
 
 ce qui montre l'égalité recherchée. Ainsi, \cc{Maybe} est bien un foncteur
-sur la catégorie Hana.
+sur la catégorie Hana. De plus, avec cette définition de \cc{transform}, on
+peut maintenant écrire
+\begin{cpp}
+    auto increment = [](auto x) { return x + int_<1>; };
 
-\todo{Exemples d'utilisation. Pourquoi est-ce utile?
-Ça serait possible de mixer ça avec des calculs sur les types et la SFINAE.}
+    transform(safe_div(int_<4>, int_<2>), increment); // just(int_<3>)
+
+    transform(safe_div(int_<4>, int_<0>), increment); // nothing
+\end{cpp}
+
+ce qui est un gain d'expressivité par rapport à notre solution initiale.
+Cependant, qu'arrive-t-il si nous désirons composer plusieurs fonctions
+qui peuvent potentiellement échouer? En d'autres mots, nous sommes
+présentemment capable de composer des fonctions de la forme
+$\cc{X} \to \cc{Maybe(Y)}$ et $\cc{Y} \to \cc{Z}$; la question
+est de savoir comment nous pourrions composer des fonctions de la forme
+$\cc{X} \to \cc{Maybe(Y)}$ et $\cc{Y} \to \cc{Maybe(Z)}$. C'est en effet
+possible, mais il nous faudra attendre la section sur les monades pour y
+arriver.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -422,8 +438,8 @@ contienne $n$ éléments, on a alors
 
 Ainsi, on a bien que \cc{transform(-, id) == id}, et \cc{Tuple} respecte
 donc les flèches identités. Il reste à montrer que \cc{Tuple} respecte la
-loi de composition, c'est-à-dire que pour toutes fonctions $\cc{f} : \cc{X} \to \cc{Y}$
-et $\cc{g} : \cc{Y} \to \cc{Z}$, on a
+loi de composition, c'est-à-dire que pour toutes fonctions
+$\cc{f} : \cc{X} \to \cc{Y}$ et $\cc{g} : \cc{Y} \to \cc{Z}$, on a
 \begin{cpp}
     transform(transform(xs, f), g) == transform(xs, compose(g, f))
 \end{cpp}
@@ -452,45 +468,3 @@ par \cc{f} sont coûteux à copier, ceci peut représenter un problème. Or, la
 loi des foncteurs nous dit qu'on peut réécrire cette ligne comme
 \cc{transform(xs, compose(g, f))}, qui ne crée pas de structure
 temporaire inutile.
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Sections optionnelles
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{comment}
-\subsection{Le foncteur Lazy}
-Une propriété intéressante de certains langages de programmation fonctionnelle
-est l'évaluation paresseuse. L'évaluation paresseuse est le principe selon
-lequel la valeur d'une expression n'est pas calculée tant que celle-ci n'est
-pas utilisée. Par exemple, en C++, si on écrit
-\begin{cpp}
-
-\end{cpp}
-
-alors xyz est toujours calculée, même si elle n'est en fait pas utilisée. Au
-contraire, en Haskell, lorsqu'on écrit
-\begin{minted}{haskell}
-
-\end{minted}
-
-alors xyz n'est jamais appelée, puisque son résultat n'est jamais utilisé.
-La capacité de contrôler quand une expression est évaluée peut être une chose
-très importante, par exemple lorsqu'on désire implémenter un langage dédié
-dans lequel il y a une notion de branchement. En effet, il sera alors
-nécessaire de contrôler laquelle des deux branches est évaluée, et quand
-celle-ci est évaluée. Bien que le C++ ne permette pas ce genre de contrôle
-de manière native, il est possible de créer une couche d'abstraction qui
-permet d'émuler l'évaluation paresseuse. De plus, comme nous le verrons
-ici, cette abstraction aura des qualités fonctorielles (et même bien plus).
-
-
-\subsection{Le foncteur Type}
-
-\todo{
-    Introduire le foncteur Type, qui n'est pas un endofoncteur.
-    Étudier les propriétés d'injectivité du foncteur pour prouver
-    que tout ce qui peut être fait dans MPL peut être fait dans Hana.
-}
-
-\end{comment}

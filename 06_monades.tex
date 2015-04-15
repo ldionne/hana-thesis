@@ -1,7 +1,8 @@
 \section{Les monades}
-
-\todo{Introduction avec un peu d'intuition; on s'en va tranquillement vers
-la définition formelle.}
+Une monade est un endofoncteur avec davantage de structure. Cette structure
+additionnelle nous permet de représenter plusieurs phénomènes courants en
+programmation qui, avant l'arrivée des monades, étaient considérés comme
+complètement déconnectés des mathématiques.
 
 \begin{définition}[Monade]
     Soit $\C$ une catégorie et $I_\C : \C \to \C$ le foncteur identité sur
@@ -17,6 +18,7 @@ la définition formelle.}
     \end{enumerate}
 \end{définition}
 
+\todo{Diagramme commutatif monades?}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Les monades dans Hana}
@@ -47,7 +49,7 @@ ce qui est équivalent à dire que pour tout objet $\cc{xs} \in \cc{F(F(F(X)))}$
     flatten(transform(xs, flatten)) == flatten(flatten(xs))
 \end{cpp}
 
-Considérant \cc{xs} comme une strucutre à ``3 niveaux'', cette loi dit donc
+Considérant \cc{xs} comme une structure à ``3 niveaux'', cette loi dit donc
 qu'écraser les niveaux intérieurs puis ensuite les niveaux extérieurs est
 équivalent à écraser les niveaux extérieurs puis ensuite les niveaux
 intérieurs. Quant à la deuxième loi, elle peut s'écrire comme
@@ -89,8 +91,28 @@ peut écrire la quatrième loi comme
     flatten(transform(xs, transform(-, f))) == transform(flatten(xs), f)
 \end{cpp}
 
-Il est plus difficile de développer une intuition pour cette loi. Voyons
-maintenant des exemples de Monades qui sont utilisées dans Hana.
+Il est plus difficile de développer une intuition pour cette loi, mais les
+exemples de monades qui suivent la rendront probablement plus claire. Avant
+de donner des exemples utiles de l'utilisation des monades dans Hana, il nous
+faut introduire une fonction nommée \cc{bind}, qui sert à enchaîner des
+fonctions dont le retour est monadique. Plus précisément, \cc{bind} est
+définie comme
+\begin{align*}
+    \cc{bind} : \; &\cc{F(X)} \times (\cc{X} \to \cc{F(Y)}) \to \cc{F(Y)} \\
+                &\cc{xs} \times \cc{f} \mapsto \cc{flatten(transform(xs, f))}
+\end{align*}
+
+Étant donné une valeur monadique $\cc{xs} \in \cc{F(X)}$ et une fonction à
+retour monadique $\cc{f} : \cc{X} \to \cc{F(Y)}$, \cc{bind} applique la
+fonction \cc{f} à l'intérieur de \cc{xs}, ce qui nous donne un objet de
+type \cc{F(F(Y))}. Ensuite, \cc{bind} applique \cc{flatten} pour obtenir
+un résultat final de type \cc{F(Y)}. Une manière possible de voir \cc{bind}
+est comme l'application d'une fonction à une valeur, mais une application
+à laquelle on aurait ajouté des effets représentés par la monade \cc{F}.
+Pour alléger la notation, Hana définit l'opérateur \cc{operator|} comme
+étant équivalent à \cc{bind}: \cc{xs | f == bind(xs, f)}. Nous utiliserons
+parfois cette notation par la suite. Nous sommes maintenant prêts pour voir
+des exemples concrets de Monades qui sont utilisées dans Hana.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -179,7 +201,7 @@ $\cc{f} : \cc{X} \to \cc{Y}$. Alors
                == transform(lift(x), f)
 \end{cpp}
 
-Finalement, pour un $\cc{mm} \in \cc{F(F(X))}$ la quatrième loi nous donne
+Finalement, pour un $\cc{mm} \in \cc{F(F(X))}$, la quatrième loi nous donne
 \begin{enumerate}
     \item Si $\cc{mm} = \cc{nothing}$, alors
     \begin{cpp}
@@ -211,10 +233,126 @@ Finalement, pour un $\cc{mm} \in \cc{F(F(X))}$ la quatrième loi nous donne
     \end{cpp}
 \end{enumerate}
 
-Ceci montre que \cc{Maybe} est bien une monade. Mais à quoi ceci peut bien
-servir?
+Ceci montre que \cc{Maybe} est bien une monade. Voici une manière de nous en
+servir. D'abord, définissons la fonction \cc{sfinae}, qui nous permettra de
+manipuler des expressions potentiellement invalides sans causer d'erreur de
+compilation. Étant donné une fonction \cc{f}, \cc{sfinae(f)} est une fonction
+qui applique \cc{f} à son argument si cet appel est valide, et qui retourne
+\cc{nothing} sinon. Voici comment on peut l'implémenter:
+\begin{cpp}
+    template <typename F, typename ...X>
+    constexpr auto sfinae_impl(int, F f, X ...x) -> decltype(just(f(x...))) {
+        return just(f(x...));
+    }
 
-\todo{Montrer l'utilité de composer des fonctions monadiques.}
+    template <typename F, typename ...X>
+    constexpr auto sfinae_impl(long, F, X ...) {
+        return nothing;
+    }
+
+    auto sfinae = [](auto f) {
+        return [=](auto ...args) {
+            return sfinae_impl(int{}, f, args...);
+        };
+    };
+\end{cpp}
+
+D'abord, \cc{sfinae(f)} est juste une fonction qui appelle \cc{sfinae_impl}
+avec les arguments qu'on lui passe. On aurait aussi pu décider de passer les
+arguments directement à \cc{sfinae}, i.e. d'écrire \cc{sfinae(f, args...)}
+au lieu de \cc{sfinae(f)(args...)}. On décide de curryifier le premier argument
+de \cc{sfinae} parce que ceci facilite généralement son utilisation. Le corps
+de la technique se passe dans l'appel à \cc{sfinae_impl}.
+D'abord, puisque \cc{sfinae_impl} est surchargée mais que \cc{sfinae} l'appelle
+avec un argument de type \cc{int}, la première version sera préférée par le
+compilateur (la deuxième version nécessite une conversion implicite de \cc{int}
+vers \cc{long}). Cependant, si l'expression \cc{just(f(args...))} est invalide,
+la première version de \cc{sfinae_impl} possédera alors une signature invalide,
+et le compilateur devra plutôt utiliser la deuxième surcharge, sans toutefois
+causer d'erreur de compilation parce que la première fonction ne pouvait pas
+être choisie. Ce phénomène appelé \textit{SFINAE} (\textit{Substitution
+Failure Is Not An Error}) est couramment utilisé dans les bibliothèques de
+programmation générique pour tester la validité d'une expression. Donc, si
+\cc{just(f(args...))} est une expression valide, alors la première fonction
+sera choisie et le résultat sera \cc{just(f(args...))}. Sinon, la deuxième
+fonction sera choisie et le résultat sera \cc{nothing}. Par exemple,
+définissons un type \cc{Person} avec deux attributs ainsi que des
+fonctions permettant d'accéder à ces attributs:
+\begin{cpp}
+    struct Person {
+        std::string name;
+        unsigned int age;
+        // ...
+    };
+
+    auto name(Person p) { return p.name; }
+    auto age(Person p) { return p.age; }
+\end{cpp}
+
+Comme on s'y attendrait, tenter d'appeler \cc{age} ou \cc{name} sur autre
+chose qu'un objet de type \cc{Person} produirait une erreur de compilation,
+puisque \cc{name} est définie seulement pour des objets de type \cc{Person}:
+\begin{cpp}
+    // error: no matching function for call to 'name'
+    name(1);
+\end{cpp}
+
+Pour éviter une erreur de compilation et prendre en main la gestion de
+l'invalidité de l'appel, nous pouvons utiliser \cc{sfinae}:
+\begin{cpp}
+    Person john{"John", 30};
+    sfinae(name)(john); // just("John")
+    sfinae(name)(1);    // nothing
+\end{cpp}
+
+Mais qu'arrive-t-il si nous souhaitons composer des fonctions qui peuvent
+échouer? C'est là que la monadicité de \cc{Maybe} va nous venir en aide.
+Considérons \cc{f} une fonction qui prend un pointeur vers une \cc{Person}
+et qui renvoie la longueur de son nom. On voudrait de plus que \cc{f} nous
+renvoie un \cc{nothing} plutôt que de faire échouer la compilation si
+\textit{n'importe quelle étape} de la chaîne est invalide:
+\begin{cpp}
+    auto deref = [](auto x) -> decltype(*x) { return *x; };
+    auto length = [](auto x) -> decltype(x.length()) { return x.length(); };
+
+    auto f = [](auto x) {
+        return sfinae(deref)(x) | sfinae(name)
+                                | sfinae(length);
+    };
+\end{cpp}
+
+On utilise \cc{bind} (sous la forme \cc{operator|}) pour créer une
+composition monadique des fonctions \cc{sfinae(deref)}, \cc{sfinae(name)}
+et \cc{sfinae(length)}. De cette manière,
+\begin{cpp}
+    // `nothing` car on tente de déréférencer un non-pointeur.
+    f(john);
+
+    // `nothing` car on tente d'accéder à l'attribut `name` dans un
+    // objet de type `int`, qui n'en a pas.
+    f(static_cast<int*>(0));
+
+    // `nothing` car on tente d'appeler `.length()` sur un objet de
+    // type `long`, ce qui est invalide.
+    struct Foo { long name; };
+    Foo foo;
+    f(&foo);
+
+    // `just(4u)`; tout va bien.
+    f(&john);
+\end{cpp}
+
+Ainsi, la monade \cc{Maybe} nous permet de composer des fonctions qui peuvent
+échouer. Si on ne s'était pas rendu compte qu'il s'agissait d'une monade, il
+est peu probable que nous aurions trouvé un interface aussi composable pour
+manipuler ces fonctions. De plus, le fait que \cc{Maybe} soit une monade
+rend possible l'utilisation de plusieurs algorithmes génériques qui
+fonctionnent pour n'importe quelle monade, par exemple les accumulations
+monadiques (\textit{monadic folds}), qui ne sont pas traités ici. Les
+algorithmes de cette famille peuvent être utilisés (avec \cc{Maybe}) pour
+réduire une structure à l'aide d'une opération qui peut échouer à chaque
+étape de réduction, ce qui mène à un gain d'expressivité et de généralité
+significatif sur les alternatives existantes en métaprogrammation.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -225,7 +363,7 @@ monade. Afin d'alléger la notation, on dénotera par \cc{[x1, ..., xn]}
 l'expression \cc{make_tuple(x1, ..., xn)}. Premièrement, on peut définir
 \cc{lift} comme
 \begin{align*}
-    \cc{lift} : \cc{X} &\to \cc{Tuple(X)}           \\
+    \cc{lift} : \cc{X} &\to \cc{Tuple(X)} \\
                 \cc{x} &\mapsto \cc{[x]}  \\
 \end{align*}
 
@@ -276,3 +414,82 @@ pour un objet $\cc{xs = [[x...]...]} \in \cc{Tuple(Tuple(X))}$, on a
                         == transform([x... ...], f)
                         == transform(flatten([[x...]...]), f)
 \end{cpp}
+
+Ceci montre que \cc{Tuple} est bien une monade. Comment ceci peut-il nous
+être utile? Il se trouve que \cc{Tuple} peut être utilisé pour composer des
+fonctions ``non déterministes''. En effet, une fonction $\cc{f} : \cc{X} \to
+\cc{Tuple(Y)}$ peut être vue comme une fonction non déterministe qui associe
+plusieurs résultats possibles à chaque valeur d'entrée. Or, la fonction
+\cc{bind} associée à \cc{Tuple} possède la signature $\cc{Tuple(X)} \times
+(\cc{X} \to \cc{Tuple(Y)}) \to \cc{Tuple(Y)}$. Ainsi, elle permet de passer
+le résultat d'une fonction ayant plusieurs valeurs possibles (un \cc{Tuple(X)})
+à une fonction non déterministe acceptant un seul \cc{X}. En utilisant
+\cc{bind} en chaîne, il est possible de créer un pipeline de transformations
+non déterministes sans que cela ne soit trop encombrant. Par exemple,
+supposons qu'on ait une fonction générique f:
+\begin{cpp}
+    template <typename T>
+    auto f(T&& t) {
+        // ...
+    }
+\end{cpp}
+
+\cc{f} étant un \textit{template}, son corps n'est pas instancié par le
+compilateur avant qu'on en fasse la requête pour un type \cc{T} explicite.
+Ainsi, il est possible que la fonction soit invalide pour certains choix de
+\cc{T} (pour lesquels on aimerait qu'elle soit valide), mais que cette erreur
+ne soit attrapée par le compilateur que beaucoup plus tard, lorsqu'on appelle
+la fonction avec un des types \cc{T} problématique. Ceci pose particulièrement
+problème pour tester les bibliothèques génériques qui sont presque uniquement
+constituées de \textit{templates}. Or, il se trouve que la monade \cc{Tuple}
+peut nous aider à s'assurer que la fonction \cc{f} compile bien avec toutes
+les variations possibles d'un type donné. D'abord, écrivons une fonction
+$\cc{cv_qualifiers} : \cc{Type} \to \cc{Tuple(Type)}$ qui associe à un
+\cc{Type} une liste de ses variations \textit{cv-qualifiées}:
+\begin{cpp}
+    template <typename T>
+    auto cv_qualifiers(_type<T>) {
+        return make_tuple(
+            type<T>, type<T const>, type<T volatile>, type<T const volatile>
+        );
+    }
+\end{cpp}
+
+Ainsi, étant donné un type \cc{T}, \cc{cv_qualifiers} retourne un \cc{Tuple}
+qui contient toutes les variations possibles de qualifications \cc{const} et
+\cc{volatile}. De manière similaire, définissons une fonction $\cc{ref_qualifiers}
+: \cc{Type} \to \cc{Tuple(Type)}$ qui associe à un type une liste des références
+possibles à ce type.
+\begin{cpp}
+    template <typename T>
+    auto ref_qualifiers(_type<T>) {
+        return make_tuple(type<T&>, type<T&&>);
+    }
+\end{cpp}
+
+Maintenant, étant donné un type \cc{T}, disons \cc{int}, il nous est possible
+de générer toutes les combinaisons de qualificatifs \cc{const-volatile} et de
+références en \cc{bind}ant le retour de \cc{cv_qualifiers} dans l'entrée de
+\cc{ref_qualifiers}, ou vice-versa. Finalement, on peut utiliser la fonction
+\cc{sfinae} présentée plus tôt pour s'assurer que la fonction \cc{f} compile
+bien avec toutes les variations de types d'arguments qui nous intéressent:
+\begin{cpp}
+    // args == [int&, int&&, int const&, in const&&, int volatile&,
+    //          int volatile&&, int const volatile&, int const volatile&&]
+    auto args = bind(cv_qualifiers(type<int>), ref_qualifiers);
+
+    transform(args, [](auto arg) {
+        using T = typename decltype(arg)::type;
+        using Valid = decltype(is_just(sfinae(f)(std::declval<T>())));
+        static_assert(Valid{}, "");
+
+        return 0; // on doit retourner quelque chose pour transform
+    });
+\end{cpp}
+
+D'abord, on génère la séquence de tous les types d'arguments possible qu'on
+souhaite peut-être envoyer à \cc{f}. Ensuite, on utilise \cc{transform} pour
+appliquer une fonction anonyme à chacun de ces types. Étant donné un type
+d'argument sous la forme d'un \cc{type<T>}, cette fonction anonyme extrait le
+type \cc{T}, puis utilise \cc{sfinae} pour s'assurer que l'appel à la fonction
+\cc{f} avec ce type d'argument est bien formé.
