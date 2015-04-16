@@ -14,9 +14,9 @@ Le C++ est un langage statiquement typé. Ceci veut dire que chaque objet
 possède un (et un seul) type, et que celui-ci est déterminé au moment de la
 compilation. De plus, en C++, le type d'un objet est directement relié à son
 mode de représentation. Par exemple, pour représenter une valeur entière, on
-doit d'abord décider d'un mode de représentation, disons \icpp{int}. Or, le mode
+doit d'abord décider d'un mode de représentation, disons \cc{int}. Or, le mode
 de représentation choisit ne permet généralement pas de représenter le concept
-voulu dans toute sa généralité. En effet, \icpp{int} n'est capable de représenter
+voulu dans toute sa généralité. En effet, \cc{int} n'est capable de représenter
 que des valeurs entre -2,147,483,647 et 2,147,483,647, ce qui est très loin
 du très général $\mathbb{Z}$. La différence entre le concept abstrait
 représenté par un type et sa représentation concrète est un problème auquel
@@ -27,7 +27,7 @@ expressivité, testabilité ou même productivité du programmeur.
 
 Lorsqu'on souhaite créer un objet pour lui donner une valeur, on doit donc
 dire au compilateur quel est le mode de représentation que l'on souhaite
-utiliser. Par exemple, pour créer un entier représenté par le type \icpp{int}
+utiliser. Par exemple, pour créer un entier représenté par le type \cc{int}
 avec une valeur de 10, on écrira
 \begin{cpp}
     int i = 10;
@@ -40,9 +40,9 @@ utiliser. Par exemple, pour déclarer une fonction dont le domaine est
 l'ensemble des chaînes de caractères et le codomaine est l'ensemble des
 entiers non-négatifs, on devra d'abord décider d'une représentation concrète
 pour chacun de ces ensembles. Supposons que l'on choisisse le type
-\icpp{std::string} pour représenter l'ensemble des chaînes de caractères et le
-type \icpp{unsigned int} pour représenter l'ensemble des entiers non-négatifs.
-Une fonction $\icpp{f} : \icpp{std::string} \to \icpp{unsigned int}$ s'écrira
+\cc{std::string} pour représenter l'ensemble des chaînes de caractères et le
+type \cc{unsigned int} pour représenter l'ensemble des entiers non-négatifs.
+Une fonction $\cc{f} : \cc{std::string} \to \cc{unsigned int}$ s'écrira
 alors
 \begin{cpp}
     unsigned int f(std::string);
@@ -74,9 +74,9 @@ types aient tous une interface commune:
     // possiblement d'autres types de séquences
 \end{cpp}
 
-Dans cet exemple, \icpp{is_empty} retourne une valeur booléenne qui est \icpp{true}
-si la séquence est vide, et \icpp{false} sinon. \icpp{head} retourne la première
-valeur d'une séquence non-vide et \icpp{tail} retourne une nouvelle séquence
+Dans cet exemple, \cc{is_empty} retourne une valeur booléenne qui est \cc{true}
+si la séquence est vide, et \cc{false} sinon. \cc{head} retourne la première
+valeur d'une séquence non-vide et \cc{tail} retourne une nouvelle séquence
 qui contient toutes les valeurs sauf la première. À partir de cette interface
 minimals, il est possible de faire plusieurs choses utiles. Par exemple, on
 peut aller chercher la n-ème valeur dans une séquence de la manière suivante:
@@ -88,8 +88,8 @@ peut aller chercher la n-ème valeur dans une séquence de la manière suivante:
 \end{cpp}
 
 Malheureusement, cette fonction ne fonctionne que sur des objets de type
-\icpp{int_sequence}. Il faudrait donc écrire une autre fonction pour les
-objets de type \icpp{float_sequence}
+\cc{int_sequence}. Il faudrait donc écrire une autre fonction pour les
+objets de type \cc{float_sequence}
 \begin{cpp}
     float_sequence float_sequence_nth_element(unsigned int n, float_sequence s) {
         if (n == 0) return s.head();
@@ -121,11 +121,11 @@ code suivant
 \end{cpp}
 
 il commence par déterminer quel est le type qui devrait être substitué à
-la place de \icpp{Sequence} dans le template écrit plus haut. Il détermine
-que le type à substituer est \icpp{int_sequence}, puis il génère une fonction
-équivalente à celle que nous avions écrite pour le type \icpp{int_sequence}.
-Finalement, l'appel à \icpp{nth_element} sera en réalité un appel à la
-fonction générée pour le type \icpp{int_sequence}. L'idée est donc
+la place de \cc{Sequence} dans le template écrit plus haut. Il détermine
+que le type à substituer est \cc{int_sequence}, puis il génère une fonction
+équivalente à celle que nous avions écrite pour le type \cc{int_sequence}.
+Finalement, l'appel à \cc{nth_element} sera en réalité un appel à la
+fonction générée pour le type \cc{int_sequence}. L'idée est donc
 d'utiliser le compilateur comme un système de réécriture pour nous
 éviter des tâches répétitives dans certains cas. Cependant, il reste un cas
 très évident de répétition dans l'exemple que nous venons de donner; les
@@ -144,27 +144,27 @@ templates peuvent aussi être utilisés pour créer des canevas de types:
     };
 \end{cpp}
 
-Ensuite, on aura qu'à écrire \icpp{sequence<int>} pour faire référence à la
-représentation d'une séquence contenant des \icpp{int}, \icpp{sequence<float>}
-pour une séquence de \icpp{float}, et ainsi de suite. Par exemple, lorsque le
+Ensuite, on aura qu'à écrire \cc{sequence<int>} pour faire référence à la
+représentation d'une séquence contenant des \cc{int}, \cc{sequence<float>}
+pour une séquence de \cc{float}, et ainsi de suite. Par exemple, lorsque le
 compilateur voit
 \begin{cpp}
     sequence<float> s = ...;
 \end{cpp}
 
-il génère un type équivalent à \icpp{float_sequence} en substituant \icpp{T}
-par \icpp{float} dans le canevas écrit plus haut, et c'est à ce type généré que
-l'écriture \icpp{sequence<float>} fait référence.
+il génère un type équivalent à \cc{float_sequence} en substituant \cc{T}
+par \cc{float} dans le canevas écrit plus haut, et c'est à ce type généré que
+l'écriture \cc{sequence<float>} fait référence.
 
 Dans la réalité, il arrive souvent que l'on souhaite écrire une fonction
 template qui ait une implémentation bien spécifique pour certains types
 d'arguments, ou encore un type template qui ait une représentation spéciale
 dans certains cas. Ceci est particulièrement utile à des fins d'optimisation.
 Par exemple, supposons que nous voulions représenter une séquence de booléens.
-Nous pouvons utiliser le type \icpp{sequence<bool>}. Cependant, en supposant
-que \icpp{sequence} stocke ses valeurs dans un tableau d'éléments contigus en
+Nous pouvons utiliser le type \cc{sequence<bool>}. Cependant, en supposant
+que \cc{sequence} stocke ses valeurs dans un tableau d'éléments contigus en
 mémoire, on peut remarquer qu'une représentation différente nous ferait sauver
-de l'espace. En effet, le type \icpp{bool} prend généralement 1 octet en mémoire
+de l'espace. En effet, le type \cc{bool} prend généralement 1 octet en mémoire
 parce qu'il s'agit de la petite unité adressable, mais nous n'avons en réalité
 besoin que d'un seul bit pour le représenter. Si on voulait stocker une
 séquence de booléens, on pourrait utiliser un tableau d'octets et n'utiliser
@@ -181,27 +181,27 @@ qu'un seul bit par booléen. Le C++ rend ce genre d'optimisation très facile
     };
 \end{cpp}
 
-Avec une telle spécialisation, le type \icpp{sequence<T>} fait référence à
+Avec une telle spécialisation, le type \cc{sequence<T>} fait référence à
 l'implémentation pour le cas général présenté au début de cette section,
-mais le type \icpp{sequence<bool>} fait référence à la représentation plus
+mais le type \cc{sequence<bool>} fait référence à la représentation plus
 efficace qu'on vient de donner. De plus, tant qu'on ne change pas l'interface
-publique du type \icpp{sequence<bool>} en le spécialisant, toutes les fonctions
-qui n'utilisent que cette interface (comme \icpp{nth_element}) fonctionneront
+publique du type \cc{sequence<bool>} en le spécialisant, toutes les fonctions
+qui n'utilisent que cette interface (comme \cc{nth_element}) fonctionneront
 encore. Cependant, il arrive fréquemment qu'il est possible d'implémenter une
 fonction de manière plus efficace si l'on tire avantage de la représentation
 d'un type. Le C++ permet donc aussi de spécifier une implémentation différente
 pour une fonction à l'aide d'une technique appelée \textit{overloading}. Par
 exemple, on pourrait spécifier l'implémentation de la fonction
-\icpp{nth_element} pour le type \icpp{sequence<bool>} comme suit:
+\cc{nth_element} pour le type \cc{sequence<bool>} comme suit:
 \begin{cpp}
     sequence<bool> nth_element(unsigned int n, sequence<bool> s) {
         // implémentation plus efficace
     }
 \end{cpp}
 
-Lorsque le compilateur voit un appel à la fonction \icpp{nth_element}, il
+Lorsque le compilateur voit un appel à la fonction \cc{nth_element}, il
 effectue un procédé plutôt complexe appelé \textit{overload resolution}, qui
-consiste essentiellement à trouver la version de \icpp{nth_element} qui est
+consiste essentiellement à trouver la version de \cc{nth_element} qui est
 la plus spécifique étant donné le type des arguments avec lesquels la fonction
 est appelée.
 
@@ -210,8 +210,8 @@ automatique du type d'une expression, qui a été introduite dans le langage en
 2011. En C++, toute expression possède un type unique qui est connu par le
 compilateur. En principe, le compilateur devrait donc être capable de dire ce
 type au programmeur. C'est en effet le cas; il suffit d'utiliser le mot clé
-\icpp{decltype}. Par exemple, pour savoir le type de l'expression \icpp{1 + 1},
-on peut écrire \icpp{decltype(1 + 1)}:
+\cc{decltype}. Par exemple, pour savoir le type de l'expression \cc{1 + 1},
+on peut écrire \cc{decltype(1 + 1)}:
 \begin{cpp}
     // équivalent à `int i = 0`, parce que `decltype(1 + 1) = int`
     decltype(1 + 1) i = 0;
@@ -219,14 +219,14 @@ on peut écrire \icpp{decltype(1 + 1)}:
 
 De plus, il est possible de demander au compilateur de donner à une variable
 le type inféré d'une expression qu'on lui assigne. Pour ce faire, on utilise
-le mot clé \icpp{auto}:
+le mot clé \cc{auto}:
 \begin{cpp}
     auto i = 1 + 1;
 \end{cpp}
 
-Ici, le compilateur détermine que le type de \icpp{1 + 1} est \icpp{int}, et
-le type de \icpp{i} est donc \icpp{int}, exactement comme si on avait écrit
-\icpp{int i = 1 + 1}. Ce principe s'étend aussi au type de retour des fonctions.
+Ici, le compilateur détermine que le type de \cc{1 + 1} est \cc{int}, et
+le type de \cc{i} est donc \cc{int}, exactement comme si on avait écrit
+\cc{int i = 1 + 1}. Ce principe s'étend aussi au type de retour des fonctions.
 En effet, le compilateur peut inférer le type de retour d'une fonction à partir
 du type de l'expression qui est retournée. Par exemple, pour prendre un exemple
 un peu trivial,
@@ -236,15 +236,15 @@ un peu trivial,
     }
 \end{cpp}
 
-Ici, le compilateur sait que \icpp{i} et \icpp{j} sont de type \icpp{int},
+Ici, le compilateur sait que \cc{i} et \cc{j} sont de type \cc{int},
 puisque c'est comme cela qu'ils ont été déclarés comme paramètres de la
-fonction \icpp{add}. De plus, il sait que l'addition de deux \icpp{int} donne
-un \icpp{int}; il peut donc inférer le type de retour de la fonction \icpp{add}
-comme étant le type \icpp{int}.
+fonction \cc{add}. De plus, il sait que l'addition de deux \cc{int} donne
+un \cc{int}; il peut donc inférer le type de retour de la fonction \cc{add}
+comme étant le type \cc{int}.
 
 Bien que ces mots clés n'en aient pas l'air, ils sont terriblement utiles pour
 faire de la programmation générique. Par exemple, si on changeait la définition
-de \icpp{add} pour
+de \cc{add} pour
 \begin{cpp}
     template <typename T, typename U>
     auto add(T t, U u) {
@@ -253,10 +253,10 @@ de \icpp{add} pour
 \end{cpp}
 
 le type de retour serait bien moins évident. Par exemple, si on appelle la
-fonction \icpp{add} avec une \icpp{std::string} et un \icpp{char const*}, il
-n'est pas du tout évident que le type de retour doit être \icpp{std::string}.
+fonction \cc{add} avec une \cc{std::string} et un \cc{char const*}, il
+n'est pas du tout évident que le type de retour doit être \cc{std::string}.
 \footnote{
-    En effet, le fichier \icpp{<string>} fournit une fonction \cc{operator+}
+    En effet, le fichier \cc{<string>} fournit une fonction \cc{operator+}
     ayant une signature de \cc{std::string(std::string, char const*)}. C'est
     cet opérateur qui sera utilisé ici.
 }
@@ -268,7 +268,7 @@ du programmeur.
 Le dernier élément de base qui sera nécessaire pour la suite est la notion
 d'\textit{expression constante}. Une expression constante est, intuitivement,
 une expression dont la valeur est connue au moment de la compilation. Pour
-dénoter une expression constante, on utilise le mot clé \icpp{constexpr}:
+dénoter une expression constante, on utilise le mot clé \cc{constexpr}:
 \begin{cpp}
     constexpr int i = 0;
 \end{cpp}
@@ -276,11 +276,11 @@ dénoter une expression constante, on utilise le mot clé \icpp{constexpr}:
 Les règles exactes de ce qui peut apparaître dans une expression constante
 sont un peu techniques, mais l'essentiel est qu'une expression constante ne
 doit contenir que des sous-expressions qui sont elles-aussi des expressions
-constantes, et que les litéraux comme \icpp{1}, \icpp{'x'} et \icpp{true}
+constantes, et que les litéraux comme \cc{1}, \cc{'x'} et \cc{true}
 sont des expressions constantes. De plus, on peut utiliser certaines
 expressions constantes comme argument à des templates. C'est notamment le
-cas pour celles d'un type intégral (au sens du standard) comme \icpp{int}
-ou \icpp{bool}. Les expressions constantes sont un outil très important,
+cas pour celles d'un type intégral (au sens du standard) comme \cc{int}
+ou \cc{bool}. Les expressions constantes sont un outil très important,
 comme nous le verrons dans ce qui suit.
 
 
@@ -294,9 +294,9 @@ d'introduire un branchement dans le compilateur. En effet, dépendamment
 d'une condition exprimée sous la forme d'un type, on peut demander au
 compilateur de compiler une fonction ou bien une autre en faisant en sorte
 que la branche que l'on souhaite soit choisie par l'\textit{overload resolution}.
-Par exemple, considérons le type template \icpp{_bool}, qui représentera une
+Par exemple, considérons le type template \cc{_bool}, qui représentera une
 condition connue au moment de la compilation. On peut alors obtenir un
-branchement équivalent à \icpp{condition ? x : y}, mais effectué au moment de
+branchement équivalent à \cc{condition ? x : y}, mais effectué au moment de
 la compilation, de la manière suivante:
 \begin{cpp}
     template <bool condition>
@@ -309,29 +309,29 @@ la compilation, de la manière suivante:
     Else if_(_bool<false>, Then t, Else e) { return e; }
 \end{cpp}
 
-L'expression \icpp{if_(condition, x, y)} est équivalente à \icpp{condition ? x : y},
-à la différence que les types de \icpp{x} et \icpp{y} ne sont pas obligés d'être
-compatibles, et que la condition doit être un objet de type \icpp{_bool<...>}
-au lieu d'être un \icpp{bool}. En effet, lorsqu'on écrit
+L'expression \cc{if_(condition, x, y)} est équivalente à \cc{condition ? x : y},
+à la différence que les types de \cc{x} et \cc{y} ne sont pas obligés d'être
+compatibles, et que la condition doit être un objet de type \cc{_bool<...>}
+au lieu d'être un \cc{bool}. En effet, lorsqu'on écrit
 \begin{cpp}
     if_(_bool<true>{}, 1, std::string{"xyz"})
 \end{cpp}
-le compilateur détermine que la version de \icpp{if_} à choisir est la première
+le compilateur détermine que la version de \cc{if_} à choisir est la première
 et c'est donc le premier argument qui est retourné. Si on avait écrit
 \begin{cpp}
     if_(_bool<false>{}, 1, std::string{"xyz"})
 \end{cpp}
-alors la deuxième fonction aurait été appelée et la \icpp{std::string} aurait
+alors la deuxième fonction aurait été appelée et la \cc{std::string} aurait
 été retournée. Tout l'intéret de cette technique est qu'elle permet aux objets
 dans les deux branches d'avoir des types incompatibles, ce qui n'est pas le cas
-avec l'opérateur \icpp{? :} usuel. En effet, avec cet opérateur, les deux
+avec l'opérateur \cc{? :} usuel. En effet, avec cet opérateur, les deux
 alternatives doivent avoir un type en commun, puisque le compilateur doit être
 en mesure de donner un type à cette expression au moment de la compilation. Or,
 il est possible que la condition ne soit connue qu'à l'exécution du programme.
 Le type de l'expression ne peut donc pas dépendre de la \textit{valeur} de la
 condition. Avec notre technique, il est nécessaire que la condition soit une
 expression constante (puisqu'elle est utilisée comme argument dans le template
-\icpp{_bool}), mais on gagne alors la possibilité d'avoir des objets de types
+\cc{_bool}), mais on gagne alors la possibilité d'avoir des objets de types
 complètement différents dans chaque branche.
 
 Le branchement à la compilation n'est pas la seule technique que nous pouvons
@@ -346,12 +346,12 @@ objets que la factorielle manipulera:
     struct _int { };
 \end{cpp}
 
-Exactement comme \icpp{_bool} un peu plus haut, \icpp{_int} ne sert qu'à
+Exactement comme \cc{_bool} un peu plus haut, \cc{_int} ne sert qu'à
 représenter une valeur connue au moment de la compilation à l'aide d'un type.
-Étant donné un objet de type \icpp{_int<i>}, la seule information qui nous
+Étant donné un objet de type \cc{_int<i>}, la seule information qui nous
 intéresse est le type de cet objet, puisqu'il contient l'entier que nous
 souhaitons représenter. C'est d'ailleurs la seule information qui nous est
-donnée par un tel objet, puisque le type \icpp{_int<i>} est un type singleton,
+donnée par un tel objet, puisque le type \cc{_int<i>} est un type singleton,
 c'est-à-dire qu'il ne possède qu'une seule valeur possible. Les raisons qui
 nous poussent à représenter les entiers connus au moment de la compilation
 par des objets de types singletons deviendront claires plus tard. Nous pouvons
@@ -370,29 +370,29 @@ maintenant regarder l'implémentation de la fonction factorielle:
     { return fact_impl(n, _int<1>{}); }
 \end{cpp}
 
-Voici ce qui arrive lorsque l'on appelle \icpp{fact(_int<3>{})}. D'abord,
-\icpp{fact} appelle directement \icpp{fact_impl} en lui fournissant un
-accumulateur à 1 sous la forme d'un \icpp{_int}. Il s'agit là d'une simple
+Voici ce qui arrive lorsque l'on appelle \cc{fact(_int<3>{})}. D'abord,
+\cc{fact} appelle directement \cc{fact_impl} en lui fournissant un
+accumulateur à 1 sous la forme d'un \cc{_int}. Il s'agit là d'une simple
 astuce pour ne pas être obligé de fournir l'accumulateur soi-même lorsqu'on
-utilise \icpp{fact}. Ensuite, le compilateur détermine que la version de
-\icpp{fact_impl} à appeler est celle dont la signature est \icpp{??
+utilise \cc{fact}. Ensuite, le compilateur détermine que la version de
+\cc{fact_impl} à appeler est celle dont la signature est \cc{??
 fact_impl(_int<3>, _int<1>)}. Cependant, pour connaître le type de retour de
 la fonction, on force le compilateur à aller voir le corps de la fonction, où
-on se trouve à appeler \icpp{fact_impl(_int<n - 1>{}, _int<acc * n>{})}. C'est
+on se trouve à appeler \cc{fact_impl(_int<n - 1>{}, _int<acc * n>{})}. C'est
 là que la récursion arrive; le compilateur est forcé de recommencer le même
-processus avec la fonction dont la signature est \icpp{fact_impl(_int<2>,
+processus avec la fonction dont la signature est \cc{fact_impl(_int<2>,
 _int<1 * 3>)}, ce qui le mènera éventuellement à considérer la fonction
-\icpp{fact_impl(_int<0>, _int<1 * 3 * 2 * 1>)}. À cette étape, la deuxième
-implémentation de \icpp{fact_impl} sera choisie, puisqu'elle est plus
+\cc{fact_impl(_int<0>, _int<1 * 3 * 2 * 1>)}. À cette étape, la deuxième
+implémentation de \cc{fact_impl} sera choisie, puisqu'elle est plus
 spécifique. Il s'agit du cas de base de la récursion. Le type de retour de
-cette fonction étant \icpp{_int<acc>} (\icpp{_int<1 * 3 * 2 * 1>} dans notre
+cette fonction étant \cc{_int<acc>} (\cc{_int<1 * 3 * 2 * 1>} dans notre
 cas), le compilateur n'a pas besoin d'aller plus loin et il ``remonte'' la
 chaîne de fonctions qu'il était en train de compiler. Ainsi, le type de
-l'expression \icpp{fact(_int<3>{})} est évalué à \icpp{_int<1 * 3 * 2 * 1>},
+l'expression \cc{fact(_int<3>{})} est évalué à \cc{_int<1 * 3 * 2 * 1>},
 et nous venons effectivement de forcer le compilateur à calculer la fonction
 factorielle. Cet exemple n'est pas très utile; en effet, il existe de
 meilleures manières de calculer une factorielle au moment de la compilation en
-utilisant \icpp{constexpr}, et de toute façon la factorielle n'est pas si
+utilisant \cc{constexpr}, et de toute façon la factorielle n'est pas si
 intéressante que ça. Cependant, il est intéressant de remarquer que la
 compilation des templates en C++ constitue un langage Turing-complet, et il
 est donc possible d'exprimer des algorithmes très complexes de cette manière,
@@ -414,7 +414,7 @@ ceci se matérialise via le type
     struct _integral_constant { /* ... */ };
 \end{cpp}
 
-\icpp{_integral_constant} est un peu comme \icpp{_int} introduit plus haut,
+\cc{_integral_constant} est un peu comme \cc{_int} introduit plus haut,
 mais il est possible de spécifier une valeur de n'importe quel type intégral.
 De plus, on fournit des \textit{variable templates} qui servent d'alias pour
 créer des objets de ces types avec un poid syntaxique minimal:
@@ -429,7 +429,7 @@ créer des objets de ces types avec un poid syntaxique minimal:
     auto three = int_<3>;
 \end{cpp}
 
-De plus, \icpp{_integral_constant} fournit les opérateurs arithmétiques usuels,
+De plus, \cc{_integral_constant} fournit les opérateurs arithmétiques usuels,
 ce qui permet de faire de l'arithmétique avec une syntaxe raisonable:
 \begin{cpp}
     template <typename T, T t, typename U, U u>
@@ -451,8 +451,8 @@ n'ont rien à voir avec les opérateurs arithmétiques usuels. En effet, ils
 n'utilisent pas du tout la \textit{valeur} de leurs arguments, mais uniquement
 leur type. De plus, le type de retour dépend entièrement du type des arguments.
 La valeur de retour, quant à elle, est complètement inutile puisque
-\icpp{_integral_constant<...>} ne possède qu'une seule valeur, c'est à dire
-\icpp{_integral_constant<...>{}}. L'idée derrière ceci est en fait très
+\cc{_integral_constant<...>} ne possède qu'une seule valeur, c'est à dire
+\cc{_integral_constant<...>{}}. L'idée derrière ceci est en fait très
 puissante; nous utilisons des objets de types singletons (n'ayant qu'une
 valeur possible) pour représenter des expressions constantes et faire des
 calculs au moment de la compilation.
@@ -463,25 +463,25 @@ puisque la donnée d'une valeur d'un type singleton fournit exactement la même
 quantité d'information que la donnée de ce type seulement. Cependant, manipuler
 des valeurs est bien plus commode que manipuler des types directement. Bien
 entendu, cette correspondance nécessite la capacité de demander le type d'une
-expression au compilateur, ce qui est justement possible grâce à \icpp{decltype}
-et \icpp{auto}.
+expression au compilateur, ce qui est justement possible grâce à \cc{decltype}
+et \cc{auto}.
 
-Avant de continuer, penchons-nous un peu plus sur la nature d'\icpp{_integral_constant}.
-Étant donné une expression constante \icpp{v} d'un type intégral \icpp{T}, on est
-capable de créer un objet du type singleton \icpp{_integral_constant<T, v>}, ce qui
+Avant de continuer, penchons-nous un peu plus sur la nature d'\cc{_integral_constant}.
+Étant donné une expression constante \cc{v} d'un type intégral \cc{T}, on est
+capable de créer un objet du type singleton \cc{_integral_constant<T, v>}, ce qui
 nous permet effectivement de représenter cette expression constante par un objet.
 Cependant, étant donné un tel objet, sommes-nous capable de retrouver l'expression
 constante qu'il représente? Présentement, c'est impossible.
 \footnote{
     En fait, c'est possible, mais comprendre pourquoi ça fonctionne dans tous
-    les cas demande une excellente compréhension de \icpp{constexpr}. Les
+    les cas demande une excellente compréhension de \cc{constexpr}. Les
     détails sont expliqués dans \href{\Hana}{Hana}.
 }
 Or, il est crucial d'être capable de le faire. De plus, il est très important
 que cette valeur soit considérée par le compilateur comme une expression constante,
 et ce peu importe que l'objet dont elle est issue soit une expression constante ou
 non. Pour que ce soit possible, il nous faut changer la définition
-d'\icpp{_integral_constant} de la manière suivante:
+d'\cc{_integral_constant} de la manière suivante:
 \begin{cpp}
     template <typename T, T v>
     struct _integral_constant {
@@ -489,9 +489,9 @@ d'\icpp{_integral_constant} de la manière suivante:
     };
 \end{cpp}
 
-Maintenant, étant donné un objet de type \icpp{_integral_constant<...>}, on
+Maintenant, étant donné un objet de type \cc{_integral_constant<...>}, on
 peut retrouver l'expression constante qu'il représente, et ce même si cet objet
-n'en est pas une. En effet, il suffit d'utiliser \icpp{decltype}:
+n'en est pas une. En effet, il suffit d'utiliser \cc{decltype}:
 \begin{cpp}
     // Supposons que `n` soit un `_integral_constant<...>`. À noter que
     // `n` n'est clairement pas une expression constante (volatile!).
@@ -499,10 +499,10 @@ n'en est pas une. En effet, il suffit d'utiliser \icpp{decltype}:
     constexpr bool v = decltype(n)::value;
 \end{cpp}
 
-On commence donc par déduire le type de \icpp{n}, qui est de la forme
-\icpp{_integral_constant<...>}. Ensuite, on va chercher l'expression
+On commence donc par déduire le type de \cc{n}, qui est de la forme
+\cc{_integral_constant<...>}. Ensuite, on va chercher l'expression
 constante qu'il représente et qui est stockée dans le membre de classe
-\icpp{value}. Bien que cela puisse sembler anodin, nous venons de faire
+\cc{value}. Bien que cela puisse sembler anodin, nous venons de faire
 quelque chose d'important. Nous étions en mesure de passer d'une expression
 constante vers un objet d'un type singleton. Maintenant, nous sommes aussi
 capables de parcourir le chemin en sens inverse et de passer d'un objet d'un
@@ -518,18 +518,18 @@ plus loin.
 il y a plusieurs autres choses que l'on souhaiterait faire. Par exemple, il
 est souvent utile de manipuler des types comme s'ils étaient des objets, pour
 effectuer des transformations sur ceux-ci. Par exemple, on aimerait écrire
-une fonction \icpp{f} qui ``prend'' un type \icpp{T}, et qui ``renvoie'' le
-type \icpp{T*}. Attention, ici \icpp{T} n'est pas le domaine de la fonction
-\icpp{f}. En fait, mathématiquement, on pourrait écrire
+une fonction \cc{f} qui ``prend'' un type \cc{T}, et qui ``renvoie'' le
+type \cc{T*}. Attention, ici \cc{T} n'est pas le domaine de la fonction
+\cc{f}. En fait, mathématiquement, on pourrait écrire
 \begin{align*}
     f : \{\text{tous les types C++}\} &\to \{\text{tous les types C++}\}\\
-                             \icpp{T} &\mapsto \icpp{T*}
+                             \cc{T} &\mapsto \cc{T*}
 \end{align*}
 
 Comment pourrait-on écrire une telle fonction en C++? Une option est d'utiliser
 le concept de \textit{métafonction}, tel qu'introduit par la bibliothèque MPL.
 Une métafonction au sens MPL est un template contenant un alias nommé
-\icpp{type} qui contient la ``valeur de retour'' de la métafonction:
+\cc{type} qui contient la ``valeur de retour'' de la métafonction:
 \begin{cpp}
     template <typename T>
     struct f {
@@ -537,8 +537,8 @@ Une métafonction au sens MPL est un template contenant un alias nommé
     };
 \end{cpp}
 
-De plus, on se donne la convention qu'appliquer une métafonction \icpp{f} à
-un type \icpp{T} se fait de la manière suivante:
+De plus, on se donne la convention qu'appliquer une métafonction \cc{f} à
+un type \cc{T} se fait de la manière suivante:
 \begin{cpp}
     using U = f<T>::type;
     // `U` est maintenant un alias pour `f<T>::type`,
@@ -548,7 +548,7 @@ un type \icpp{T} se fait de la manière suivante:
 Cette approche fonctionne assez bien, mis à part que la syntaxe est peu
 intuitive et qu'écrire des métafonctions complexes est assez difficile.
 Pour cette raison, Hana utilise une approche mixte qui consiste à écrire les
-transformations de base (précisément celles de \icpp{<type_traits>}) comme des
+transformations de base (précisément celles de \cc{<type_traits>}) comme des
 métafonctions au sens MPL, puis de les manipuler en tant qu'objets pour
 construire des métafonctions plus complexes. Voici comment cela fonctionne.
 D'abord, on définit une famille de types singletons qui représenteront des types
@@ -568,12 +568,12 @@ comme s'ils étaient des objets:
     // le type `int` dans notre monde
 \end{cpp}
 
-Étant donné un type \icpp{T}, on est donc maintenant capable de fournir un
-objet qui représente ce type \icpp{T}. Cependant, étant donné un objet qui
-représente un type \icpp{T}, on est pas (pour l'instant) capable de retrouver
-le type \icpp{T}. Pour être capable de faire la correspondance entre le monde
+Étant donné un type \cc{T}, on est donc maintenant capable de fournir un
+objet qui représente ce type \cc{T}. Cependant, étant donné un objet qui
+représente un type \cc{T}, on est pas (pour l'instant) capable de retrouver
+le type \cc{T}. Pour être capable de faire la correspondance entre le monde
 des types et celui des valeurs dans les deux sens, on fait la chose suivante.
-D'abord, on fournit un alias qui fait en sorte que \icpp{_type<T>} devienne
+D'abord, on fournit un alias qui fait en sorte que \cc{_type<T>} devienne
 une métafonction au sens MPL:
 \begin{cpp}
     template <typename T>
@@ -582,20 +582,20 @@ une métafonction au sens MPL:
     };
 \end{cpp}
 
-Ensuite, étant donné un objet qui représente un type \icpp{T}, on est capable
-de retrouver \icpp{T} comme suit:
+Ensuite, étant donné un objet qui représente un type \cc{T}, on est capable
+de retrouver \cc{T} comme suit:
 \begin{cpp}
     auto t = ...; // un `type<T>`
     using T = decltype(t)::type;
 \end{cpp}
 
 On utilise donc l'inférence de type fournie par le compilateur avec
-\icpp{decltype} pour d'abord obtenir \icpp{_type<T>} à partir de \icpp{t},
-puis on utilise le fait que \icpp{_type<T>} est une métafonction MPL pour
-obtenir un alias au \icpp{T} initial. D'ailleurs, il est très éclairant de
+\cc{decltype} pour d'abord obtenir \cc{_type<T>} à partir de \cc{t},
+puis on utilise le fait que \cc{_type<T>} est une métafonction MPL pour
+obtenir un alias au \cc{T} initial. D'ailleurs, il est très éclairant de
 constater que ce procédé est analogue à ce que nous avons fait pour
-\icpp{_integral_constant}, où nous avions la variable de classe \icpp{value}
-qui jouait le rôle de \icpp{type} et qui nous permettait de traverser le pont
+\cc{_integral_constant}, où nous avions la variable de classe \cc{value}
+qui jouait le rôle de \cc{type} et qui nous permettait de traverser le pont
 entre les types et les objets dans le sens inverse.
 
 Pour être en mesure de faire des calculs sur des types, il nous manque
@@ -626,15 +626,15 @@ des métafonctions:
     // type `int*` dans notre monde!
 \end{cpp}
 
-Voyons comment cela fonctionne. D'abord, nous dotons \icpp{_metafunction<F>}
-d'un opérateur d'appel. Cet opérateur assume que \icpp{_metafunction<F>} ne
-sera appelé qu'avec des objets de type \icpp{_type<T>}. Ensuite, dans le corps
-de la fonction, on commence par appliquer la métafonction \icpp{F} aux types
-\icpp{T} cachés dans les paramètres \icpp{_type<T>...}, puis on stocke le
-résultat dans l'alias \icpp{Result} pour faciliter la lecture. On retourne
-finalement un objet de type \icpp{_type<Result>} en utilisant le raccourci
-\icpp{type<Result>}. C'est donc de la manière suivante qu'il faut comprendre
-l'expression \icpp{f(type<int>)}:
+Voyons comment cela fonctionne. D'abord, nous dotons \cc{_metafunction<F>}
+d'un opérateur d'appel. Cet opérateur assume que \cc{_metafunction<F>} ne
+sera appelé qu'avec des objets de type \cc{_type<T>}. Ensuite, dans le corps
+de la fonction, on commence par appliquer la métafonction \cc{F} aux types
+\cc{T} cachés dans les paramètres \cc{_type<T>...}, puis on stocke le
+résultat dans l'alias \cc{Result} pour faciliter la lecture. On retourne
+finalement un objet de type \cc{_type<Result>} en utilisant le raccourci
+\cc{type<Result>}. C'est donc de la manière suivante qu'il faut comprendre
+l'expression \cc{f(type<int>)}:
 \begin{cpp}
     f(type<int>) == metafunction<std::add_pointer>(type<int>)
                  == type<std::add_pointer<int>::type>
@@ -673,26 +673,26 @@ déjà étudiée lorsque nous avons introduit les calculs sur des types:
 Quel est le domaine de cette fonction? Mécaniquement, on peut dire que le
 domaine est
 \[
-    \bigcup_{\text{tous les types \icpp{T}}} \icpp{_type<T>}
+    \bigcup_{\text{tous les types \cc{T}}} \cc{_type<T>}
 \]
 
 Cependant, sous cette forme, ce domaine ne nous est pas vraiment utile. Pour
 pouvoir mettre un nom sur cet ensemble, Hana introduit le concept de type
 généralisé. En essence, un type généralisé est une étiquette qui rassemble
-une famille de types (comme \icpp{_type<...>}) sous une même bannière. Ceci
+une famille de types (comme \cc{_type<...>}) sous une même bannière. Ceci
 nous permet de manipuler des objets de n'importe quel type faisant partie
 de cette famille comme étant un représentant de la bannière. Par exemple,
-pour représenter la famille de types \icpp{_type<...>}, on utilisera la
-bannière \icpp{Type}. D'une certaine manière, on peut donc dire que
+pour représenter la famille de types \cc{_type<...>}, on utilisera la
+bannière \cc{Type}. D'une certaine manière, on peut donc dire que
 \[
-    \icpp{Type} = \bigcup_{\text{tous les types \icpp{T}}} \icpp{_type<T>}
+    \cc{Type} = \bigcup_{\text{tous les types \cc{T}}} \cc{_type<T>}
 \]
 
 Concrètement, les types généralisés sont implémentés comme des types
 conventionnels qui ne servent que d'étiquette à une famille de types
-conventionnels. La métafonction \icpp{datatype} de Hana permet d'obtenir
-le type généralisé d'un type conventionnel. Étant donné un type \icpp{T}
-quelconque, le type généralisé de \icpp{T} est \icpp{datatype<T>::type}:
+conventionnels. La métafonction \cc{datatype} de Hana permet d'obtenir
+le type généralisé d'un type conventionnel. Étant donné un type \cc{T}
+quelconque, le type généralisé de \cc{T} est \cc{datatype<T>::type}:
 \begin{cpp}
     using GeneralizedT = datatype<T>::type;
 \end{cpp}
@@ -705,14 +705,14 @@ Hana est l'utilisation de ces étiquettes comme étant le ``type'' des objets.
 Ainsi, dans Hana, les objets sont classifiés par leur type généralisé et les
 fonctions spécifient leur domaine comme un type généralisé plutôt qu'un
 type conventionnel. Par exemple, la définition rigoureuse de notre fonction
-\icpp{add_pointer} devient
+\cc{add_pointer} devient
 \[
-    \icpp{add_pointer} : \icpp{Type} \to \icpp{Type}
+    \cc{add_pointer} : \cc{Type} \to \cc{Type}
 \]
 
-ce qui veut dire que \icpp{add_pointer} accepte n'importe quel objet dont le
-type généralisé est \icpp{Type}, et ce peut importe son type réel (qui sera
-de la forme \icpp{_type<T>}. Ceci permet de faire abstraction de la
+ce qui veut dire que \cc{add_pointer} accepte n'importe quel objet dont le
+type généralisé est \cc{Type}, et ce peut importe son type réel (qui sera
+de la forme \cc{_type<T>}. Ceci permet de faire abstraction de la
 représentation des objets, qui n'est généralement qu'un détail
 d'implémentation dans le contexte de la métaprogrammation. De plus, on peut se
 rendre compte que la notion de type généralisé est strictement plus générale
@@ -723,9 +723,9 @@ d'ailleurs ce qui est fait dans Hana. Plus précisément, le type généralisé
 d'un type est ce type lui-même par défaut, mais il est possible de spécifier
 le type généralisé d'une famille de types si on le désire. Pour se faire, il
 suffit d'utiliser la spécialisation des \textit{templates} pour la métafonction
-\icpp{datatype}. Par exemple, le type généralisé de \icpp{int} est \icpp{int},
-mais celui de n'importe quel \icpp{_type<T>} est \icpp{Type}, puisque
-\icpp{datatype} est spécialisé de la manière suivante:
+\cc{datatype}. Par exemple, le type généralisé de \cc{int} est \cc{int},
+mais celui de n'importe quel \cc{_type<T>} est \cc{Type}, puisque
+\cc{datatype} est spécialisé de la manière suivante:
 \begin{cpp}
     struct Type; // représente le type généralisé Type
     template <typename T>
@@ -737,7 +737,7 @@ mais celui de n'importe quel \icpp{_type<T>} est \icpp{Type}, puisque
 Mais ce n'est pas tout. Le C++ possède la notion de \textit{template}, qui est
 dans l'essence un type paramétré, ou encore une fonction sur les types. Cette
 notion de type paramétré est fondamentale si l'on veut exprimer des
-types moindrement complexes, comme par exemple \icpp{std::vector<T>}. En
+types moindrement complexes, comme par exemple \cc{std::vector<T>}. En
 bonne généralisation de la notion de type, Hana introduit la notion de
 type généralisé paramétré. Formellement, on peut voir ceci comme une
 fonction sur les types généralisés, exactement comme les \textit{templates}
@@ -746,22 +746,22 @@ sont des fonctions sur les types.
 Sans s'en rendre compte, nous avons déjà vu une manifestation des types
 généralisés paramétrés lorsque que nous voulions manipuler des entiers
 au moment de la compilation. Au départ, nous avions commencé avec
-\icpp{_int<i>}, puis nous avions étendu le principe à
-\icpp{_integral_constant<T, i>} pour être capable de manipuler des entiers
-de n'importe quel type intégral \icpp{T}. En réalité, étant donné un type
-intégral \icpp{T}, le type généralisé de \icpp{_integral_constant<T, i>}
-est \icpp{IntegralConstant(T)}, et ce peut-importe l'entier \icpp{i} que
-\icpp{_integral_constant<T, i>} représente. Vu de cette manière,
-\icpp{IntegralConstant} est donc un type généralisé paramétré par
-le type généralisé \icpp{T} de la valeur entière qu'il représente.
-Cependant, étant donné que \icpp{IntegralConstant} ne peut que représenter
-des valeurs de types intégraux (\icpp{int}, \icpp{long}, etc...), les types
-généralisés auxquels il fait du sens d'appliquer \icpp{IntegralConstant}
+\cc{_int<i>}, puis nous avions étendu le principe à
+\cc{_integral_constant<T, i>} pour être capable de manipuler des entiers
+de n'importe quel type intégral \cc{T}. En réalité, étant donné un type
+intégral \cc{T}, le type généralisé de \cc{_integral_constant<T, i>}
+est \cc{IntegralConstant(T)}, et ce peut-importe l'entier \cc{i} que
+\cc{_integral_constant<T, i>} représente. Vu de cette manière,
+\cc{IntegralConstant} est donc un type généralisé paramétré par
+le type généralisé \cc{T} de la valeur entière qu'il représente.
+Cependant, étant donné que \cc{IntegralConstant} ne peut que représenter
+des valeurs de types intégraux (\cc{int}, \cc{long}, etc...), les types
+généralisés auxquels il fait du sens d'appliquer \cc{IntegralConstant}
 coïncident tous avec des types standards du C++.
 
-Au passage, on notera que nous utilisons la notation \icpp{IntegralConstant(T)}
-plutôt que \icpp{IntegralConstant<T>} pour dénoter l'application de
-\icpp{IntegralConstant} à \icpp{T}. Nous faisons ceci principalement pour deux
+Au passage, on notera que nous utilisons la notation \cc{IntegralConstant(T)}
+plutôt que \cc{IntegralConstant<T>} pour dénoter l'application de
+\cc{IntegralConstant} à \cc{T}. Nous faisons ceci principalement pour deux
 raisons. D'abord, cela permet de mettre en évidence la différence entre les
 types généralisés et les \textit{templates}. De plus, la plupart des types
 généralisés paramétrés de Hana ne sont pas implémentés comme des
