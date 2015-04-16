@@ -37,51 +37,50 @@ Si elle n'est pas très intuitive, l'égalité de ces deux expressions fait donc
 au moins du sens.
 
 Or, il existe une manière visuelle de se représenter cette équation qui nous
-aidera à en tirer un peu d'intuition. D'abord, on représente les catégories
-$\C$ et $\D$ ainsi que l'action des foncteurs $F : \C \to \D$ et $G : \C \to \D$
-sur deux objets quelconques $X,Y \in \ob(\C)$ et une flèche $f : X \to Y$.
+aidera à en tirer un peu d'intuition. Il suffit de représenter les catégories
+$\C$ et $\D$ ainsi que l'action de $F$, $G$ et $\eta$ sur deux objets
+quelconques $X,Y \in \ob(\C)$ et une flèche $f : X \to Y$.
 
-\todo{Compléter ce diagramme.}
+\[
 \begin{tikzpicture}
-    \draw (2,2) ellipse (1.5cm and 2cm); % Catégorie C
-    \draw (2,1) node {.}; % X
-    \draw (2,3) node {.}; % Y
+    % Catégorie C
+    \draw (2,2) ellipse (2cm and 2.5cm);
+    \node(C) at (3,4.6) {$\C$};
 
-    \draw (8,2) ellipse (1.5cm and 2cm); % Catégorie D
-    \draw (7,1) node {.}; % F(X)
-    \draw (9,1) node {.}; % G(X)
+    \draw (2,3) node[circle, inner sep=1.2pt, outer sep=1.5pt, fill=black, label={above:{$X$}}] (X) {};
+    \draw (2,1) node[circle, inner sep=1.2pt, outer sep=1.5pt, fill=black, label={below:{$Y$}}] (Y) {};
+    \draw [thick, ->] (X) -- node[right] {$f$} (Y);
 
-    \draw (7,3) node {.}; % F(Y)
-    \draw (9,3) node {.}; % G(Y)
+    % Catégorie D
+    \draw (8,2) ellipse (2cm and 2.5cm);
+    \node(D) at (9,4.6) {$\D$};
+    \draw (7,3) node[circle, inner sep=1.2pt, outer sep=1.5pt, fill=black, label={above:{$F(X)$}}] (FX) {};
+    \draw (7,1) node[circle, inner sep=1.2pt, outer sep=1.5pt, fill=black, label={below:{$F(Y)$}}] (FY) {};
+    \draw [blue, thick, ->] (FX) -- node[color=black, left] {$F(f)$} (FY);
+
+    \draw (9,3) node[circle, inner sep=1.2pt, outer sep=1.5pt, fill=black, label={above:{$G(X)$}}] (GX) {};
+    \draw (9,1) node[circle, inner sep=1.2pt, outer sep=1.5pt, fill=black, label={below:{$G(Y)$}}] (GY) {};
+    \draw [red, thick, ->] (GX) -- node[color=black, right] {$G(f)$} (GY);
+
+    % Foncteurs
+    \draw [thick, ->] (3.9,4) to [bend left=25] node[above] {$F,G$} (6.1,4);
+
+    % Transformation naturelle
+    \draw [red, thick, ->] (FX) -- node[color=black, above] {$\eta_X$} (GX);
+    \draw [blue, thick, ->] (FY) -- node[color=black, below] {$\eta_Y$} (GY);
 \end{tikzpicture}
+\]
 
-Ajoutons maintenant la représentation de $\eta$ appliquée à ces objets. On
-obtient
-
-\todo{Compléter ce diagramme.}
-\begin{tikzpicture}
-    \draw (2,2) ellipse (1.5cm and 2cm); % Catégorie C
-    \draw (2,1) node {.}; % X
-    \draw (2,3) node {.}; % Y
-
-    \draw (8,2) ellipse (1.5cm and 2cm); % Catégorie D
-    \draw (7,1) node {.}; % F(X)
-    \draw (9,1) node {.}; % G(X)
-
-    \draw (7,3) node {.}; % F(Y)
-    \draw (9,3) node {.}; % G(Y)
-\end{tikzpicture}
-
-L'équation $\eta_Y \circ F(f) = G(f) \circ \eta_X$ peut se lire comme
+L'équation $\eta_Y \, \circ F(f) = G(f) \circ \, \eta_X$ peut se lire comme
 ``$\eta_Y$ après $F(f)$ doit être égal à $G(f)$ après $\eta_X$'', ce
-qui veut simplement dire que les chemins rouges et bleus doivent en fait
+qui veut simplement dire que les chemins bleus et rouges doivent en fait
 donner le même résultat, et ce peut importe les $X$, $Y$ et $f$ considérés.
 Ainsi, l'équation présentée plus haut peut se réécrire sous une forme plus
 visuelle en affirmant que le diagramme suivant commute:
 \[
 \begin{tikzcd}
-    F(X) \arrow[d, blue, "\eta_X"' black] \arrow[r, red, "F(f)" black] & F(Y) \arrow[d, red, "\eta_Y" black] \\
-    G(X) \arrow[r, blue, "G(f)" black] & G(Y)
+    F(X) \arrow[d, blue, "F(f)"' black] \arrow[r, red, "\eta_X" black] & G(X) \arrow[d, red, "G(f)" black] \\
+    F(Y) \arrow[r, blue, "\eta_Y" black] & G(Y)
 \end{tikzcd}
 \]
 

@@ -39,8 +39,8 @@ deux flèches dont les sources et destinations sont compatibles, c'est-à-dire
 que pour des flèches $f : Y \to Z$ et $g : X \to Y$, on puisse écrire
 $f \circ g$. La définition de $\circ$ doit donc être de la forme
 \begin{align*}
-    \circ : \hom(Y, Z) \times \hom(X, Y) &\to \hom(X, Z) \\
-             f, g &\mapsto f \circ g
+    \circ : \; &\hom(Y, Z) \times \hom(X, Y) \to \hom(X, Z) \\
+               &f, g \mapsto f \circ g
 \end{align*}
 
 Il est donc nécessaire de parler d'une telle opération $\circ$ pour chaque
@@ -50,11 +50,11 @@ rigoureusement notre abus de langage, appelons $\circ_{\left(X,Y,Z\right)}$
 l'opération binaire associée au triplet d'objets $\left(X,Y,Z\right)$.
 Il suffit maintenant de définir la composition comme
 \begin{align*}
-    \circ : \bigcup \left\{ \dom(\circ_{\left(X,Y,Z\right)})
-                            \suchthat X, Y, Z \in \ob(\C) \right\} &\to \hom(\C) \\
-           f, g &\mapsto f \circ_{\left(\dom(g), \range(g), \range(f)\right)} g
+    \circ : \; &\bigcup \left\{ \dom(\circ_{\left(X,Y,Z\right)})
+                            \suchthat X, Y, Z \in \ob(\C) \right\} \to \hom(\C) \\
+           & f, g \mapsto f \circ_{\left(\dom(g), \range(g), \range(f)\right)} g
 \end{align*}
-, ce qui nous permet de composer n'importe quelles deux flèches dont les sources
+ce qui nous permet de composer n'importe quelles deux flèches dont les sources
 et destinations sont compatibles sans s'enfarger dans les fleurs du tapis. Nous
 sommes maintenant prêts à passer aux propriétés qui doivent être satisfaites
 pour qu'on ait bien une catégorie. D'abord, pour tout objet $X \in \ob(\C)$,
@@ -98,35 +98,56 @@ catégorie sont trivialement satisfaites. Une autre catégorie simple (et
 peu utile) est la catégorie triviale, qui ne contient qu'un seul objet
 et sa flèche identité:
 
-\centerline{\includegraphics[scale=0.3]{figures/trivial}}
+\[
+\scalebox{1}{
+    \begin{tikzcd}
+        \bullet \arrow[loop above, "id"]
+    \end{tikzcd}
+}
+\]
 
 De manière générale, on peut voir une catégorie comme un graphe dirigé avec
 certaines propriétés. Par exemple, le graphe suivant est une catégorie:
 
-% TODO
-\centerline{\tikz \draw (0,0) rectangle (3, 2);}
+\[
+\begin{tikzcd}
+        \bullet \arrow[loop above] \arrow[r, "u"] \arrow[rr, bend right, "w"]
+      & \bullet \arrow[loop above] \arrow[r, "v"]
+      & \bullet \arrow[loop above]
+\end{tikzcd}
+\]
 
 Les objets sont les sommets du graphe, les flèches sont les arrêtes et la loi
-de composition est une application qui associe à deux arrêtes $u$ et $v$ un
-troisième sommet qui part de la source de $u$ jusqu'à la destination de $v$.
-Bien entendu, tous les graphes ne sont pas des catégories. Par exemple, le
-graphe suivant ne peut pas être une catégorie:
+de composition est une application qui associe à deux arrêtes $u$ et $v$ une
+troisième arrête $w$ qui part de la source de $u$ jusqu'à la destination de
+$v$. Bien entendu, tous les graphes ne sont pas des catégories. Par exemple,
+le graphe suivant ne peut pas être une catégorie:
 
-% TODO
-\centerline{\tikz \draw (0,0) rectangle (3, 2);}
+\[
+\begin{tikzcd}
+        \bullet \arrow[r] \arrow[rr, bend right]
+      & \bullet \arrow[loop above] \arrow[r]
+      & \bullet \arrow[loop above]
+\end{tikzcd}
+\]
 
-En effet, il n'y a pas d'arrête qui part du sommet $a$ vers lui-même, ce qui
-ne respecte pas le fait que chaque objet doit avoir une flèche identité. Aussi,
-bien qu'il respecte les identités, le graphe suivant ne peut pas être une
-catégorie:
+En effet, il n'y a pas d'arrête qui part du sommet de gauche vers lui-même, ce
+qui ne respecte pas le fait que chaque objet doit avoir une flèche identité.
+Aussi, bien qu'il respecte les identités, le graphe suivant ne peut pas être
+une catégorie:
 
-% TODO
-\centerline{\tikz \draw (0,0) rectangle (3, 2);}
+\[
+\begin{tikzcd}
+        a \arrow[loop above] \arrow[r, "u"]
+      & b \arrow[loop above] \arrow[r, "v"]
+      & c \arrow[loop above]
+\end{tikzcd}
+\]
 
 En effet, il existe une arrête entre les sommets $a$ et $b$ et une arrête
 entre les sommets $b$ et $c$, mais il n'y en a pas entre les sommets $a$ et
 $c$. Si on essayait de définir la loi de composition, on se rendrait compte
-qu'il n'y a pas de valeur possible pour $u \circ v$. Ainsi, la composition
+qu'il n'y a pas de valeur possible pour $v \circ u$. Ainsi, la composition
 serait mal définie et le graphe ne peut pas représenter une catégorie. En
 général, on peut créer une catégorie à partir de n'importe quel graphe dirigé
 en ajoutant simplement les flèches manquantes.
