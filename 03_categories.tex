@@ -29,46 +29,32 @@ de $X$ vers $Y$ par $\hom(X, Y)$, ou encore $\hom_\C(X, Y)$ lorsque la catégori
 $\C$ n'est pas évidente à partir du contexte. On utilise aussi la notation
 $f : X \to Y$ pour dire que $f$ est une flèche allant de $X$ vers $Y$,
 c'est-à-dire que $f \in \hom(X, Y)$. On dit alors que $f$ est de source
-$X$ et de destination $Y$, noté $\dom(f)$ et $\range(f)$ respectivement.
+$X$ et de destination $Y$, noté $\dom(f)$ et $\range(f)$, respectivement.
 
-Ensuite, il est important de bien comprendre qu'on ne parle pas en réalité
-d'une seule opération binaire, mais bien d'une opération binaire pour chaque
-triplet d'objets $X, Y, Z \in \ob(\C)$. En effet, on souhaite définir notre
-opération binaire de manière à ce qu'elle puisse composer n'importe quelles
-deux flèches dont les sources et destinations sont compatibles, c'est-à-dire
-que pour des flèches $f : Y \to Z$ et $g : X \to Y$, on puisse écrire
-$f \circ g$. La définition de $\circ$ doit donc être de la forme
+Ensuite, il est important de bien comprendre qu'on ne parle pas d'une seule
+opération binaire, mais en réalité d'une famille d'opérations binaires $\circ$
+qui associe à chaque paire de $\hom$-classes $\hom(Y,Z)$ et $\hom(X,Y)$ une
+opération
 \begin{align*}
-    \circ : \; &\hom(Y, Z) \times \hom(X, Y) \to \hom(X, Z) \\
-               &f, g \mapsto f \circ g
+    \circ_{X,Y,Z} : \; &\hom(Y, Z) \times \hom(X, Y) \to \hom(X, Z) \\
+                       &g, f \mapsto g \circ_{X,Y,Z} f
 \end{align*}
 
-Il est donc nécessaire de parler d'une telle opération $\circ$ pour chaque
-paire de $\hom$-classe $\left(\hom(Y, Z), \hom(X, Y)\right)$, ou, de manière
-équivalente, pour chaque triplet d'objets $\left(X, Y, Z\right)$. Pour justifier
-rigoureusement notre abus de langage, appelons $\circ_{\left(X,Y,Z\right)}$
-l'opération binaire associée au triplet d'objets $\left(X,Y,Z\right)$.
-Il suffit maintenant de définir la composition comme
-\begin{align*}
-    \circ : \; &\bigcup \left\{ \dom(\circ_{\left(X,Y,Z\right)})
-                            \suchthat X, Y, Z \in \ob(\C) \right\} \to \hom(\C) \\
-           & f, g \mapsto f \circ_{\left(\dom(g), \range(g), \range(f)\right)} g
-\end{align*}
-ce qui nous permet de composer n'importe quelles deux flèches dont les sources
-et destinations sont compatibles sans s'enfarger dans les fleurs du tapis. Nous
-sommes maintenant prêts à passer aux propriétés qui doivent être satisfaites
-pour qu'on ait bien une catégorie. D'abord, pour tout objet $X \in \ob(\C)$,
-il doit exister une flèche de $X$ vers lui-même, qu'on appelle généralement
+Pour éviter de s'enfarger dans les fleurs du tapis, nous utiliserons simplement
+la notation $\circ$, comme il est d'usage dans la littérature. Nous sommes
+maintenant prêts à passer aux propriétés qui doivent être satisfaites pour
+qu'on ait bien une catégorie. D'abord, pour tout objet $X \in \ob(\C)$, il
+doit exister une flèche de $X$ vers lui-même, qu'on appelle généralement
 identité (sur $X$):
 \[
     \id_X : X \to X
 \]
 
 Ensuite, la composition $\circ$ définie plus haut doit être associative,
-c'est-à-dire que pour toutes flèches $f : C \to D$, $g : B \to C$ et
-$h : A \to B$, on doit avoir
+c'est-à-dire que pour toutes flèches $f : A \to B$, $g : B \to C$ et
+$h : C \to D$, on doit avoir
 \[
-    (f \circ g) \circ h = f \circ (g \circ h)
+    (h \circ g) \circ f = h \circ (g \circ f)
 \]
 
 Finalement, on doit avoir que les identités sont des éléments neutres de la
@@ -207,7 +193,13 @@ capacité de raisonner mathématiquement à propos des fonctions de Hana puisque
 le langage C++ n'est pas pur, contrairement au Haskell. Ce n'est cependant pas
 une restriction qui nous handicap beaucoup, puisque Hana s'intéresse surtout à
 la manipulation d'objets hétérogènes, ce qui requiert l'utilisation d'un style
-de programmation fonctionnel de toute façon.
+de programmation fonctionnel de toute façon. On notera aussi qu'on ignore les
+fonctions qui ne terminent pas, un abus qui est généralement accepté puisque
+justifiable \cite{danielsson06}. Finalement, on ignore aussi les détails du
+C++ comme les restrictions sur le type \cc{void} ou le fait qu'on ne peut pas
+passer un tableau comme argument à une fonction. Il n'y a pas de perte de
+généralité puisqu'on peut créer des types équivalents à \cc{void} et \cc{T[N]},
+mais qui se comportent comme des vrais objets.
 
 Finalement, la loi de composition sur Hana est, sans grande surprise,
 l'extension de la composition de fonctions usuelle aux fonctions
@@ -229,8 +221,8 @@ types généralisés. On peut définir la composition par
 Ainsi, \icpp{compose<X, Y, Z>} peut être appelée avec n'importe quelle fonctions
 \icpp{f} et \icpp{g}, mais celles dont les domaines et codomaines ne coïncident
 pas avec \icpp{X}, \icpp{Y} et \icpp{Z} résulteront en une erreur de compilation.
-Dans la réalité, il est trop répétitif de préciser les types \icpp{X}, \icpp{Y} et
-\icpp{Z} et on préfère la définition suivante pour \icpp{compose}:
+Dans la réalité, il est trop répétitif de préciser les types \icpp{X}, \icpp{Y}
+et \icpp{Z} et on préfère la définition suivante pour \icpp{compose}:
 \begin{cpp}
     auto compose = [](auto f, auto g) {
         return [=](auto x) {
@@ -241,15 +233,12 @@ Dans la réalité, il est trop répétitif de préciser les types \icpp{X}, \icp
 
 La tâche de s'assurer que les domaines et codomaines sont respectés est ainsi
 laissée au programmeur, mais l'interface qui en résulte est beaucoup plus
-facile à utiliser. Dans les preuves, la première définition de \icpp{compose}
-sera généralement utilisée, pour mettre en évidence les types généralisés des
-fonctions qui sont composées.
-
-Il nous reste à démontrer que Hana est bien une catégorie. Pour ce faire,
-il suffit de vérifier qu'il existe une flèche identité pour chaque objet de
-la catégorie et que la composition est bien associative. D'abord, la flèche
-identité d'un type généralisé peut être définie en utilisant une fonction
-\textit{template} ou une fonction anonyme générique de la manière suivante:
+facile à utiliser. Il nous reste à démontrer que Hana est bien une catégorie.
+Pour ce faire, il suffit de vérifier qu'il existe une flèche identité pour
+chaque objet de la catégorie et que la composition est bien associative.
+D'abord, la flèche identité d'un type généralisé peut être définie en
+utilisant une fonction \textit{template} ou une fonction anonyme générique
+de la manière suivante:
 \begin{cpp}
     template <typename X>
     auto id = [](auto x) {
