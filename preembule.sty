@@ -15,6 +15,13 @@
 \usepackage{verbatim}           % \begin{comment}
 \usepackage{tikz}               % Figures et graphiques
 \usetikzlibrary{cd}             % Diagrammes commutatifs avec TikZ
+\usepackage{afterpage}
+
+\newcommand\blankpage{%
+    \null
+    \thispagestyle{empty}%
+    \addtocounter{page}{-1}%
+    \newpage}
 
 % Pour inclure du code source
 \usepackage{minted}
