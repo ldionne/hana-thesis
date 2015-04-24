@@ -1,8 +1,8 @@
 \section{Les catégories: premier contact}
 L'intérêt de se tourner vers la théorie des catégories est de guider le
-design de la bibliothèque pour obtenir des interfaces très généraux et
-spécifiés clairement, formellement. La généralité de la théorie permet
-d'avoir des interfaces qui sont très abstraits et qui en couvrent donc
+design de la bibliothèque pour obtenir des interfaces très générales et
+spécifiées clairement, formellement. La généralité de la théorie permet
+d'avoir des interfaces qui sont très abstraites et qui en couvrent donc
 très large, ce qui réduit la complexité globale de la bibliothèque. La
 capacité de formaliser ces interfaces permet d'automatiser une bonne partie
 des tests et de raisonner à propos des programmes écrits avec Hana de manière
@@ -147,7 +147,7 @@ ensemblistes et la composition est la composition usuelle de fonctions.
 On peut ensuite ajouter de la structure à ces ensembles et demander que
 les applications ensemblistes respectent cette structure. Ceci nous mène
 à considérer, par exemple, la catégorie $\mathrm{Grp}$, où les objets sont
-les groupes et les flèches sont des homomorphismes de groupe, avec la
+les groupes et les flèches sont des homomorphismes de groupes, avec la
 composition usuelle. On peut continuer sur ce chemin et considérer la
 catégorie $\mathrm{Ring}$ des anneaux, où les flèches sont des homomorphismes
 d'anneaux, puis la catégorie $\mathrm{K-Vect}$ des espaces vectoriels sur un
@@ -218,7 +218,7 @@ types généralisés. On peut définir la composition par
     };
 \end{cpp}
 
-Ainsi, \icpp{compose<X, Y, Z>} peut être appelée avec n'importe quelle fonctions
+Ainsi, \icpp{compose<X, Y, Z>} peut être appelée avec n'importe quelles fonctions
 \icpp{f} et \icpp{g}, mais celles dont les domaines et codomaines ne coïncident
 pas avec \icpp{X}, \icpp{Y} et \icpp{Z} résulteront en une erreur de compilation.
 Dans la réalité, il est trop répétitif de préciser les types \icpp{X}, \icpp{Y}
@@ -251,21 +251,23 @@ Ainsi, étant donné un type généralisé \cc{X}, l'identité sur \cc{X} est
 \cc{id<X>}. Puisque le type C++ de l'argument de \cc{id<X>} est quelconque,
 on peut passer n'importe quel objet à cette fonction, tant que le type
 généralisé de cet objet est exactement \cc{X}. Si ce n'est pas le cas,
-le compilateur rapportera une erreur de compilation. De plus, il est clair
-que l'identité est un élément neutre de la loi de composition. En effet, soit
+le compilateur rapportera une erreur de compilation. Pour alléger la
+notation, on écrira \cc{id} au lieu de \cc{id<X>}, un peu comme on a
+fait pour \cc{compose} plus haut. De plus, il est clair que l'identité
+est un élément neutre de la loi de composition. En effet, soit
 \cc{A} et \cc{B} des types généralisés et $\cc{f} : \cc{A} \to \cc{B}$
 une fonction. Alors,
 \begin{cpp}
-    compose<A, B, B>(id<B>, f) == [](auto x) { return id<B>(f(x)); }
-                               == [](auto x) { return f(x); }
-                               == f
+    compose(id, f) == [](auto x) { return id(f(x)); }
+                   == [](auto x) { return f(x); }
+                   == f
 \end{cpp}
 
 De manière similaire,
 \begin{cpp}
-    compose<A, A, B>(f, id<A>) == [](auto x) { return f(id<A>(x)); }
-                               == [](auto x) { return f(x); }
-                               == f
+    compose(f, id) == [](auto x) { return f(id(x)); }
+                   == [](auto x) { return f(x); }
+                   == f
 \end{cpp}
 
 ce qui montre que l'identité est bien l'élément neutre de la composition.
@@ -274,16 +276,16 @@ pas difficile non plus. Pour des types généralisés \cc{A}, \cc{B}, \cc{C},
 \cc{D}, soit $\cc{f} : \cc{A} \to \cc{B}$, $\cc{g} : \cc{B} \to \cc{C}$ et
 $\cc{h} : \cc{C} \to \cc{D}$ des fonctions. Alors,
 \begin{cpp}
-    compose<A, C, D>(h, compose<A, B, C>(g, f))
-        == [](auto x) { return h(compose<A, B, C>(g, f)(x)); }
+    compose(h, compose(g, f))
+        == [](auto x) { return h(compose(g, f)(x)); }
         == [](auto x) { return h([](auto x) { return g(f(x)); }(x)); }
         == [](auto x) { return h(g(f(x))); }
 \end{cpp}
 
 De l'autre côté, on obtient que
 \begin{cpp}
-    compose<A, B, D>(compose<B, C, D>(h, g), f)
-        == [](auto x) { return compose<B, C, D>(h, g)(f(x)); }
+    compose(compose(h, g), f)
+        == [](auto x) { return compose(h, g)(f(x)); }
         == [](auto x) { return [](auto x) { return h(g(x)); }(f(x)); }
         == [](auto x) { return h(g(f(x))); }
 \end{cpp}

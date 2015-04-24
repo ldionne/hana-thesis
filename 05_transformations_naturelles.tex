@@ -195,10 +195,10 @@ Ceci est en fait une manifestation du résultat plus général suivant.
     et $\beta_X$ est une flèche $G(X) \to H(X)$. Ensuite, on a
     \begin{align*}
         (\beta \circ \alpha)_Y \circ F(f)
-            &= (\beta_Y \circ \alpha_Y) \circ F(f)                          \\
-            &= \beta_Y \circ (G(f) \circ \alpha_X)                          \\
-            &= (H(f) \circ \beta_X) \circ \alpha_X                          \\
-            &= H(f) \circ (\beta \circ \alpha)_X
+            &= (\beta_Y \circ \alpha_Y) \circ F(f) & (\text{par définition})\\
+            &= \beta_Y \circ (G(f) \circ \alpha_X) & (\text{par la loi})    \\
+            &= (H(f) \circ \beta_X) \circ \alpha_X & (\text{par la loi, encore})\\
+            &= H(f) \circ (\beta \circ \alpha)_X   & (\text{par définition})
     \end{align*}
 
     ce qui montre que $\beta \circ \alpha$ est naturelle.

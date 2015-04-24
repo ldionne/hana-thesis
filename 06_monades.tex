@@ -320,7 +320,7 @@ renvoie un \cc{nothing} plutôt que de faire échouer la compilation si
     };
 \end{cpp}
 
-On utilise \cc{bind} (sous la forme \cc{operator|}) pour créer une
+On utilise \cc{bind} (sous sa forme \cc{operator|}) pour créer une
 composition monadique des fonctions \cc{sfinae(deref)}, \cc{sfinae(name)}
 et \cc{sfinae(length)}. De cette manière,
 \begin{cpp}
@@ -343,7 +343,7 @@ et \cc{sfinae(length)}. De cette manière,
 
 Ainsi, la monade \cc{Maybe} nous permet de composer des fonctions qui peuvent
 échouer. Si on ne s'était pas rendu compte qu'il s'agissait d'une monade, il
-est peu probable que nous aurions trouvé un interface aussi composable pour
+est peu probable que nous aurions trouvé une interface aussi composable pour
 manipuler ces fonctions. De plus, le fait que \cc{Maybe} soit une monade
 rend possible l'utilisation de plusieurs algorithmes génériques qui
 fonctionnent pour n'importe quelle monade, par exemple les accumulations
@@ -359,24 +359,31 @@ significatif sur les alternatives existantes en métaprogrammation.
 Un autre foncteur que nous avons vu dans une section précédente est \cc{Tuple}.
 Tout comme \cc{Maybe}, il s'agit non seulement d'un foncteur mais aussi d'une
 monade. Afin d'alléger la notation, on dénotera par \cc{[x1, ..., xn]}
-l'expression \cc{make_tuple(x1, ..., xn)}. Premièrement, on peut définir
-\cc{lift} comme
+l'expression \cc{make_tuple(x1, ..., xn)}. De plus, on écrira une séquence
+de séquences de la manière suivante
+\[
+    \cc{[[x11, ..., x1m], ..., [xn1, ..., xnk]] == [[x...]...]}
+\]
+et on dénotera la concaténation de ces séquences par
+\[
+    \cc{[x11, ..., x1m, ..., xn1, ..., xnk] == [x... ...]}
+\]
+
+On peut maintenant définir \cc{lift} comme
 \begin{align*}
     \cc{lift} : \cc{X} &\to \cc{Tuple(X)} \\
-                \cc{x} &\mapsto \cc{[x]}  \\
+                \cc{x} &\mapsto \cc{[x]}
 \end{align*}
 
 \cc{lift} prend simplement un élément et le met dans un tuple singleton.
 Ensuite, on peut définir \cc{flatten} comme
 \begin{align*}
     \cc{flatten} : \cc{Tuple(Tuple(X))} &\to \cc{Tuple(X)} \\
-                   \cc{[[x1, ..., xn], ..., [y1, ..., ym]]} &\mapsto \cc{[x1, ..., xn, y1, ..., ym]}
+                   \cc{[[x...]...]} &\mapsto \cc{[x... ...]}
 \end{align*}
 
 Montrons maintenant que \cc{Tuple} est bien une monade. D'abord, pour montrer
-la première loi, considérons $\cc{xss} \in \cc{Tuple(Tuple(Tuple(X)))}$. Pour
-simplifier la notation, on écrira \cc{xss = [[[x...]...]...]}, et \cc{x... ...}
-représentera la concaténation des listes contenues dans \cc{[[x...]...]}.
+la première loi, considérons $\cc{xss} \in \cc{Tuple(Tuple(Tuple(X)))}$.
 On a alors
 \begin{cpp}
     flatten(transform([[[x...]...]...], flatten))
@@ -480,15 +487,15 @@ bien avec toutes les variations de types d'arguments qui nous intéressent:
     transform(args, [](auto arg) {
         using T = typename decltype(arg)::type;
         using Valid = decltype(is_just(sfinae(f)(std::declval<T>())));
-        static_assert(Valid{}, "");
+        static_assert(Valid::value, "");
 
         return 0; // on doit retourner quelque chose pour transform
     });
 \end{cpp}
 
-D'abord, on génère la séquence de tous les types d'arguments possible qu'on
-souhaite peut-être envoyer à \cc{f}. Ensuite, on utilise \cc{transform} pour
-appliquer une fonction anonyme à chacun de ces types. Étant donné un type
-d'argument sous la forme d'un \cc{type<T>}, cette fonction anonyme extrait le
-type \cc{T}, puis utilise \cc{sfinae} pour s'assurer que l'appel à la fonction
+D'abord, on génère la séquence de tous les types d'arguments qu'on souhaite
+peut-être envoyer à \cc{f}. Ensuite, on utilise \cc{transform} pour appliquer
+une fonction anonyme à chacun de ces types. Étant donné un type d'argument
+sous la forme d'un \cc{type<T>}, cette fonction anonyme extrait le type
+\cc{T}, puis utilise \cc{sfinae} pour s'assurer que l'appel à la fonction
 \cc{f} avec ce type d'argument est bien formé.

@@ -90,7 +90,7 @@ flèches de Hana sont des fonctions dont le domaine et le codomaine sont des
 types généralisés. Ainsi, $F$ devra envoyer une telle fonction
 $\cc{f} : \cc{T} \to \cc{U}$ vers une fonction $F(\cc{f}) : F(\cc{T}) \to F(\cc{U})$.
 Dans Hana, un foncteur se matérialise comme un type généralisé paramétré muni
-d'une fonction appelée \cc{transform} ayant la pseudo-signature suivante:
+d'une fonction appelée \cc{transform} ayant la signature suivante:
 \[
     \cc{transform} : \cc{F(T)} \times (\cc{T} \to \cc{U}) \to \cc{F(U)}
 \]
@@ -110,7 +110,7 @@ l'on ait une fonction $\cc{f} : \cc{T} \to \cc{U}$. On peut appliquer partiellem
 On peut remarquer que \cc{transform(-, f)} possède la signature requise
 pour être l'image d'une flèche de Hana par le foncteur \cc{F}. Dans la catégorie
 Hana, un foncteur \cc{F} envoie donc un type généralisé \cc{T} sur un nouveau
-type généralisé \cc{U}, et une fonction $\cc{f} : \cc{T} \to \cc{U}$ sur une
+type généralisé \cc{F(T)}, et une fonction $\cc{f} : \cc{T} \to \cc{U}$ sur une
 nouvelle fonction $\cc{transform(-, f)} : \cc{F(T)} \to \cc{F(U)}$. Bien entendu,
 pour qu'il s'agisse bien d'un foncteur, certaines propriétés doivent être
 respectées. D'abord, le foncteur doit respecter la loi de composition de Hana,
@@ -157,13 +157,15 @@ inaccessible.
 Une autre manière de gérer la possibilité d'un échec est d'introduire la
 notion de valeur optionnelle. Essentiellement, une valeur optionnelle est
 une valeur qui peut être là ou ne pas y être, accompagnée d'un mécanisme
-pour savoir si la valeur est là ou non. Pour une valeur de type \cc{T},
-on dénotera une valeur optionnelle de ce type par le type \cc{Maybe(T)}.
-Une valeur optionnelle peut être créée de deux manières. D'abord, on peut
-créer une valeur optionnelle (qui existe) avec \cc{just(x)}, où \cc{x}
-est une valeur de type \cc{T}. Ensuite, on peut créer une valeur optionnelle
-qui est vide avec \cc{nothing}. Par exemple, on pourrait écrire une fonction
-qui effectue une division entière de la manière suivante (en écrivant \cc{Int}
+pour savoir si la valeur est là ou non. Une fonction qui peut échouer devient
+donc une fonction qui n'échoue jamais, mais qui peut retourner une valeur
+optionnelle vide. Pour une valeur de type \cc{T}, on dénotera une valeur
+optionnelle de ce type par le type \cc{Maybe(T)}. Une valeur optionnelle
+peut être créée de deux manières. D'abord, on peut créer une valeur
+optionnelle (qui existe) avec \cc{just(x)}, où \cc{x} est une valeur de
+type \cc{T}. Ensuite, on peut créer une valeur optionnelle qui est vide
+avec \cc{nothing}. Par exemple, on pourrait écrire une fonction qui effectue
+une division entière de la manière suivante (en écrivant \cc{Int}
 au lieu de \cc{IntegralConstant(int)} pour alléger):
 \begin{align*}
     \cc{div} : \cc{Int} \times \cc{Int} &\to \cc{Int} \\
@@ -199,15 +201,18 @@ manière de savoir quand est-ce qu'une valeur optionnelle est vide ou pleine:
 
 On peut ensuite utiliser le résultat de \cc{safe_div} comme suit:
 \begin{cpp}
-    auto maybe_result = safe_div(x, y);
+    auto maybe_result = safe_div(int_<10>, int_<5>);
     if (is_just(maybe_result)) {
         auto result = from_just(maybe_result);
-        ...
+        f(result); // on peut utiliser le résultat de safe_div
+    }
+    else {
+        // on sait que safe_div a planté
     }
 \end{cpp}
 
 On constate rapidement que le gain est plutôt faible par rapport à une
-solution où on vérifierait explicitement que \cc{y != 0} et où l'on
+solution où l'on vérifierait explicitement que \cc{y != 0} et où l'on
 n'utiliserait pas de \cc{Maybe}. En effet, il est quand même nécessaire
 de vérifier si la valeur optionnelle est vide ou pleine avant de pouvoir
 utiliser le résultat de la fonction (si résultat il y a). Ce qu'on aimerait
@@ -379,16 +384,16 @@ grâce à l'astuce suivante:
         return e.value;
     }
 
-    char y = get<3>(make_tuple('x', 'y', 'z'));
+    char y = get<1>(make_tuple('x', 'y', 'z'));
 \end{cpp}
 
 Puisque \cc{_tuple} hérite de tous les \cc{_element}s, il existe une
 conversion de \cc{_tuple} vers n'importe laquelle de ses classes de base.
 Ensuite, puisqu'on fixe le \cc{i} explicitement en appelant \cc{get<i>},
 le compilateur constate que la seule signature possible pour \cc{get} est
-\cc{char get(_element<3, char>)}. Il suffit ensuite de retourner la valeur
+\cc{char get(_element<1, char>)}. Il suffit ensuite de retourner la valeur
 associée à cet élément. En bref, on a donc que
-\cc{get<i>(make_tuple(x1, ..., xn)) == xi}.
+\cc{get<i>(make_tuple(x1, ..., xn)) == xi+1}.
 
 Étant donné une séquence d'objets $\cc{x1}, \hdots, \cc{xn}$ de type généralisé
 \cc{X}, on dénotera par \cc{Tuple(X)} le type généralisé de \cc{make_tuple(x1, ..., xn)}.
@@ -420,10 +425,10 @@ puis on retourne une nouvelle séquence qui contient le résultat. À ce
 point-ci, le foncteur caché sous le tapis devrait commencer à être évident.
 
 En effet, en tant que foncteur, \cc{Tuple} associe à tout objet \cc{X} de $Hana$
-un nouvel objet \cc{Tuple(X)} représentant une séquence d'éléments de type \cc{X},
-et à toute flèche $\cc{f} : \cc{X} \to \cc{Y}$ une nouvelle flèche $\cc{transform(-, f)} :
-\cc{Tuple(X)} \to \cc{Tuple(Y)}$, qui consiste à appliquer \cc{f} à chaque
-élément d'une telle séquence.
+un nouvel objet \cc{Tuple(X)} représentant une séquence d'éléments de type
+(généralisé) \cc{X}, et à toute flèche $\cc{f} : \cc{X} \to \cc{Y}$ une
+nouvelle flèche $\cc{transform(-, f)} : \cc{Tuple(X)} \to \cc{Tuple(Y)}$,
+qui consiste à appliquer \cc{f} à chaque élément de la séquence.
 
 Démontrons maintenant que \cc{Tuple} est bien un foncteur. D'abord, étant
 donné un objet quelconque \cc{xs} de type généralisé \cc{Tuple(X)},
