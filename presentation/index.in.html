@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="author", content="Louis Dionne">
+    <title>Théorie des catégories++</title>
+    <link rel="stylesheet" href="css/reveal.min.css">
+    <link rel="stylesheet" href="css/theme/default.css" id="theme">
+    <link rel="stylesheet" href="lib/css/highlight/zenburn.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <section data-markdown=""
+                     data-separator="^====+$"
+                     data-vertical="^----+$"
+                     data-notes="^Note:">
+            <script type="text/template">
+
+## Théorie des catégories++
+
+====================
+
+## Plan de match
+- Métaprogrammation en C++
+- Théorie des catégories
+
+==============================================================================
+
+### Métaprogrammation en C++
+
+====================
+
+### User-defined types
+
+```cpp
+struct Person {
+    string first_name;
+    string last_name;
+    int age;
+    // ...
+};
+
+int main() {
+    Person louis{"Louis", "Dionne", 22};
+}
+```
+
+----
+
+### User-defined types can be "templated"
+
+```cpp
+template <typename String>
+struct Person {
+    String first_name;
+    String last_name;
+    int age;
+    // ...
+};
+
+int main() {
+    Person<string> louis{"Louis", "Dionne", 22};
+}
+```
+
+====================
+
+### Pas certain que c'est utile? Moi non plus
+
+====================
+
+### Attends un peu
+
+```cpp
+struct IntList {
+    int value;
+    IntList* next;
+};
+```
+
+----
+
+```cpp
+struct StringList {
+    string value;
+    StringList* next;
+};
+```
+
+----
+
+```cpp
+struct FooList {
+    Foo value;
+    FooList* next;
+};
+```
+
+----
+
+### Ahhh!
+
+```cpp
+template <typename T>
+struct List {
+    T value;
+    List<T>* next;
+};
+```
+
+====================
+
+### On peut aussi templater sur des entiers et certains types simples
+
+```cpp
+template <typename T, int length>
+struct SafeArray {
+    // ...
+};
+
+int main() {
+    SafeArray<char, 5> hello = {'h', 'e', 'l', 'l', 'o'};
+    hello[10]; // erreur au lieu de undefined behavior!
+}
+```
+
+====================
+
+### Une dernière technicalité: la spécialisation
+
+```cpp
+template <typename T>
+struct List {
+    T value;
+    List<T>* next;
+}
+
+template <>
+struct List<int> {
+    // implémentation super clever pour int
+};
+
+int main() {
+    List<string> liste1 = ...; // première structure
+    List<int> liste2 = ...; // deuxième structure
+}
+```
+
+====================
+
+### Finalement de la métaprog
+
+```cpp
+template <int i>
+struct fact {
+    static int const value = i * fact<i - 1>::value;
+};
+
+template <>
+struct fact<0> {
+    static int const value = 1;
+};
+
+template <int result>
+struct show;
+
+int main() {
+    show<fact<5>::value> x;
+}
+```
+
+----
+
+```sh
+<stdin>: error: implicit instantiation of undefined template 'show<120>'
+    show<fact<5>::value> x;
+                         ^
+<stdin>: note: template is declared here
+struct show;
+       ^
+1 error generated.
+```
+
+====================
+
+### C'est la base; on se crée plein de choses par-dessus
+
+- Structures de données compile-time
+- Algorithmes compile-time
+
+====================
+
+### Il faut me croire, mais c'est vraiment utile
+
+- DSELs (parsers, linear algebra, laziness, etc...)
+- Optimisation de haut niveau
+- Type safety (e.g. analyse dimensionnelle)
+
+====================
+
+#### Hana est une "standard library" pour la métaprogrammation
+
+==============================================================================
+
+### Théorie des catégories
+
+====================
+
+### Voir [ici](http://yogsototh.github.io/Category-Theory-Presentation)
+(lien entre les catégories et le Haskell)
+
+====================
+
+### Résumé grossier
+
+----
+
+Une catégorie est un ensemble d'objets et de flèches entre ces objets
+
+----
+
+On peut composer les flèches un peu comme on compose des fonctions
+
+----
+
+Mais attention, les flèches ne représentent pas forcément des fonctions
+
+----
+
+Certaines lois régissent quelles flèches peuvent exister
+
+====================
+
+On considère la catégorie suivante:
+
+- Les objets sont les types d'un langage de programmation (`int`, `char`, `string`)
+- Les flèches sont les types de fonctions $f : A -> B$ d'un type `A` vers un type `B`
+- La composition de flèches est la composition de fonctions usuelle
+
+----
+
+### Attention; si le langage est impur, tout plante!
+
+====================
+
+### Templates = langage purement fonctionnel
+
+----
+
+### Tout baigne!
+
+====================
+
+### Mon but:
+#### Formaliser la métaprogrammation grâce à la théorie des catégories
+
+====================
+
+### Plan du projet
+
+Revue de l'utilisation de la théorie des catégories dans les langages de
+programmation (seulement Haskell et Scala AFAIK)
+
+----
+
+Introduire les concepts suivants (de manière mathématique):
+
+- Monoïdes, groupes, anneaux, domaines intègres
+- Catégories, foncteurs, foncteurs monoïdaux, monades, co-monades, produits, catamorphismes
+
+----
+
+Expliquer comment ces concepts sont réalisés et utilisés au niveau de la programmation
+
+----
+
+Si temps, quelques sujets qui tiennent de la recherche (soft) mais dont j'ai réellement besoin:
+
+- Explorer le foncteur `Type`, qui représente un type (`int`, `char`) comme un objet d'un type singleton (`type<int>()`, `type<char>()`).
+- Explorer la co-monade `Lazy`, qui encapsule l'évaluation paresseuse derrière un interface co-monadique.
+- Explorer des "nouveaux" concepts comme `Foldable` (avec les catamorphismes), `Searchable` (beau et utile mais informel)
+
+====================
+
+### Comment je vois ça
+
+- Je règle la partie plus "math" (sécuriser mes arrières + consolider ma compréhension)
+- Je montre comment les résultats s'appliquent à ma bibliothèque (il y aura des problèmes; il est possible que certains résultats ne s'appliquent pas tel quel)
+- Intérêts de recherche à la fin (si temps)
+
+====================
+
+## C'est tout!
+
+            </script>
+            </section>
+        </div>
+    </div>
+
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            slideNumber: true,
+            history: true,
+
+            dependencies: [
+                { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+                { src: 'plugin/math/math.js', async: true },
+                { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } }
+            ]
+        });
+    </script>
+</body>
+
+</html>

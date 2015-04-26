@@ -9,3 +9,6 @@
 *.bbl
 *.toc
 _minted-main/
+node_modules
+.DS_Store
+build/
