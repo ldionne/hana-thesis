@@ -5,10 +5,10 @@
     <meta charset="utf-8">
     <meta name="author", content="Louis Dionne">
     <title>Théorie des catégories++</title>
-    <link rel="stylesheet" href="css/reveal.min.css">
-    <link rel="stylesheet" href="css/theme/default.css" id="theme">
-    <link rel="stylesheet" href="lib/css/highlight/zenburn.css">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="presentation/css/reveal.min.css">
+    <link rel="stylesheet" href="presentation/css/theme/default.css" id="theme">
+    <link rel="stylesheet" href="presentation/lib/css/highlight/zenburn.css">
+    <link rel="stylesheet" href="presentation/css/styles.css">
 </head>
 
 <body>
@@ -302,21 +302,21 @@ Si temps, quelques sujets qui tiennent de la recherche (soft) mais dont j'ai ré
     </div>
 
 
-    <script src="lib/js/head.min.js"></script>
-    <script src="js/reveal.min.js"></script>
+    <script src="presentation/lib/js/head.min.js"></script>
+    <script src="presentation/js/reveal.min.js"></script>
     <script>
         Reveal.initialize({
             slideNumber: true,
             history: true,
 
             dependencies: [
-                { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-                { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-                { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
-                { src: 'plugin/math/math.js', async: true },
-                { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } }
+                { src: 'presentation/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                { src: 'presentation/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                { src: 'presentation/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                { src: 'presentation/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                { src: 'presentation/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+                { src: 'presentation/plugin/math/math.js', async: true },
+                { src: 'presentation/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } }
             ]
         });
     </script>
