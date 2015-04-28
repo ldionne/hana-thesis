@@ -25,276 +25,402 @@
 ====================
 
 ## Plan de match
-- Métaprogrammation en C++
-- Théorie des catégories
+- Survol du système de typage du C++
+- Introduction à la métaprogrammation en C++
+- Introduction aux catégories
+- __Fusion__!
 
 ==============================================================================
 
-### Métaprogrammation en C++
+### Le système de typage du C++
+
+<!-- On définit les commandes MathJax dans la 3eme slide pour éviter de
+     les voir se loader lorsqu'on commence la présentation. -->
+
+$\newcommand{\cc}[1]{{\tt #1}}$
+$\newcommand{\sub}[1]{_{#1}}$
+$\newcommand{\C}{\mathcal{C}}$
+$\newcommand{\D}{\mathcal{D}}$
+$\newcommand{\ob}{\mathrm{ob}}$
+$\newcommand{\id}{\mathrm{id}}$
+$\newcommand{\hom}{\mathrm{hom}}$
+
+$\newcommand{\Set}{\mathrm{Set}}$
+$\newcommand{\Grp}{\mathrm{Grp}}$
+$\newcommand{\Top}{\mathrm{Top}}$
+$\newcommand{\Cxx}{\mathrm{C++}}$
+$\newcommand{\Hana}{\mathrm{Hana}}$
 
 ====================
 
-### User-defined types
+### Qu'est-ce qu'un type?
+En gros, c'est un ensemble de valeurs
 
+$\cc{int} := \\{ -32 767, \dots, 32 767 \\}$
+$\cc{string} := \\{\text{toutes les chaînes de caractères}\\}$
+
+Note:
+Ça permet au compilateur de connaître la représentation des objets
+et de les stocker dans l'ordinateur.
+
+----
+
+### On doit spécifier le type des objets qu'on manipule
+
+__Maths__
+$$n := 33 \in {\cc{unsigned\ int}}$$
+$$s := Bonjour \in \cc{string}$$
+
+__C++__
 ```cpp
-struct Person {
-    string first_name;
-    string last_name;
-    int age;
-    // ...
-};
+int n = 33;
+string s = "Bonjour";
+```
 
-int main() {
-    Person louis{"Louis", "Dionne", 22};
+----
+
+### On peut définir des fonctions
+
+__Maths__
+$$
+    \begin{matrix}
+        \cc{f} : \cc{int} \to \cc{int} \\\\
+                       x  \mapsto x^2
+    \end{matrix}
+$$
+
+__C++__
+```cpp
+auto f(int x) -> int {
+    return x * x;
 }
 ```
 
+Note:
+Cette fonction est en fait mal définie, parce que e.g.
+$32767^2 \not\in \cc{int}$.
+
 ----
 
-### User-defined types can be "templated"
+### En C++, on peut aussi définir nos propres types
 
 ```cpp
-template <typename String>
-struct Person {
-    String first_name;
-    String last_name;
+struct Personne {
+    string nom;
     int age;
-    // ...
 };
 
 int main() {
-    Person<string> louis{"Louis", "Dionne", 22};
+    Personne john = {"John", 30};
 }
 ```
 
 ====================
 
-### Pas certain que c'est utile? Moi non plus
+### Les templates
+
+## Sauve qui peut! <!-- .element: class="fragment" -->
 
 ====================
 
-### Attends un peu
+### Sérieusement
+#### Juste une famille de types indexés sur les types
 
-```cpp
-struct IntList {
-    int value;
-    IntList* next;
-};
-```
+__Maths__
+$$
+    \\{ \cc{X_T} \\}\sub{\cc{T} \in \cc{Type}}
+$$
 
-----
-
-```cpp
-struct StringList {
-    string value;
-    StringList* next;
-};
-```
-
-----
-
-```cpp
-struct FooList {
-    Foo value;
-    FooList* next;
-};
-```
-
-----
-
-### Ahhh!
-
+__C++__
 ```cpp
 template <typename T>
-struct List {
-    T value;
-    List<T>* next;
-};
-```
-
-====================
-
-### On peut aussi templater sur des entiers et certains types simples
-
-```cpp
-template <typename T, int length>
-struct SafeArray {
+struct X {
     // ...
 };
 
-int main() {
-    SafeArray<char, 5> hello = {'h', 'e', 'l', 'l', 'o'};
-    hello[10]; // erreur au lieu de undefined behavior!
-}
-```
-
-====================
-
-### Une dernière technicalité: la spécialisation
-
-```cpp
-template <typename T>
-struct List {
-    T value;
-    List<T>* next;
-}
-
-template <>
-struct List<int> {
-    // implémentation super clever pour int
-};
-
-int main() {
-    List<string> liste1 = ...; // première structure
-    List<int> liste2 = ...; // deuxième structure
-}
-```
-
-====================
-
-### Finalement de la métaprog
-
-```cpp
-template <int i>
-struct fact {
-    static int const value = i * fact<i - 1>::value;
-};
-
-template <>
-struct fact<0> {
-    static int const value = 1;
-};
-
-template <int result>
-struct show;
-
-int main() {
-    show<fact<5>::value> x;
-}
+X<int> i = {...};
+X<string> s = {...};
 ```
 
 ----
 
-```sh
-<stdin>: error: implicit instantiation of undefined template 'show<120>'
-    show<fact<5>::value> x;
-                         ^
-<stdin>: note: template is declared here
-struct show;
-       ^
-1 error generated.
+#### Par exemple
+
+__Maths__
+$$
+    \\{ \cc{list_T} \\}\sub{\cc{T} \in \cc{Type}}
+$$
+
+__C++__
+```cpp
+template <typename T>
+struct list {
+    // ...
+};
+
+list<int> ns = {0, 1, 2, 3, 4};
+list<string> str = {"bonjour", "hello", "hola"};
 ```
 
 ====================
 
-### C'est la base; on se crée plein de choses par-dessus
+#### On a aussi des fonctions indexées sur les types
 
-- Structures de données compile-time
-- Algorithmes compile-time
+__Maths__
+$$
+    \\{ \cc{f_T} : \cc{A_T} \to \cc{B_T} \\}\sub{\cc{T} \in \cc{Type}}
+$$
+
+__C++__
+```cpp
+template <typename T>
+auto f(A<T> x) -> B<T> {
+    // ...
+}
+
+A<int> x = {...};
+A<string> y = {...};
+
+f(x); // appelle f : A<int> -> B<int>
+f(y); // appelle f : A<string> -> B<string>
+```
+
+----
+
+#### Par exemple
+
+__Maths__
+$$
+    \cc{at_T} : \cc{int} \times \cc{list_T} \to \cc{T}
+$$
+
+__C++__
+```cpp
+template <typename T>
+T at(int n, list<T> xs) {
+    // ...
+}
+
+list<int> ns = {0, 1, 2, 3, 4};
+int trois = at(3, ns);
+
+list<string> str = {"bonjour", "hello", "hola"};
+string hello = at(1, str);
+```
 
 ====================
 
-### Il faut me croire, mais c'est vraiment utile
+#### Et finalement on a des variables indexées sur les types
 
-- DSELs (parsers, linear algebra, laziness, etc...)
-- Optimisation de haut niveau
-- Type safety (e.g. analyse dimensionnelle)
+__Maths__
+$$
+    \\{ \cc{x_T} \\}\sub{\cc{T} \in \cc{Type}}
+$$
 
-====================
+__C++__
+```cpp
+template <typename T>
+X<T> x = ...;
 
-#### Hana est une "standard library" pour la métaprogrammation
+X<int> foo = x<int>;
+X<string> bar = x<string>;
+```
+
+----
+
+#### Par exemple
+
+__Maths__
+$$
+    \\{ \pi_\cc{T} \\}\sub{\cc{T} \in \cc{Type}}
+$$
+
+__C++__
+```cpp
+template <typename T>
+T pi = ...;
+
+float x = pi<float>;    // moins bonne précision, plus compact
+double y = pi<double>;  // meilleure précision, moins compact
+```
 
 ==============================================================================
 
-### Théorie des catégories
+### Et la métaprogrammation dans tout ça?
+#### Une famille indexée est une fonction sous le couvert... <!-- .element: class="fragment" -->
 
 ====================
 
-### Voir [ici](http://yogsototh.github.io/Category-Theory-Presentation)
-(lien entre les catégories et le Haskell)
+### Les templates sont donc des fonctions sur les types
+
+$$
+    \begin{matrix}
+        \\{ \cc{X_T} \\}\sub{\cc{T} \in \cc{Type}}  \\\\
+                        \simeq                      \\\\
+            \cc{X} : \cc{Type} \to \cc{Type}        \\\\
+                       \cc{T} \to \cc{X_T}
+    \end{matrix}
+$$
+
+----
+
+### Observation analogue pour les fonctions
+
+$$
+    \begin{matrix}
+        \\{ \cc{f_T} : \cc{A_T} \to \cc{B_T} \\}\sub{\cc{T} \in \cc{Type}}  \\\\
+                            \simeq                                          \\\\
+            \cc{f} : \cc{Type} \to \left(\cc{A_T} \to \cc{B_T}\right)       \\\\
+                        \cc{T} \mapsto \cc{f_T}
+    \end{matrix}
+$$
+
+----
+
+### ...et pour les variables
+
+$$
+    \begin{matrix}
+        \\{ \cc{x_T} \\}\sub{\cc{T} \in \cc{Type}}  \\\\
+                        \simeq                      \\\\
+            \cc{x} : \cc{Type} \to \cc{X_T}         \\\\
+                        \cc{T} \mapsto \cc{x_T}
+    \end{matrix}
+$$
+
+----
+
+### Formalisation rigoureuse: types dépendants
+#### Pas le temps :-( <!-- .element: class="fragment" -->
 
 ====================
 
-### Résumé grossier
-
-----
-
-Une catégorie est un ensemble d'objets et de flèches entre ces objets
-
-----
-
-On peut composer les flèches un peu comme on compose des fonctions
-
-----
-
-Mais attention, les flèches ne représentent pas forcément des fonctions
-
-----
-
-Certaines lois régissent quelles flèches peuvent exister
+### C'est ça qu'on manipule en métaprogrammation
 
 ====================
 
-On considère la catégorie suivante:
+### Un exemple s'il vous plaît?
 
-- Les objets sont les types d'un langage de programmation (`int`, `char`, `string`)
-- Les flèches sont les types de fonctions $f : A -> B$ d'un type `A` vers un type `B`
-- La composition de flèches est la composition de fonctions usuelle
-
-----
-
-### Attention; si le langage est impur, tout plante!
+<!-- TODO -->
 
 ====================
 
-### Templates = langage purement fonctionnel
+### Mais ça sert à quoi?
 
-----
+- Analyse dimensionnelle
+- Introspection
+- Optimisations de haut niveau
+- Parallélisation automatique
+- $\infty$ d'exemples...
 
-### Tout baigne!
+==============================================================================
 
-====================
-
-### Mon but:
-#### Formaliser la métaprogrammation grâce à la théorie des catégories
-
-====================
-
-### Plan du projet
-
-Revue de l'utilisation de la théorie des catégories dans les langages de
-programmation (seulement Haskell et Scala AFAIK)
-
-----
-
-Introduire les concepts suivants (de manière mathématique):
-
-- Monoïdes, groupes, anneaux, domaines intègres
-- Catégories, foncteurs, foncteurs monoïdaux, monades, co-monades, produits, catamorphismes
-
-----
-
-Expliquer comment ces concepts sont réalisés et utilisés au niveau de la programmation
-
-----
-
-Si temps, quelques sujets qui tiennent de la recherche (soft) mais dont j'ai réellement besoin:
-
-- Explorer le foncteur `Type`, qui représente un type (`int`, `char`) comme un objet d'un type singleton (`type<int>()`, `type<char>()`).
-- Explorer la co-monade `Lazy`, qui encapsule l'évaluation paresseuse derrière un interface co-monadique.
-- Explorer des "nouveaux" concepts comme `Foldable` (avec les catamorphismes), `Searchable` (beau et utile mais informel)
+### La théorie des catégories
 
 ====================
 
-### Comment je vois ça
+Une catégorie $\C$ est
 
-- Je règle la partie plus "math" (sécuriser mes arrières + consolider ma compréhension)
-- Je montre comment les résultats s'appliquent à ma bibliothèque (il y aura des problèmes; il est possible que certains résultats ne s'appliquent pas tel quel)
-- Intérêts de recherche à la fin (si temps)
+- une collection d'objets $\ob(\C)$
+- une collection de morphismes $\hom(\C)$
+- une loi de composition $\circ$
+<br><br>
+(avec certaines règles)
+
+----
+
+<!-- TODO: Qu'est-ce que les objets et les morphismes -->
+
+----
+
+<!-- TODO: Qu'est-ce que la loi de composition -->
 
 ====================
 
-## C'est tout!
+### Exemples
+
+----
+
+#### $\Set$
+
+- $\ob(\Set) = \\{ \text{ensembles} \\}$
+- $\hom(X, Y) = \\{ \text{fonctions } f : X \to Y \\}$
+- $\circ = \text{composition usuelle}$
+
+----
+
+#### $\Grp$
+
+- $\ob(\Grp) = \\{ \text{groupes} \\}$
+- $\hom(X, Y) = \\{ \text{homomorphismes } f : X \to Y \\}$
+- $\circ = \text{composition usuelle}$
+
+----
+
+#### $\Top$
+
+- $\ob(\Top) = \\{ \text{espaces topologiques} \\}$
+- $\hom(X, Y) = \\{ \text{applications continues } f : X \to Y \\}$
+- $\circ = \text{composition usuelle}$
+
+----
+
+#### $\Cxx$
+
+- $\ob(\Cxx) = \\{ \text{types } \cc{T} \\}$
+- $\hom(\cc{X}, \cc{Y}) = \\{ \text{fonctions } \cc{f} : \cc{X} \to \cc{Y} \\}$
+- $\circ = \text{composition usuelle}$
+
+Note:
+Il faut se limiter aux fonctions pures et qui terminent.
+Il faut aussi oublier `void` & al, mais tout ça est justifiable.
+
+====================
+
+### Les foncteurs
+
+<!-- TODO -->
+
+==============================================================================
+
+### Le plat de résistance
+
+====================
+
+### La catégorie $\Hana$
+#### (Hana = nom de la bibliothèque)
+
+<!-- TODO -->
+
+- $\ob(\Hana) = $
+- $\hom(\cc{X}, \cc{Y}) = $
+- $\circ = \text{composition usuelle}$
+
+====================
+
+### Foncteurs
+
+<!-- TODO -->
+
+====================
+
+### Applications
+
+====================
+
+### $\cc{Maybe}$
+
+<!-- TODO -->
+
+====================
+
+### $\cc{Tuple}$
+
+<!-- TODO -->
+
+==============================================================================
+
+## Merci
 
             </script>
             </section>
@@ -308,6 +434,8 @@ Si temps, quelques sujets qui tiennent de la recherche (soft) mais dont j'ai ré
         Reveal.initialize({
             slideNumber: true,
             history: true,
+            transition: 'slide',
+            transitionSpeed: 'fast',
 
             dependencies: [
                 { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
@@ -315,8 +443,7 @@ Si temps, quelques sujets qui tiennent de la recherche (soft) mais dont j'ai ré
                 { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
                 { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
                 { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
-                { src: 'plugin/math/math.js', async: true },
-                { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } }
+                { src: 'plugin/math/math.js', async: true }
             ]
         });
     </script>
