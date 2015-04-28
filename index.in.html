@@ -208,42 +208,6 @@ list<string> str = {"bonjour", "hello", "hola"};
 string hello = at(1, str);
 ```
 
-====================
-
-#### Et finalement on a des variables indexées sur les types
-
-__Maths__
-$$
-    \\{ \cc{x_T} \\}\sub{\cc{T} \in \cc{Type}}
-$$
-
-__C++__
-```cpp
-template <typename T>
-X<T> x = ...;
-
-X<int> foo = x<int>;
-X<string> bar = x<string>;
-```
-
-----
-
-#### Par exemple
-
-__Maths__
-$$
-    \\{ \pi_\cc{T} \\}\sub{\cc{T} \in \cc{Type}}
-$$
-
-__C++__
-```cpp
-template <typename T>
-T pi = ...;
-
-float x = pi<float>;    // moins bonne précision, plus compact
-double y = pi<double>;  // meilleure précision, moins compact
-```
-
 ==============================================================================
 
 ### Et la métaprogrammation dans tout ça?
@@ -272,19 +236,6 @@ $$
                             \simeq                                          \\\\
             \cc{f} : \cc{Type} \to \left(\cc{A_T} \to \cc{B_T}\right)       \\\\
                         \cc{T} \mapsto \cc{f_T}
-    \end{matrix}
-$$
-
-----
-
-### ...et pour les variables
-
-$$
-    \begin{matrix}
-        \\{ \cc{x_T} \\}\sub{\cc{T} \in \cc{Type}}  \\\\
-                        \simeq                      \\\\
-            \cc{x} : \cc{Type} \to \cc{X_T}         \\\\
-                        \cc{T} \mapsto \cc{x_T}
     \end{matrix}
 $$
 
