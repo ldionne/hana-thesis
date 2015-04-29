@@ -4,11 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="author", content="Louis Dionne">
-    <title>Théorie des catégories++</title>
+    <title>Catégories et métaprogrammation en C++</title>
     <link rel="stylesheet" href="css/reveal.min.css">
     <link rel="stylesheet" href="css/theme/default.css" id="theme">
     <link rel="stylesheet" href="lib/css/highlight/zenburn.css">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/custom.css">
 </head>
 
 <body>
@@ -20,12 +21,12 @@
                      data-notes="^Note:">
             <script type="text/template">
 
-## Théorie des catégories++
-### Louis Dionne
+### Catégories et métaprogrammation en C++
+#### Louis Dionne
 
 ====================
 
-## Plan de match
+### Plan
 - Survol du système de typage du C++
 - Introduction à la métaprogrammation en C++
 - Introduction aux catégories
@@ -118,17 +119,26 @@ int main() {
 
 ====================
 
+### Pour la suite, on définira
+$$
+    Type := \\{ \text{tous les types } \cc{T} \text{ d'un programme fixé} \\}
+$$
+
+Note:
+Pas de paradoxe, parce que cet ensemble est fini si on fixe un programme.
+
+====================
+
 ### Les templates
 
 ## Sauve qui peut! <!-- .element: class="fragment" -->
 
 ====================
 
-### Sérieusement
-#### Juste une famille de types indexés sur les types
+#### En fait, c'est juste une famille de types indexés sur les types
 
 $$
-    \\{ \cc{X_T} = \cc{X\tp{T}} \\}\sub{\cc{T} \in \cc{Type}}
+    \cc{X} := \\{ \cc{X_T} = \cc{X\tp{T}} \\}\sub{\cc{T} \in Type}
 $$
 
 ```cpp
@@ -146,7 +156,7 @@ X<string> s = {...};
 #### Par exemple
 
 $$
-    \\{ \cc{list_T} = \cc{list\tp{T}} \\}\sub{\cc{T} \in \cc{Type}}
+    \cc{list} := \\{ \cc{list\tp{T}} \\}\sub{\cc{T} \in Type}
 $$
 
 ```cpp
@@ -164,7 +174,7 @@ list<string> str = {"bonjour", "hello", "hola"};
 #### On a aussi des fonctions indexées sur les types
 
 $$
-    \\{ \cc{f_T} : \cc{A\tp{T}} \to \cc{B\tp{T}} \\}\sub{\cc{T} \in \cc{Type}}
+    \cc{f} := \\{ \cc{f_T} : \cc{A\tp{T}} \to \cc{B\tp{T}} \\}\sub{\cc{T} \in Type}
 $$
 
 ```cpp
@@ -185,7 +195,7 @@ f(y); // appelle f : A<string> -> B<string>
 #### Par exemple
 
 $$
-    \cc{at_T} : \cc{int} \times \cc{list\tp{T}} \to \cc{T}
+    \cc{at} := \\{ \cc{at_T} : \cc{int} \times \cc{list\tp{T}} \to \cc{T} \\}\sub{\cc{T} \in Type}
 $$
 
 ```cpp
@@ -212,10 +222,10 @@ string hello = at(1, str);
 
 $$
     \begin{matrix}
-        \\{ \cc{X\tp{T}} \\}\sub{\cc{T} \in \cc{Type}}  \\\\
-                        \simeq                      \\\\
-            \cc{X} : \cc{Type} \to \cc{Type}        \\\\
-                       \cc{T} \to \cc{X\tp{T}}
+        \cc{X} := \\{ \cc{X\tp{T}} \\}\sub{\cc{T} \in Type}             \\\\
+                        \simeq                                          \\\\
+            \cc{X} : Type \to Type                                      \\\\
+                    \cc{T} \to \cc{X\tp{T}}
     \end{matrix}
 $$
 
@@ -225,10 +235,10 @@ $$
 
 $$
     \begin{matrix}
-        \\{ \cc{f_T} : \cc{A\tp{T}} \to \cc{B\tp{T}} \\}\sub{\cc{T} \in \cc{Type}}  \\\\
-                            \simeq                                                  \\\\
-            \cc{f} : \cc{Type} \to \left(\cc{A\tp{T}} \to \cc{B\tp{T}}\right)       \\\\
-                        \cc{T} \mapsto \cc{f_T}
+        \cc{f} := \\{ \cc{f_T} : \cc{A\tp{T}} \to \cc{B\tp{T}} \\}\sub{\cc{T} \in Type} \\\\
+                            \simeq                                                      \\\\
+            \cc{f} : Type \to \left(\cc{A\tp{T}} \to \cc{B\tp{T}}\right)                \\\\
+                    \cc{T} \mapsto \cc{f_T}
     \end{matrix}
 $$
 
@@ -243,19 +253,13 @@ $$
 
 ====================
 
-### Un exemple s'il vous plaît?
-
-<!-- TODO -->
-
-====================
-
 ### Mais à quoi ça sert?
 
 - Analyse dimensionnelle
 - Introspection
 - Optimisations de haut niveau
 - Parallélisation automatique
-- $\infty$ d'exemples
+- $\infty$ d'applications
 
 ==============================================================================
 
@@ -334,7 +338,7 @@ $\hom(A, B)$ est la collection des morphismes de $A$ vers $B$
 
 #### $\Cxx$
 
-- $\ob(\Cxx) = \\{ \text{types } \cc{T} \\}$
+- $\ob(\Cxx) = Type$
 - $\hom(\cc{X}, \cc{Y}) = \\{ \text{fonctions } \cc{f} : \cc{X} \to \cc{Y} \\}$
 - $\circ = \text{composition usuelle}$
 
@@ -418,10 +422,15 @@ où
 
 $$
     \begin{matrix}
-        \cc{transform(-, f)} : \cc{list\tp{X}} \to \cc{list\tp{Y}}                  \\\\
+        \cc{transform(-, f)} : \cc{list\tp{A}} \to \cc{list\tp{B}}                  \\\\
                                \cc{[x1, ..., xn]} \mapsto \cc{[f(x1), ..., f(xn)]}  \\\\
     \end{matrix}
 $$
+
+Note:
+Il y a un lien évident entre le foncteur `list` et le foncteur puissance.
+En fait, ils sont à peu près pareil, sauf qu'une liste peut admettre des
+duplicats et pas un ensemble.
 
 ==============================================================================
 
@@ -433,7 +442,7 @@ $$
 #### D'abord, on définit le template $\cc{type}$
 
 $$
-    \\{ \cc{type\tp{T}} \\}\sub{\cc{T} \in \cc{Type}}
+    \cc{type} := \\{ \cc{type\tp{T}} \\}\sub{\cc{T} \in Type}
 $$
 
 ```cpp
@@ -446,7 +455,7 @@ struct type { /* rien */ };
 #### Ensuite, on se dote d'un type symbolique $\cc{Type}$
 
 ```cpp
-struct Type { };
+struct Type { /* rien */ };
 ```
 
 ----
@@ -454,22 +463,37 @@ struct Type { };
 #### Finalement, on définit la (méta)fonction suivante
 $$
     \begin{matrix}
-        \cc{gtype} : \cc{Type} \to \cc{Type}    \\\\
-                    \cc{T} \mapsto \cc{T}       \\\\
+        \cc{gtype} : Type \to Type                                      \\\\
+                    \cc{T} \mapsto \cc{T}                               \\\\
                     \cc{type\tp{T}} \mapsto \cc{Type}
     \end{matrix}
 $$
+
+----
+
+#### On dira que $\cc{T}$ est un type généralisé si $\cc{T} \in \cc{gtype}(Type)$
 
 ====================
 
 ### La catégorie $\Hana$
 #### (Hana = nom de la bibliothèque)
 
-<!-- TODO -->
-
-- $\ob(\Hana) = \cc{gtype}(\ob(\Cxx))$
+- $\ob(\Hana) = \cc{gtype}(Type) = \\{ \text{les types généralisés} \\}$
 - $\hom(\cc{X}, \cc{Y}) = \\{ \text{fonctions } \cc{f} : \cc{X} \to \cc{Y} \\}$
 - $\circ = \text{composition usuelle}$
+
+----
+
+#### Attention! On doit définir ceux-ci spécialement
+
+- $\hom(\cc{Type}, \cc{Y}) = \\{ \text{templates } \cc{f} : \cc{type\tp{T}} \to \cc{Y} \\}$
+- $\hom(\cc{X}, \cc{Type}) = \\{ \text{templates } \cc{f} : \cc{X} \to \cc{type\tp{U}} \\}$
+- $\hom(\cc{Type}, \cc{Type}) = \\{ \text{templates } \cc{f} : \cc{type\tp{T}} \to \cc{type\tp{U}} \\}$
+
+====================
+
+### Et puis?
+#### On vient de fusionner la métaprogrammation et la programmation <!-- .element class="fragment" -->
 
 ====================
 
@@ -477,17 +501,52 @@ $$
 
 ====================
 
-### Foncteur $\cc{Maybe}$
+### Foncteur $\cc{Tuple} : \Hana \to \Hana$
+
+1. $X \mapsto \cc{Tuple\tp{X}}$
+2. $\cc{f} : \cc{A} \to \cc{B} \mapsto \cc{transform(-, f)}$
+
+<br>
+où
+
+$$
+    \begin{matrix}
+        \cc{transform(-, f)} : \cc{Tuple\tp{A}} \to \cc{Tuple\tp{B}}                \\\\
+                               \cc{[x1, ..., xn]} \mapsto \cc{[f(x1), ..., f(xn)]}  \\\\
+    \end{matrix}
+$$
+
+----
+
+#### En quoi est-ce différent du foncteur $\cc{list}$?
+### $\cc{Tuple}$ peut contenir des types! <!-- .element: class="fragment" -->
+
+----
+
+#### Par exemple
+
+$$
+    \begin{matrix}
+        \cc{add\\_ptr} : &\cc{Type} \to \cc{Type}                       \\\\
+                         &\cc{T} \mapsto \cc{T*}
+    \end{matrix}
+$$
+
+```cpp
+transform([type<int>{}, type<char>{}, type<float>{}], add_ptr)
+    == [add_ptr(type<int>{}), add_ptr(type<char>{}), add_ptr(type<float>{})]
+    == [type<int*>{}, type<char*>{}, type<float*>{}]
+```
 
 ====================
 
-### Foncteur $\cc{Tuple}$
+### On a aussi
 
-<!-- TODO -->
-
-====================
-
-### On a aussi des monades, des catamorphismes, etc...
+- Foncteurs $\cc{Maybe}$, $\cc{Lazy}$ et $\cc{Either}$
+- Foncteurs applicatifs
+- Monades
+- Certains catamorphismes
+- etc...
 
 ====================
 
@@ -499,23 +558,63 @@ $$
 
 ### Constatez par vous-même
 
-#### Avant
+### Avant
 
 ```cpp
-TODO
+template<typename T, typename U>
+using builtin_common_t = decltype(true?std::declval<T>():std::declval<U>());
+
+template<typename T, typename U>
+using lazy_builtin_common_t = m::defer<builtin_common_t, T, U>;
+
+template<typename...Ts>
+struct common_type { };
+
+template<typename ...Ts>
+using common_type_t = m::eval<common_type<Ts...>>;
+
+template<typename T>
+struct common_type<T> : std::decay<T> { };
+
+template<typename T, typename U>
+struct common_type<T, U>
+  : m::if_c<(std::is_same<decay_t<T>, T>::value &&
+             std::is_same<decay_t<U>, U>::value ),
+      ml::let<lazy_builtin_common_t<T, U>>,
+      common_type<decay_t<T>, decay_t<U>>
+    >
+{ };
+
+template<typename T, typename U, typename... Vs>
+struct common_type<T, U, Vs...>
+  : ml::let<ml::fold<m::list<U, Vs...>, T, m::quote<common_type_t>>>
+{ };
 ```
 
 ----
 
-#### Après
+### Après
 
 ```cpp
-TODO
+template <typename T1, typename ...Tn>
+auto common_type_impl = monadic_fold<Maybe>.left(tuple_t<Tn...>,
+  type<std::decay_t<T1>>,
+  sfinae([](auto t, auto u) -> decltype(type<
+    std::decay_t<decltype(true ? traits::declval(t) : traits::declval(u))>
+  >) { return {}; })
+);
+
+template <typename ...T>
+struct common_type : decltype(common_type_impl<T...>) { };
+
+template <typename ...T>
+using common_type_t = typename common_type<T...>::type;
 ```
 
 ==============================================================================
 
 ## Merci
+http://github.com/ldionne/hana <!-- .element class="fragment" -->
 
             </script>
             </section>
