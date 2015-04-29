@@ -21,6 +21,7 @@
             <script type="text/template">
 
 ## Théorie des catégories++
+### Louis Dionne
 
 ====================
 
@@ -30,17 +31,16 @@
 - Introduction aux catégories
 - __Fusion__!
 
-==============================================================================
-
-### Le système de typage du C++
-
-<!-- On définit les commandes MathJax dans la 3eme slide pour éviter de
+<!-- On définit les commandes MathJax dans la 2eme slide pour éviter de
      les voir se loader lorsqu'on commence la présentation. -->
 
 $\newcommand{\cc}[1]{{\tt #1}}$
 $\newcommand{\sub}[1]{_{#1}}$
+$\newcommand{\tp}[1]{<#1>}$
+
 $\newcommand{\C}{\mathcal{C}}$
 $\newcommand{\D}{\mathcal{D}}$
+$\newcommand{\P}{\mathcal{P}}$
 $\newcommand{\ob}{\mathrm{ob}}$
 $\newcommand{\id}{\mathrm{id}}$
 $\newcommand{\hom}{\mathrm{hom}}$
@@ -50,8 +50,9 @@ $\newcommand{\Grp}{\mathrm{Grp}}$
 $\newcommand{\Top}{\mathrm{Top}}$
 $\newcommand{\Cxx}{\mathrm{C++}}$
 $\newcommand{\Hana}{\mathrm{Hana}}$
+$\newcommand{\Id}{\mathrm{Id}}$
 
-====================
+==============================================================================
 
 ### Qu'est-ce qu'un type?
 En gros, c'est un ensemble de valeurs
@@ -126,12 +127,10 @@ int main() {
 ### Sérieusement
 #### Juste une famille de types indexés sur les types
 
-__Maths__
 $$
-    \\{ \cc{X_T} \\}\sub{\cc{T} \in \cc{Type}}
+    \\{ \cc{X_T} = \cc{X\tp{T}} \\}\sub{\cc{T} \in \cc{Type}}
 $$
 
-__C++__
 ```cpp
 template <typename T>
 struct X {
@@ -146,12 +145,10 @@ X<string> s = {...};
 
 #### Par exemple
 
-__Maths__
 $$
-    \\{ \cc{list_T} \\}\sub{\cc{T} \in \cc{Type}}
+    \\{ \cc{list_T} = \cc{list\tp{T}} \\}\sub{\cc{T} \in \cc{Type}}
 $$
 
-__C++__
 ```cpp
 template <typename T>
 struct list {
@@ -166,12 +163,10 @@ list<string> str = {"bonjour", "hello", "hola"};
 
 #### On a aussi des fonctions indexées sur les types
 
-__Maths__
 $$
-    \\{ \cc{f_T} : \cc{A_T} \to \cc{B_T} \\}\sub{\cc{T} \in \cc{Type}}
+    \\{ \cc{f_T} : \cc{A\tp{T}} \to \cc{B\tp{T}} \\}\sub{\cc{T} \in \cc{Type}}
 $$
 
-__C++__
 ```cpp
 template <typename T>
 auto f(A<T> x) -> B<T> {
@@ -189,12 +184,10 @@ f(y); // appelle f : A<string> -> B<string>
 
 #### Par exemple
 
-__Maths__
 $$
-    \cc{at_T} : \cc{int} \times \cc{list_T} \to \cc{T}
+    \cc{at_T} : \cc{int} \times \cc{list\tp{T}} \to \cc{T}
 $$
 
-__C++__
 ```cpp
 template <typename T>
 T at(int n, list<T> xs) {
@@ -219,10 +212,10 @@ string hello = at(1, str);
 
 $$
     \begin{matrix}
-        \\{ \cc{X_T} \\}\sub{\cc{T} \in \cc{Type}}  \\\\
+        \\{ \cc{X\tp{T}} \\}\sub{\cc{T} \in \cc{Type}}  \\\\
                         \simeq                      \\\\
             \cc{X} : \cc{Type} \to \cc{Type}        \\\\
-                       \cc{T} \to \cc{X_T}
+                       \cc{T} \to \cc{X\tp{T}}
     \end{matrix}
 $$
 
@@ -232,9 +225,9 @@ $$
 
 $$
     \begin{matrix}
-        \\{ \cc{f_T} : \cc{A_T} \to \cc{B_T} \\}\sub{\cc{T} \in \cc{Type}}  \\\\
-                            \simeq                                          \\\\
-            \cc{f} : \cc{Type} \to \left(\cc{A_T} \to \cc{B_T}\right)       \\\\
+        \\{ \cc{f_T} : \cc{A\tp{T}} \to \cc{B\tp{T}} \\}\sub{\cc{T} \in \cc{Type}}  \\\\
+                            \simeq                                                  \\\\
+            \cc{f} : \cc{Type} \to \left(\cc{A\tp{T}} \to \cc{B\tp{T}}\right)       \\\\
                         \cc{T} \mapsto \cc{f_T}
     \end{matrix}
 $$
@@ -256,13 +249,13 @@ $$
 
 ====================
 
-### Mais ça sert à quoi?
+### Mais à quoi ça sert?
 
 - Analyse dimensionnelle
 - Introspection
 - Optimisations de haut niveau
 - Parallélisation automatique
-- $\infty$ d'exemples...
+- $\infty$ d'exemples
 
 ==============================================================================
 
@@ -270,21 +263,44 @@ $$
 
 ====================
 
-Une catégorie $\C$ est
+### Une catégorie $\C$ est
+#### 1. une collection d'objets $\ob(\C)$
 
-- une collection d'objets $\ob(\C)$
-- une collection de morphismes $\hom(\C)$
-- une loi de composition $\circ$
-<br><br>
-(avec certaines règles)
+<img style="width:800px; height:auto;" src="figures/cat_simple.svg"></img>
 
-----
-
-<!-- TODO: Qu'est-ce que les objets et les morphismes -->
+<!-- TODO: Ajuster l'image -->
 
 ----
 
-<!-- TODO: Qu'est-ce que la loi de composition -->
+#### 2. une collection de morphismes $\hom(\C)$
+$\hom(A, B)$ est la collection des morphismes de $A$ vers $B$
+
+<!-- TODO: ajouter une image -->
+
+----
+
+#### 3. une loi de composition $\circ$
+
+<!-- TODO: ajouter une image -->
+
+====================
+
+### $\C$ doit aussi respecter certaines règles
+#### 1. tout objet $X$ a un morphisme identité $\id_X$ de $X$ vers lui-même
+
+<!-- TODO: ajouter une image de morphisme identité -->
+
+----
+
+#### 2. les morphismes identité sont des éléments neutres de $\circ$
+
+<!-- TODO: ajouter une image d'élément neutre -->
+
+----
+
+#### 3. la composition $\circ$ est associative
+
+<!-- TODO: ajouter une image de composition associative -->
 
 ====================
 
@@ -329,12 +345,122 @@ Il faut aussi oublier `void` & al, mais tout ça est justifiable.
 ====================
 
 ### Les foncteurs
+#### transformations entre catégories
 
-<!-- TODO -->
+----
+
+### Un foncteur $F : \C \to \D$
+#### 1. associe à chaque objet $X \in \ob(\C)$ un objet $F(X) \in \ob(\D)$
+
+<!-- TODO: Image de foncteur -->
+
+----
+
+#### 2. associe à chaque morphisme $f : A \to B$ un morphisme $F(f) : F(A) \to F(B)$
+
+<!-- TODO: Image de foncteur -->
+
+----
+
+#### 3. respecte les identités et la composition
+
+$F(g \circ f) = F(g) \circ F(f)$
+
+$F(\id_X) = \id\sub{F(X)}$
+
+====================
+
+### Exemples
+
+----
+
+#### Le foncteur identité $\Id : \C \to \C$
+
+1. $\Id(X) = X$
+2. $\Id(f : A \to B) = f : A \to B$
+
+----
+
+#### Le foncteur oubli $F : \Grp \to \Set$
+
+1. $F(G) = G$
+2. $F(f : G \to H) = f : G \to H$
+
+<br>
+(enlève la structure)
+
+----
+
+#### Le foncteur puissance $\P : \Set \to \Set$
+
+1. $\P(X) = \text{ensemble puissance de } X$
+2. $\P(f : A \to B) = f\sub{\star}$
+
+<br>
+où
+
+$$
+    \begin{matrix}
+        f\sub{\star} : \P(A) \to \P(B)                                  \\\\
+                   U \mapsto f(U)                                       \\\\
+    \end{matrix}
+$$
+
+----
+
+#### Le foncteur $\cc{list} : \Cxx \to \Cxx$
+
+1. $\cc{list}(X) = \cc{list\tp{X}}$
+2. $\cc{list}(\cc{f} : \cc{A} \to \cc{B}) = \cc{transform(-, f)}$
+
+<br>
+où
+
+$$
+    \begin{matrix}
+        \cc{transform(-, f)} : \cc{list\tp{X}} \to \cc{list\tp{Y}}                  \\\\
+                               \cc{[x1, ..., xn]} \mapsto \cc{[f(x1), ..., f(xn)]}  \\\\
+    \end{matrix}
+$$
 
 ==============================================================================
 
 ### Le plat de résistance
+#### Les types généralisés
+
+====================
+
+### On définit le template suivant
+
+__Maths__
+$$
+    \\{ \cc{type_T} \\}\sub{\cc{T} \in \cc{Type}}
+$$
+
+__C++__
+```cpp
+template <typename T>
+struct type { /* rien */ };
+```
+
+----
+
+### On se dote d'un type symbolique $\cc{Type}$
+
+```cpp
+struct Type { };
+```
+
+----
+
+### Puis on définit la (méta)fonction suivante
+$$
+    \begin{matrix}
+        \cc{gtype} : \cc{Type} \to \cc{Type}    \\\\
+                    \cc{T} \mapsto \cc{T}       \\\\
+                    \cc{type_T} \mapsto \cc{Type}
+    \end{matrix}
+$$
 
 ====================
 
@@ -343,15 +469,9 @@ Il faut aussi oublier `void` & al, mais tout ça est justifiable.
 
 <!-- TODO -->
 
-- $\ob(\Hana) = $
-- $\hom(\cc{X}, \cc{Y}) = $
+- $\ob(\Hana) = \cc{gtype}(\ob(\Cxx))$
+- $\hom(\cc{X}, \cc{Y}) = \\{ \text{fonctions } \cc{f} : \cc{X} \to \cc{Y} \\}$
 - $\circ = \text{composition usuelle}$
-
-====================
-
-### Foncteurs
-
-<!-- TODO -->
 
 ====================
 
@@ -359,15 +479,41 @@ Il faut aussi oublier `void` & al, mais tout ça est justifiable.
 
 ====================
 
-### $\cc{Maybe}$
+### Foncteur $\cc{Maybe}$
+
+====================
+
+### Foncteur $\cc{Tuple}$
 
 <!-- TODO -->
 
 ====================
 
-### $\cc{Tuple}$
+### On a aussi des monades, des catamorphismes, etc...
 
-<!-- TODO -->
+====================
+
+### Le résultat?
+
+### Expressivité, généralité et rectitude
+
+----
+
+### Constatez par vous-même
+
+#### Avant
+
+```cpp
+TODO
+```
+
+----
+
+#### Après
+
+```cpp
+TODO
+```
 
 ==============================================================================
 
