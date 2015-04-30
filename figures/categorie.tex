@@ -1,0 +1,12 @@
+\documentclass[tikz]{standalone}
+\usetikzlibrary{cd}
+
+\newcommand{\id}{\mathrm{id}}
+
+\begin{document}
+\begin{tikzcd}
+      A \arrow[loop above, "\id_A"] \arrow[r, "f"] \arrow[rr, bend right, "h"]
+    & B \arrow[loop above, "\id_B"] \arrow[r, "g"]
+    & C \arrow[loop above, "\id_C"]
+\end{tikzcd}
+\end{document}

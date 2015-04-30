@@ -268,43 +268,24 @@ $$
 ====================
 
 ### Une catégorie $\C$ est
-#### 1. une collection d'objets $\ob(\C)$
 
-<img style="width:800px; height:auto;" src="figures/cat_simple.svg"></img>
+1. #### une collection d'objets $\ob(\C)$
+2. #### une collection de morphismes $\hom(\C)$
+3. #### une loi de composition $\circ$
 
-<!-- TODO: Ajuster l'image -->
-
-----
-
-#### 2. une collection de morphismes $\hom(\C)$
-$\hom(A, B)$ est la collection des morphismes de $A$ vers $B$
-
-<!-- TODO: ajouter une image -->
+<img style="width: 60%; height:auto;" src="figures/categorie.svg"></img>
 
 ----
 
-#### 3. une loi de composition $\circ$
-
-<!-- TODO: ajouter une image -->
+#### $\hom(A, B)$ est la collection des morphismes de $A$ vers $B$
 
 ====================
 
 ### $\C$ doit aussi respecter certaines règles
-#### 1. tout objet $X$ a un morphisme identité $\id_X$ de $X$ vers lui-même
 
-<!-- TODO: ajouter une image de morphisme identité -->
-
-----
-
-#### 2. les morphismes identité sont des éléments neutres de $\circ$
-
-<!-- TODO: ajouter une image d'élément neutre -->
-
-----
-
-#### 3. la composition $\circ$ est associative
-
-<!-- TODO: ajouter une image de composition associative -->
+1. #### tout objet $X$ a un morphisme identité $\id_X$ de $X$ vers lui-même
+2. #### les morphismes identité sont des éléments neutres de $\circ$
+3. #### la composition $\circ$ est associative
 
 ====================
 
@@ -351,26 +332,21 @@ Il faut aussi oublier `void` & al, mais tout ça est justifiable.
 ### Les foncteurs
 #### transformations entre catégories
 
-----
+====================
 
 ### Un foncteur $F : \C \to \D$
-#### 1. associe à chaque objet $X \in \ob(\C)$ un objet $F(X) \in \ob(\D)$
 
-<!-- TODO: Image de foncteur -->
+1. #### associe à chaque objet $X \in \ob(\C)$ un objet $F(X) \in \ob(\D)$
+2. #### associe à chaque morphisme $f : A \to B$ un morphisme $F(f) : F(A) \to F(B)$
 
-----
-
-#### 2. associe à chaque morphisme $f : A \to B$ un morphisme $F(f) : F(A) \to F(B)$
-
-<!-- TODO: Image de foncteur -->
+<img style="width: 60%; height:auto;" src="figures/foncteur.svg"></img>
 
 ----
 
-#### 3. respecte les identités et la composition
+### $F$ doit respecter les identités et la composition
 
-$F(g \circ f) = F(g) \circ F(f)$
-
-$F(\id_X) = \id\sub{F(X)}$
+1. $F(g \circ f) = F(g) \circ F(f)$
+2. $F(\id_X) = \id\sub{F(X)}$
 
 ====================
 
