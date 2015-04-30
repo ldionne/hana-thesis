@@ -371,23 +371,6 @@ Il faut aussi oublier `void` & al, mais tout ça est justifiable.
 
 ----
 
-#### Le foncteur puissance $\P : \Set \to \Set$
-
-1. $\P(X) = \text{ensemble puissance de } X$
-2. $\P(f : A \to B) = f\sub{\star}$
-
-<br>
-où
-
-$$
-    \begin{matrix}
-        f\sub{\star} : \P(A) \to \P(B)                                  \\\\
-                   U \mapsto f(U)                                       \\\\
-    \end{matrix}
-$$
-
-----
-
 #### Le foncteur $\cc{list} : \Cxx \to \Cxx$
 
 1. $\cc{list}(X) = \cc{list\tp{X}}$
@@ -402,11 +385,6 @@ $$
                                \cc{[x1, ..., xn]} \mapsto \cc{[f(x1), ..., f(xn)]}  \\\\
     \end{matrix}
 $$
-
-Note:
-Il y a un lien évident entre le foncteur `list` et le foncteur puissance.
-En fait, ils sont à peu près pareil, sauf qu'une liste peut admettre des
-duplicats et pas un ensemble.
 
 ==============================================================================
 
